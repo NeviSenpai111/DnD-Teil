@@ -1,0 +1,68 @@
+{
+  "_meta": {
+    "sources": [
+      {
+        "json": "SpaceGalleonBrew",
+        "abbreviation": "SGB",
+        "full": "Space Galleon Homebrew",
+        "authors": ["NeviSenpai"],
+        "version": "1.0.0"
+      }
+    ],
+    "edition": "classic"
+  },
+  "vehicle": [
+    {
+      "name": "Space Galleon with Antimatter Rifle",
+      "source": "Homebrew",
+      "vehicleType": "SPELLJAMMER",
+      "dimensions": ["130 ft.", "30 ft."],
+      "terrain": ["space", "sea", "air"],
+      "capCrew": 20,
+      "capCargo": 20,
+      "cost": 3000000,
+      "pace": 4,
+      "speed": 35,
+      "hull": { "ac": 15, "acFrom": ["wood"], "hp": 400, "dt": 15 },
+      "weapon": [
+        {
+          "name": "Antimatter Rifle",
+          "crew": 1,
+          "count": 2,
+          "ac": 15,
+          "hp": 50,
+          "costs": [{ "cost": 10000, "note": "Antimatter Rifle" }],
+          "entries": [
+            "It takes 1 action to fire it. After 5 consecutive shots the rifle needs to cool down for 3 turns."
+          ],
+          "action": [
+            {
+              "name": "Antimatter Shots",
+              "entries": [
+                "{@atk rw} {@hit 6} to hit, range 120/360 ft., one target. {@h}16 ({@damage 6d8}) necrotic damage."
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Mangonel",
+          "crew": 5,
+          "ac": 15,
+          "hp": 100,
+          "costs": [{ "cost": 10000, "note": "mangonel" }, { "note": "stone" }],
+          "entries": [
+            "It takes 2 actions to load the mangonel, 2 actions to aim it, and 1 action to fire it."
+          ],
+          "action": [
+            {
+              "name": "Mangonel Stone",
+              "entries": [
+                "{@atk rw} {@hit 5} to hit, range 200/800 ft. (can't hit targets within 60 feet of it), one target. {@h}27 ({@damage 5d10}) bludgeoning damage."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

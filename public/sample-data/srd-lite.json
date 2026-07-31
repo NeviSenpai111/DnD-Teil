@@ -1,0 +1,1069 @@
+{
+  "_meta": {
+    "sources": [
+      {
+        "json": "SRDLite",
+        "abbreviation": "SRDL",
+        "full": "SRD-Lite Test Content",
+        "authors": [
+          "5eTools Builder"
+        ],
+        "version": "0.1.0"
+      }
+    ],
+    "edition": "classic"
+  },
+  "race": [
+    {
+      "name": "Sturdyfolk",
+      "source": "SRDLite",
+      "size": [
+        "M"
+      ],
+      "speed": 25,
+      "ability": [
+        {
+          "con": 2,
+          "wis": 1
+        }
+      ],
+      "skillProficiencies": [
+        {
+          "choose": {
+            "from": [
+              "perception",
+              "survival",
+              "athletics"
+            ],
+            "count": 1
+          }
+        }
+      ],
+      "entries": [
+        "Stout and steady, the sturdyfolk endure hardships that would break others.",
+        {
+          "type": "entries",
+          "name": "Dwarven Resilience",
+          "entries": [
+            "You have advantage on saving throws against {@condition poisoned} and resistance against poison damage."
+          ]
+        },
+        {
+          "type": "entries",
+          "name": "Darkvision",
+          "entries": [
+            "You can see in dim light within 60 feet as if it were bright light."
+          ]
+        }
+      ],
+      "resist": [
+        "poison"
+      ],
+      "darkvision": 60,
+      "languageProficiencies": [
+        {
+          "common": true,
+          "anyStandard": 1
+        }
+      ]
+    },
+    {
+      "name": "Swiftling",
+      "source": "SRDLite",
+      "size": [
+        "S"
+      ],
+      "speed": 35,
+      "ability": [
+        {
+          "dex": 2,
+          "int": 1
+        }
+      ],
+      "entries": [
+        "Quick of foot and mind, swiftlings rarely stay still for long.",
+        {
+          "type": "entries",
+          "name": "Fleet of Foot",
+          "entries": [
+            "Your base walking speed is 35 feet."
+          ]
+        }
+      ],
+      "additionalSpells": [
+        {
+          "innate": {
+            "1": [
+              "mage light|SRDLite"
+            ]
+          },
+          "known": {
+            "1": {
+              "_": [
+                {
+                  "choose": "level=0",
+                  "count": 1
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "background": [
+    {
+      "name": "Veteran Guard",
+      "source": "SRDLite",
+      "skillProficiencies": [
+        {
+          "athletics": true,
+          "intimidation": true
+        }
+      ],
+      "entries": [
+        {
+          "type": "entries",
+          "name": "Feature: Watchful Eye",
+          "entries": [
+            "Your time on watch lets you notice trouble before it starts. You can often find a safe place to rest within a settlement and gain a friendly contact among the local guard."
+          ]
+        },
+        {
+          "type": "table",
+          "colLabels": [
+            "d4",
+            "Personality Trait"
+          ],
+          "rows": [
+            [
+              "1",
+              "I always have a plan for when things go wrong."
+            ],
+            [
+              "2",
+              "I face problems head-on. A simple, direct solution is the best path."
+            ],
+            [
+              "3",
+              "I keep watch while others sleep, whether they ask me to or not."
+            ],
+            [
+              "4",
+              "I judge people by their deeds, not their words."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Wandering Scholar",
+      "source": "SRDLite",
+      "skillProficiencies": [
+        {
+          "arcana": true,
+          "history": true
+        }
+      ],
+      "entries": [
+        {
+          "type": "entries",
+          "name": "Feature: Researcher",
+          "entries": [
+            "When you try to learn or recall a piece of lore, you often know where and from whom you can obtain it."
+          ]
+        }
+      ]
+    }
+  ],
+  "class": [
+    {
+      "name": "Warden",
+      "source": "SRDLite",
+      "hd": {
+        "number": 1,
+        "faces": 10
+      },
+      "proficiency": [
+        "str",
+        "con"
+      ],
+      "startingProficiencies": {
+        "armor": [
+          "light",
+          "medium",
+          "shields"
+        ],
+        "weapons": [
+          "simple",
+          "martial"
+        ],
+        "skills": [
+          {
+            "choose": {
+              "from": [
+                "acrobatics",
+                "athletics",
+                "insight",
+                "intimidation",
+                "perception",
+                "survival"
+              ],
+              "count": 2
+            }
+          }
+        ]
+      },
+      "subclassTitle": "Warden Path",
+      "classFeatures": [
+        "Defensive Stance|Warden|SRDLite|1",
+        "Martial Vigor|Warden|SRDLite|1",
+        "Second Wind|Warden|SRDLite|2",
+        "Warden Path|Warden|SRDLite|3"
+      ],
+      "entries": [
+        "Wardens are disciplined protectors who stand between danger and those they guard."
+      ],
+      "optionalfeatureProgression": [
+        {
+          "name": "Warden Stance",
+          "featureType": [
+            "FS:W"
+          ],
+          "progression": {
+            "1": 1,
+            "5": 2
+          }
+        }
+      ],
+      "classTableGroups": [
+        {
+          "colLabels": [
+            "Vigor Uses"
+          ],
+          "rows": [
+            [
+              2
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ],
+            [
+              3
+            ],
+            [
+              3
+            ],
+            [
+              4
+            ],
+            [
+              4
+            ],
+            [
+              4
+            ],
+            [
+              4
+            ],
+            [
+              5
+            ],
+            [
+              5
+            ],
+            [
+              5
+            ],
+            [
+              5
+            ],
+            [
+              5
+            ],
+            [
+              5
+            ],
+            [
+              6
+            ],
+            [
+              6
+            ],
+            [
+              6
+            ],
+            [
+              6
+            ],
+            [
+              6
+            ]
+          ]
+        },
+        {
+          "colLabels": [
+            "Weapon Mastery"
+          ],
+          "rows": [
+            [
+              2
+            ],
+            [
+              2
+            ],
+            [
+              2
+            ],
+            [
+              2
+            ],
+            [
+              2
+            ],
+            [
+              2
+            ],
+            [
+              2
+            ],
+            [
+              2
+            ],
+            [
+              2
+            ],
+            [
+              2
+            ],
+            [
+              2
+            ],
+            [
+              2
+            ],
+            [
+              2
+            ],
+            [
+              2
+            ],
+            [
+              2
+            ],
+            [
+              2
+            ],
+            [
+              2
+            ],
+            [
+              2
+            ],
+            [
+              2
+            ],
+            [
+              2
+            ]
+          ]
+        }
+      ],
+      "multiclassing": {
+        "requirements": {
+          "str": 13
+        }
+      }
+    },
+    {
+      "name": "Channeler",
+      "source": "SRDLite",
+      "hd": {
+        "number": 1,
+        "faces": 6
+      },
+      "proficiency": [
+        "int",
+        "wis"
+      ],
+      "spellcastingAbility": "int",
+      "casterProgression": "full",
+      "cantripProgression": [
+        3,
+        3,
+        3,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "spellsKnownProgression": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        18,
+        19,
+        19,
+        20,
+        20
+      ],
+      "startingProficiencies": {
+        "armor": [],
+        "weapons": [
+          "simple"
+        ],
+        "skills": [
+          {
+            "choose": {
+              "from": [
+                "arcana",
+                "history",
+                "insight",
+                "investigation"
+              ],
+              "count": 2
+            }
+          }
+        ]
+      },
+      "classFeatures": [
+        "Spellcasting|Channeler|SRDLite|1"
+      ],
+      "entries": [
+        "Channelers shape raw arcane energy through study and force of will."
+      ],
+      "multiclassing": {
+        "requirements": {
+          "int": 13
+        }
+      }
+    }
+  ],
+  "classFeature": [
+    {
+      "name": "Defensive Stance",
+      "source": "SRDLite",
+      "className": "Warden",
+      "classSource": "SRDLite",
+      "level": 1,
+      "entries": [
+        "While you aren't wearing heavy armor, you can use a {@condition reaction|||reaction} to gain a +2 bonus to AC against one attack you can see."
+      ]
+    },
+    {
+      "name": "Martial Vigor",
+      "source": "SRDLite",
+      "className": "Warden",
+      "classSource": "SRDLite",
+      "level": 1,
+      "entries": [
+        "Your Hit Point maximum increases by an amount equal to your Constitution modifier (minimum 1). You also have proficiency in Strength and Constitution saving throws."
+      ]
+    },
+    {
+      "name": "Second Wind",
+      "source": "SRDLite",
+      "className": "Warden",
+      "classSource": "SRDLite",
+      "level": 2,
+      "entries": [
+        "Once per short rest, you can use a bonus action to regain {@dice 1d10} + your Warden level in hit points."
+      ]
+    },
+    {
+      "name": "Warden Path",
+      "source": "SRDLite",
+      "className": "Warden",
+      "classSource": "SRDLite",
+      "level": 3,
+      "entries": [
+        "You commit to a Warden Path that shapes your defensive style, granting features at 3rd level and beyond."
+      ]
+    },
+    {
+      "name": "Spellcasting",
+      "source": "SRDLite",
+      "className": "Channeler",
+      "classSource": "SRDLite",
+      "level": 1,
+      "entries": [
+        "You can cast channeler spells using Intelligence as your spellcasting ability. Your spell save DC is {@dc 8} + your proficiency bonus + your Intelligence modifier."
+      ]
+    },
+    {
+      "name": "Warden Stance",
+      "source": "SRDLite",
+      "className": "Warden",
+      "classSource": "SRDLite",
+      "level": 1,
+      "entries": [
+        "You adopt a stance that shapes how you fight. Choose one stance; you gain a second stance at 5th level."
+      ]
+    },
+    {
+      "name": "Expertise",
+      "source": "SRDLite",
+      "className": "Warden",
+      "classSource": "SRDLite",
+      "level": 1,
+      "entries": [
+        "Choose two of your skill proficiencies. Your proficiency bonus is doubled for any ability check you make that uses either of the chosen proficiencies."
+      ]
+    },
+    {
+      "name": "Unarmored Defense",
+      "source": "SRDLite",
+      "className": "Warden",
+      "classSource": "SRDLite",
+      "level": 1,
+      "entries": [
+        "While you aren't wearing any armor, your Armor Class equals 10 + your Dexterity modifier + your Constitution modifier. You can use a shield and still gain this benefit."
+      ]
+    }
+  ],
+  "subclass": [
+    {
+      "name": "Path of the Sentinel",
+      "shortName": "Sentinel",
+      "source": "SRDLite",
+      "className": "Warden",
+      "classSource": "SRDLite",
+      "subclassFeatures": [
+        "Sentinel's Watch|Warden|SRDLite|Sentinel|SRDLite|3"
+      ]
+    }
+  ],
+  "subclassFeature": [
+    {
+      "name": "Sentinel's Watch",
+      "source": "SRDLite",
+      "className": "Warden",
+      "classSource": "SRDLite",
+      "subclassShortName": "Sentinel",
+      "subclassSource": "SRDLite",
+      "level": 3,
+      "entries": [
+        "When a creature within 5 feet of you makes an attack against a target other than you, you can use your reaction to make a melee attack against that creature."
+      ]
+    }
+  ],
+  "spell": [
+    {
+      "name": "Spark Touch",
+      "source": "SRDLite",
+      "level": 0,
+      "school": "V",
+      "classes": {
+        "fromClassList": [
+          {
+            "name": "Channeler",
+            "source": "SRDLite"
+          }
+        ]
+      },
+      "entries": [
+        "Make a melee spell attack against a creature you touch. On a hit it takes {@damage 1d8} lightning damage. This spell's damage increases by {@dice 1d8} at 5th, 11th, and 17th level."
+      ],
+      "time": [
+        {
+          "number": 1,
+          "unit": "action"
+        }
+      ],
+      "range": {
+        "type": "point",
+        "distance": {
+          "type": "touch"
+        }
+      },
+      "components": {
+        "v": true,
+        "s": true
+      },
+      "duration": [
+        {
+          "type": "instant"
+        }
+      ]
+    },
+    {
+      "name": "Mage Light",
+      "source": "SRDLite",
+      "level": 0,
+      "school": "V",
+      "classes": {
+        "fromClassList": [
+          {
+            "name": "Channeler",
+            "source": "SRDLite"
+          }
+        ]
+      },
+      "entries": [
+        "You conjure a floating mote of light that sheds bright light in a 10-foot radius."
+      ],
+      "time": [
+        {
+          "number": 1,
+          "unit": "action"
+        }
+      ],
+      "range": {
+        "type": "point",
+        "distance": {
+          "type": "feet",
+          "amount": 30
+        }
+      },
+      "components": {
+        "v": true,
+        "m": "a phosphorescent moth wing"
+      },
+      "duration": [
+        {
+          "type": "timed",
+          "duration": {
+            "type": "hour",
+            "amount": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "Frost Bite",
+      "source": "SRDLite",
+      "level": 0,
+      "school": "V",
+      "classes": {
+        "fromClassList": [
+          {
+            "name": "Channeler",
+            "source": "SRDLite"
+          }
+        ]
+      },
+      "entries": [
+        "One creature you can see must succeed on a Constitution save ({@dc 13}) or take {@damage 1d6} cold damage and have disadvantage on its next attack."
+      ],
+      "time": [
+        {
+          "number": 1,
+          "unit": "action"
+        }
+      ],
+      "range": {
+        "type": "point",
+        "distance": {
+          "type": "feet",
+          "amount": 60
+        }
+      },
+      "components": {
+        "v": true,
+        "s": true
+      },
+      "duration": [
+        {
+          "type": "instant"
+        }
+      ]
+    },
+    {
+      "name": "Arcane Bolt",
+      "source": "SRDLite",
+      "level": 1,
+      "school": "V",
+      "classes": {
+        "fromClassList": [
+          {
+            "name": "Channeler",
+            "source": "SRDLite"
+          }
+        ]
+      },
+      "entries": [
+        "{@atk rs} A bolt of force streaks toward a target within range. {@h}{@damage 3d6} force damage."
+      ],
+      "entriesHigherLevel": [
+        {
+          "type": "entries",
+          "name": "At Higher Levels",
+          "entries": [
+            "The damage increases by {@scaledamage 3d6|1-9|1d6} for each slot level above 1st."
+          ]
+        }
+      ],
+      "time": [
+        {
+          "number": 1,
+          "unit": "action"
+        }
+      ],
+      "range": {
+        "type": "point",
+        "distance": {
+          "type": "feet",
+          "amount": 120
+        }
+      },
+      "components": {
+        "v": true,
+        "s": true
+      },
+      "duration": [
+        {
+          "type": "instant"
+        }
+      ]
+    },
+    {
+      "name": "Mending Ward",
+      "source": "SRDLite",
+      "level": 1,
+      "school": "A",
+      "classes": {
+        "fromClassList": [
+          {
+            "name": "Channeler",
+            "source": "SRDLite"
+          }
+        ]
+      },
+      "entries": [
+        "A creature you touch regains {@dice 1d8} + your spellcasting ability modifier hit points."
+      ],
+      "time": [
+        {
+          "number": 1,
+          "unit": "bonus"
+        }
+      ],
+      "range": {
+        "type": "point",
+        "distance": {
+          "type": "feet",
+          "amount": 30
+        }
+      },
+      "components": {
+        "v": true,
+        "s": true,
+        "m": "a strip of white cloth"
+      },
+      "duration": [
+        {
+          "type": "timed",
+          "duration": {
+            "type": "minute",
+            "amount": 10
+          },
+          "concentration": true
+        }
+      ],
+      "meta": {
+        "ritual": true
+      }
+    },
+    {
+      "name": "Flame Dart",
+      "source": "SRDLite",
+      "level": 1,
+      "school": "V",
+      "classes": {
+        "fromClassList": [
+          {
+            "name": "Channeler",
+            "source": "SRDLite"
+          }
+        ]
+      },
+      "entries": [
+        "A creature within range must make a Dexterity save ({@dc 13}), taking {@damage 2d6} fire damage on a failure or half as much on a success."
+      ],
+      "time": [
+        {
+          "number": 1,
+          "unit": "action"
+        }
+      ],
+      "range": {
+        "type": "point",
+        "distance": {
+          "type": "feet",
+          "amount": 90
+        }
+      },
+      "components": {
+        "v": true,
+        "s": true
+      },
+      "duration": [
+        {
+          "type": "instant"
+        }
+      ]
+    }
+  ],
+  "item": [
+    {
+      "name": "Leather Armor",
+      "source": "SRDLite",
+      "type": "LA",
+      "ac": 11,
+      "armor": true,
+      "value": 1000
+    },
+    {
+      "name": "Chain Shirt",
+      "source": "SRDLite",
+      "type": "MA",
+      "ac": 13,
+      "armor": true,
+      "value": 5000
+    },
+    {
+      "name": "Plate Armor",
+      "source": "SRDLite",
+      "type": "HA",
+      "ac": 18,
+      "armor": true,
+      "value": 150000
+    },
+    {
+      "name": "Shield",
+      "source": "SRDLite",
+      "type": "S",
+      "ac": 2,
+      "armor": true,
+      "value": 1000
+    },
+    {
+      "name": "Longsword",
+      "source": "SRDLite",
+      "type": "M",
+      "weapon": true,
+      "weaponCategory": "martial",
+      "dmg1": "1d8",
+      "dmgType": "S",
+      "value": 1500,
+      "mastery": [
+        "Sap"
+      ]
+    },
+    {
+      "name": "Shortbow",
+      "source": "SRDLite",
+      "type": "R",
+      "weapon": true,
+      "weaponCategory": "simple",
+      "dmg1": "1d6",
+      "dmgType": "P",
+      "range": "80/320",
+      "value": 2500,
+      "mastery": [
+        "Vex"
+      ]
+    },
+    {
+      "name": "Charm of Warding",
+      "source": "SRDLite",
+      "type": "G",
+      "weight": 0.5,
+      "entries": [
+        "A carved bone talisman. While you wear it, you gain a +1 bonus to Armor Class."
+      ],
+      "bonusAc": "+1"
+    },
+    {
+      "name": "Circlet of Insight",
+      "source": "SRDLite",
+      "type": "G",
+      "weight": 1,
+      "entries": [
+        "A plain copper band. Your Intelligence score is 19 while you wear this circlet. It has no effect if your Intelligence is already 19 or higher."
+      ],
+      "ability": {
+        "static": {
+          "int": 19
+        }
+      }
+    },
+    {
+      "name": "Warded Band",
+      "source": "SRDLite",
+      "type": "G",
+      "weight": 0.1,
+      "reqAttune": true,
+      "bonusAc": "+1",
+      "entries": [
+        "A ring of braided silver. While you wear and are attuned to it, you gain a +1 bonus to Armor Class."
+      ]
+    },
+    {
+      "name": "Sack of Deep Holding",
+      "source": "SRDLite",
+      "type": "G",
+      "weight": 5,
+      "containerCapacity": {
+        "weight": [
+          250
+        ],
+        "weightless": true
+      },
+      "entries": [
+        "This unassuming burlap sack opens into an extradimensional space. Its contents weigh nothing while inside."
+      ]
+    },
+    {
+      "name": "Rod of Embers",
+      "source": "SRDLite",
+      "type": "G",
+      "weight": 2,
+      "charges": 3,
+      "recharge": "dawn",
+      "entries": [
+        "This charred iron rod has 3 charges and regains all of them at dawn. You can expend a charge to make its tip glow like a torch for an hour."
+      ]
+    }
+  ],
+  "feat": [
+    {
+      "name": "Tough",
+      "source": "SRDLite",
+      "entries": [
+        "Your hit point maximum increases by an amount equal to twice your level when you gain this feat. Whenever you gain a level thereafter, your hit point maximum increases by an additional 2 hit points."
+      ]
+    },
+    {
+      "name": "Alert",
+      "source": "SRDLite",
+      "entries": [
+        "You gain a +5 bonus to initiative, you can't be surprised while conscious, and other creatures don't gain advantage on attack rolls against you as a result of being unseen."
+      ]
+    },
+    {
+      "name": "Stalwart Guard",
+      "source": "SRDLite",
+      "prerequisite": [
+        {
+          "ability": [
+            {
+              "str": 13
+            }
+          ]
+        }
+      ],
+      "entries": [
+        "You have learned to hold the line. When an ally within 5 feet of you is hit by an attack, you can use your reaction to grant them a +2 bonus to AC against that attack."
+      ]
+    }
+  ],
+  "optionalfeature": [
+    {
+      "name": "Stalwart Stance",
+      "source": "SRDLite",
+      "featureType": [
+        "FS:W"
+      ],
+      "entries": [
+        "While you are wearing armor, you gain a +1 bonus to Armor Class."
+      ]
+    },
+    {
+      "name": "Riverflow Stance",
+      "source": "SRDLite",
+      "featureType": [
+        "FS:W"
+      ],
+      "entries": [
+        "When you take the Dash action, opportunity attacks against you are made at disadvantage until the start of your next turn."
+      ]
+    },
+    {
+      "name": "Emberwatch Stance",
+      "source": "SRDLite",
+      "featureType": [
+        "FS:W"
+      ],
+      "prerequisite": [
+        {
+          "level": 5
+        }
+      ],
+      "entries": [
+        "When a creature within 30 feet of you that you can see is hit by an attack, you can use your reaction to move up to half your speed toward it."
+      ]
+    }
+  ],
+  "monster": [
+    {
+      "name": "Ember Hawk",
+      "source": "SRDLite",
+      "size": [
+        "S"
+      ],
+      "type": "elemental",
+      "ac": [
+        13
+      ],
+      "hp": {
+        "average": 11,
+        "formula": "2d6 + 4"
+      },
+      "speed": {
+        "walk": 10,
+        "fly": 60
+      },
+      "str": 6,
+      "dex": 16,
+      "con": 14,
+      "int": 4,
+      "wis": 12,
+      "cha": 7,
+      "trait": [
+        {
+          "name": "Smolder",
+          "entries": [
+            "A creature that touches the ember hawk takes 1 fire damage."
+          ]
+        }
+      ],
+      "action": [
+        {
+          "name": "Talons",
+          "entries": [
+            "Melee Attack: +5 to hit, reach 5 ft. Hit: 4 (1d4 + 2) slashing damage plus 2 (1d4) fire damage."
+          ]
+        }
+      ]
+    }
+  ]
+}
