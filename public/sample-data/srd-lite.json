@@ -830,6 +830,48 @@
           "type": "instant"
         }
       ]
+    },
+    {
+      "name": "Warding Aegis",
+      "source": "SRDLite",
+      "level": 1,
+      "school": "A",
+      "classes": {
+        "fromClassList": [
+          {
+            "name": "Channeler",
+            "source": "SRDLite"
+          }
+        ]
+      },
+      "entries": [
+        "A shimmering ward surrounds a willing creature you touch. While it wears no armor, its base Armor Class becomes 13 + its Dexterity modifier. The ward ends early if the target dons armor."
+      ],
+      "time": [
+        {
+          "number": 1,
+          "unit": "action"
+        }
+      ],
+      "range": {
+        "type": "point",
+        "distance": {
+          "type": "touch"
+        }
+      },
+      "components": {
+        "v": true,
+        "s": true
+      },
+      "duration": [
+        {
+          "type": "timed",
+          "duration": {
+            "type": "hour",
+            "amount": 8
+          }
+        }
+      ]
     }
   ],
   "item": [
@@ -952,6 +994,15 @@
       "entries": [
         "This charred iron rod has 3 charges and regains all of them at dawn. You can expend a charge to make its tip glow like a torch for an hour."
       ]
+    },
+    {
+      "name": "Whispering Boots",
+      "source": "SRDLite",
+      "type": "G",
+      "weight": 1,
+      "entries": [
+        "While you wear these soft-soled boots, you have advantage on Dexterity (Stealth) checks."
+      ]
     }
   ],
   "feat": [
@@ -983,6 +1034,18 @@
       ],
       "entries": [
         "You have learned to hold the line. When an ally within 5 feet of you is hit by an attack, you can use your reaction to grant them a +2 bonus to AC against that attack."
+      ]
+    },
+    {
+      "name": "Polyglot Scholar",
+      "source": "SRDLite",
+      "languageProficiencies": [
+        {
+          "anyStandard": 2
+        }
+      ],
+      "entries": [
+        "Your studies have spanned many cultures. You learn two standard languages of your choice."
       ]
     }
   ],

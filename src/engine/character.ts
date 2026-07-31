@@ -19,8 +19,11 @@ import { ABILITIES, SKILLS, skillNameToId, type Ability, type AbilityScores } fr
 import { asiSource } from "./edition";
 import { bestArmorClass, type ArmorPiece, type UnarmoredFormula } from "./armor";
 import { maxHpMulticlass } from "./hp";
+import { encumbrance, type Encumbrance } from "./currency";
 import {
+  advantageTargets,
   applyToValue,
+  proficiencyTargets,
   racePassives,
   resolveTarget,
   type Modifier,
@@ -470,6 +473,8 @@ export interface DeriveInput {
   extraLanguages?: string[];
   /** Tools picked from "choose/any N" grants (added to the summary). */
   extraTools?: string[];
+  /** Carried weight; when set, variant-encumbrance speed penalties apply. */
+  carriedWeight?: number;
 }
 
 export interface DerivedStat {
@@ -502,6 +507,10 @@ export interface DerivedCharacter {
   resistances: string[];
   immunities: string[];
   senses: string[];
+  /** Variant-encumbrance state for the carried weight ("ok" when unknown). */
+  encumbrance: Encumbrance;
+  /** Advantage markers from modifiers: target (skill id) -> source names. */
+  advantages: Record<string, string[]>;
   /** Max HP, present only once a class with a hit die is chosen. */
   maxHp?: number;
   hitDie?: string;
@@ -559,6 +568,7 @@ export function deriveCharacter(input: DeriveInput): DerivedCharacter {
   const grants = gatherSkillGrants(input);
   const proficientSkillIds = resolveProficientSkills(grants, input.skillChoices);
   const profSet = new Set(proficientSkillIds);
+  for (const id of proficiencyTargets(mods_, modCtx)) profSet.add(id);
   const expertiseSet = new Set([...(input.expertise ?? []), ...gatherFeatExpertise(input.feats)]);
 
   const skills: Record<string, DerivedSkill> = {};
@@ -594,6 +604,25 @@ export function deriveCharacter(input: DeriveInput): DerivedCharacter {
     ? hpClasses.map((c) => `${c.level}d${c.faces}`).join(" + ")
     : undefined;
 
+  // Variant encumbrance: −10 ft past Str×5, −20 past Str×10, and a crawl at
+  // the Str×15 hard cap. Applied only when the carried weight is known.
+  const baseSpeed = applyToValue(
+    normalizeSpeed(input.race?.speed ?? input.subrace?.speed),
+    mods_,
+    "speed",
+    modCtx,
+  );
+  const encumbered =
+    input.carriedWeight !== undefined ? encumbrance(input.carriedWeight, abilities.str) : "ok";
+  const speed =
+    encumbered === "over-capacity"
+      ? 5
+      : encumbered === "heavily-encumbered"
+        ? Math.max(0, baseSpeed - 20)
+        : encumbered === "encumbered"
+          ? Math.max(0, baseSpeed - 10)
+          : baseSpeed;
+
   // Language/tool picks from "choose/any N" grants join the fixed summary.
   const gathered = gatherProficiencies(input);
   const proficiencies: ProficiencySummary = {
@@ -625,12 +654,9 @@ export function deriveCharacter(input: DeriveInput): DerivedCharacter {
     }),
     initiative: initiativeMod(abilities.dex) + resolveTarget(mods_, "initiative", modCtx).bonus,
     passivePerception: passiveScore(skills.perception.mod),
-    speed: applyToValue(
-      normalizeSpeed(input.race?.speed ?? input.subrace?.speed),
-      mods_,
-      "speed",
-      modCtx,
-    ),
+    speed,
+    encumbrance: encumbered,
+    advantages: advantageTargets(mods_, modCtx),
     size: input.race?.size?.[0] ? (SIZE_NAMES[input.race.size[0]] ?? input.race.size[0]) : undefined,
     proficientSkillIds,
     proficiencies,

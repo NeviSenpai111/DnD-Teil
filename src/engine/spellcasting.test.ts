@@ -4,6 +4,7 @@ import {
   deriveSpellcasting,
   multiclassSpellSlots,
   pactSlots,
+  scaledCantripDice,
   spellSlots,
 } from "./spellcasting";
 
@@ -88,5 +89,24 @@ describe("deriveSpellcasting", () => {
     const sc = deriveSpellcasting({ progression: "pact", level: 5, abilityScore: 16, pb: 3, ability: "cha" });
     expect(sc.pact).toEqual({ count: 2, slotLevel: 3 });
     expect(sc.maxSpellLevel).toBe(3);
+  });
+});
+
+describe("scaledCantripDice", () => {
+  const cantrip = {
+    level: 0,
+    entries: ["On a hit it takes {@damage 1d8} lightning damage."],
+  };
+
+  it("scales the first damage tag by the character-level multiplier", () => {
+    expect(scaledCantripDice(cantrip, 4)).toBeUndefined(); // no scaling yet
+    expect(scaledCantripDice(cantrip, 5)).toBe("2d8");
+    expect(scaledCantripDice(cantrip, 11)).toBe("3d8");
+    expect(scaledCantripDice(cantrip, 17)).toBe("4d8");
+  });
+
+  it("ignores leveled spells and diceless cantrips", () => {
+    expect(scaledCantripDice({ ...cantrip, level: 1 }, 5)).toBeUndefined();
+    expect(scaledCantripDice({ level: 0, entries: ["You create light."] }, 5)).toBeUndefined();
   });
 });

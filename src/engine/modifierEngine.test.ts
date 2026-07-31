@@ -62,6 +62,31 @@ describe("content-derived modifiers", () => {
     expect(mods).toEqual([{ type: "set", target: "int", value: 19, source: "Circlet" }]);
   });
 
+  it("derives advantage markers from item text, in both wordings", () => {
+    const boots = itemModifiers({
+      name: "Whispering Boots",
+      source: "X",
+      entries: ["While worn, you have advantage on Dexterity (Stealth) checks."],
+    });
+    expect(boots).toEqual([{ type: "advantage", target: "stealth", source: "Whispering Boots" }]);
+
+    const plain = itemModifiers({
+      name: "Keen Lens",
+      source: "X",
+      entries: ["You have advantage on Perception checks made using sight."],
+    });
+    expect(plain).toEqual([{ type: "advantage", target: "perception", source: "Keen Lens" }]);
+
+    // Non-skill phrases don't produce bogus targets.
+    expect(
+      itemModifiers({
+        name: "Lucky Coin",
+        source: "X",
+        entries: ["You have advantage on death saving throw checks."],
+      }),
+    ).toEqual([]);
+  });
+
   it("gathers species resistances and darkvision", () => {
     const passives = racePassives([
       { name: "Sturdyfolk", source: "X", resist: ["poison"], darkvision: 60 },
@@ -125,5 +150,27 @@ describe("deriveCharacter with modifiers", () => {
       ],
     });
     expect(derived.ac).toBe(10);
+  });
+
+  it("applies proficiency-type modifiers and surfaces advantage markers", () => {
+    const derived = deriveCharacter({
+      ...base,
+      level: 1,
+      modifiers: [
+        { type: "proficiency", target: "stealth", source: "Shadow Gloves" },
+        { type: "advantage", target: "stealth", source: "Whispering Boots" },
+      ],
+    });
+    expect(derived.skills.stealth.proficient).toBe(true);
+    expect(derived.skills.stealth.mod).toBe(2); // dex 0 + PB 2
+    expect(derived.advantages).toEqual({ stealth: ["Whispering Boots"] });
+  });
+
+  it("applies variant-encumbrance speed penalties from carried weight", () => {
+    const at = (carriedWeight: number) => deriveCharacter({ ...base, carriedWeight });
+    expect(at(50)).toMatchObject({ speed: 30, encumbrance: "ok" }); // str 10 ×5 = 50
+    expect(at(51)).toMatchObject({ speed: 20, encumbrance: "encumbered" });
+    expect(at(101)).toMatchObject({ speed: 10, encumbrance: "heavily-encumbered" });
+    expect(at(151)).toMatchObject({ speed: 5, encumbrance: "over-capacity" });
   });
 });

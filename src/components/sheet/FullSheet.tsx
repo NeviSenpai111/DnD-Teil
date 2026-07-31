@@ -8,7 +8,9 @@ import {
   chosenOptionalFeaturesFor,
   classFeaturesFor,
   classResourcesFor,
+  containerContentsWeight,
   deriveFromCharacter,
+  effectAcFormulaCandidates,
   inventoryWeight,
   itemForEntry,
   listByType,
@@ -34,7 +36,8 @@ import { formatMod } from "../../engine/modifiers";
 import { rollD20, rollDamage, rollDie, type RollMode } from "../../engine/dice";
 import { shortRestRestores } from "../../engine/resources";
 import { COINS, carryingCapacity, currencyInGp } from "../../engine/currency";
-import { cantripDiceMultiplier } from "../../engine/spellcasting";
+import { cantripDiceMultiplier, scaledCantripDice } from "../../engine/spellcasting";
+import { itemModifiers } from "../../engine/modifierEngine";
 import { masteryNames } from "../../engine/mastery";
 import { isWeapon, unarmedStrikeLine, weaponAttackLine, type AttackLine } from "../../engine/attacks";
 import type { Spell } from "../../data/types/spell-content";
@@ -74,12 +77,14 @@ export function FullSheet({ character }: { character: Character }) {
   const [rollMode, setRollMode] = useState<RollMode>("normal");
   const [lastRoll, setLastRoll] = useState<RollResult>();
 
-  const rollCheck = (label: string, mod: number) => {
-    const r = rollD20(mod, rollMode);
+  const rollCheck = (label: string, mod: number, advantage?: boolean) => {
+    // A modifier-granted advantage applies unless the toggle overrides it.
+    const mode = rollMode !== "normal" ? rollMode : advantage ? "advantage" : "normal";
+    const r = rollD20(mod, mode);
     setLastRoll({
       label,
       detail: `d20 [${r.rolls.join(", ")}] ${formatMod(mod)}${
-        rollMode !== "normal" ? ` · ${rollMode}` : ""
+        mode !== "normal" ? ` · ${mode}` : ""
       }`,
       total: r.total,
     });
@@ -133,7 +138,15 @@ export function FullSheet({ character }: { character: Character }) {
 
       <section className="grid grid-cols-3 gap-2 text-center text-sm sm:grid-cols-6">
         <Chip label="Prof" value={formatMod(derived.pb)} />
-        <Chip label="Speed" value={`${derived.speed} ft`} />
+        <Chip
+          label="Speed"
+          value={`${derived.speed} ft`}
+          title={
+            derived.encumbrance !== "ok"
+              ? `${derived.encumbrance.replace("-", " ")} — variant encumbrance penalty applied`
+              : undefined
+          }
+        />
         <Chip label="Initiative" value={formatMod(derived.initiative)} />
         <Chip label="AC" value={derived.ac} />
         <Chip label="Pass. Per" value={derived.passivePerception} />
@@ -161,6 +174,8 @@ export function FullSheet({ character }: { character: Character }) {
           <Chip label="HP" value="—" />
         )}
       </section>
+
+      <EffectsStrip character={character} />
 
       {hpOpen && maxHp != null && (
         <HpStrip
@@ -229,6 +244,52 @@ export function FullSheet({ character }: { character: Character }) {
         </aside>
       )}
     </article>
+  );
+}
+
+/**
+ * Toggleable effects: Mage-Armor-style AC formulas detected in the
+ * character's known spells. Active ones join the AC derivation.
+ */
+function EffectsStrip({ character }: { character: Character }) {
+  const index = useContentStore((s) => s.index);
+  const updateSheet = useCharacterStore((s) => s.updateSheet);
+  const candidates = effectAcFormulaCandidates(character, index);
+  if (candidates.length === 0) return null;
+
+  const toggle = (name: string) =>
+    updateSheet(character.id, (c) => ({
+      play: {
+        ...c.play,
+        activeEffects: c.play.activeEffects.includes(name)
+          ? c.play.activeEffects.filter((n) => n !== name)
+          : [...c.play.activeEffects, name],
+      },
+    }));
+
+  return (
+    <section className="flex flex-wrap items-center gap-2 rounded border border-blood/20 bg-white/40 p-2 text-sm print:hidden">
+      <span className="text-[10px] font-bold uppercase tracking-wide text-ink/50">Effects</span>
+      {candidates.map((f) => {
+        const active = character.play.activeEffects.includes(f.name);
+        return (
+          <button
+            key={f.name}
+            type="button"
+            aria-pressed={active}
+            onClick={() => toggle(f.name)}
+            title={`AC ${f.base} + ${f.abilities.join("/")} while unarmored — toggle when cast`}
+            className={`rounded-full border px-2.5 py-0.5 text-xs font-semibold ${
+              active
+                ? "border-blood bg-blood text-parchment"
+                : "border-ink/30 text-ink/60 hover:border-blood/40 hover:text-blood"
+            }`}
+          >
+            {f.name}
+          </button>
+        );
+      })}
+    </section>
   );
 }
 
@@ -599,23 +660,34 @@ function Skills({
   onRoll,
 }: {
   derived: ReturnType<typeof deriveFromCharacter>;
-  onRoll: (label: string, mod: number) => void;
+  onRoll: (label: string, mod: number, advantage?: boolean) => void;
 }) {
   return (
     <Panel title="Skills">
       <ul className="space-y-0.5 text-sm">
         {SKILLS.map((skill) => {
           const s = derived.skills[skill.id];
+          const advSources = derived.advantages[skill.id];
           return (
             <li key={skill.id} className="flex items-center gap-2">
               <ProfDot on={s.proficient} expertise={s.expertise} />
               <span className="w-8 text-[10px] uppercase text-ink/40">{skill.ability}</span>
-              <span className="flex-1">{skill.name}</span>
+              <span className="flex-1">
+                {skill.name}
+                {advSources && (
+                  <span
+                    className="ml-1 align-middle text-[9px] font-bold uppercase text-blood"
+                    title={`Advantage: ${advSources.join(", ")}`}
+                  >
+                    adv
+                  </span>
+                )}
+              </span>
               <button
                 type="button"
-                onClick={() => onRoll(skill.name, s.mod)}
+                onClick={() => onRoll(skill.name, s.mod, !!advSources)}
                 aria-label={`Roll ${skill.name}`}
-                title="Roll this skill check"
+                title={advSources ? "Roll with advantage" : "Roll this skill check"}
                 className="font-semibold tabular-nums hover:text-blood hover:underline"
               >
                 {formatMod(s.mod)}
@@ -1083,11 +1155,18 @@ function SpellsTab({ character }: { character: Character }) {
                             </span>
                           )}
                         </span>
-                        {s.spell?.school && (
-                          <span className="text-[10px] uppercase text-ink/40">
-                            {schoolName(s.spell.school)}
-                          </span>
-                        )}
+                        <span className="text-[10px] uppercase text-ink/40">
+                          {s.spell &&
+                            scaledCantripDice(s.spell, characterLevel(character)) && (
+                              <span
+                                className="mr-1 font-semibold text-blood"
+                                title="Damage dice at your character level"
+                              >
+                                {scaledCantripDice(s.spell, characterLevel(character))}
+                              </span>
+                            )}
+                          {s.spell?.school && schoolName(s.spell.school)}
+                        </span>
                       </div>
                       {open && (
                         <div className="my-1 space-y-1">
@@ -1172,6 +1251,18 @@ function InventoryTab({ character }: { character: Character }) {
     item: itemForEntry(entry, index),
   }));
   const containers = rows.filter((r) => r.item?.containerCapacity && r.entry.id);
+  const byId = new Map(character.inventory.map((e) => [e.id, e]));
+  // A container can't be packed into itself or its own contents (no cycles).
+  const wouldCycle = (row: InventoryItem, target: InventoryItem): boolean => {
+    let holderId: string | undefined = target.id;
+    const visited = new Set<string>();
+    while (holderId && !visited.has(holderId)) {
+      if (holderId === row.id) return true;
+      visited.add(holderId);
+      holderId = byId.get(holderId)?.containedIn;
+    }
+    return false;
+  };
   const totalWeight = inventoryWeight(character, index);
   const capacity = carryingCapacity(deriveFromCharacter(character, index).abilities.str);
 
@@ -1219,7 +1310,12 @@ function InventoryTab({ character }: { character: Character }) {
         <ul className="divide-y divide-ink/10">
           {rows.map(({ entry, i, item }) => {
             const code = itemTypeCode(item?.type);
-            const equippable = WEARABLE_CODES.includes(code ?? "") || (!!item && isWeapon(item));
+            // Modifier-carrying wondrous items (AC bonuses, set-scores,
+            // advantage text) are equippable too, so their effects can apply.
+            const equippable =
+              WEARABLE_CODES.includes(code ?? "") ||
+              (!!item && isWeapon(item)) ||
+              (!!item && itemModifiers(item).length > 0);
             const open = expanded === i;
             return (
               <li key={`${entry.name}-${i}`} className="py-1.5 text-sm">
@@ -1301,7 +1397,8 @@ function InventoryTab({ character }: { character: Character }) {
                   </button>
                 </div>
                 {(item?.charges != null ||
-                  (containers.length > 0 && !item?.containerCapacity)) && (
+                  item?.containerCapacity != null ||
+                  containers.length > 0) && (
                   <div className="mt-1 flex flex-wrap items-center gap-3 pl-1">
                     {item?.charges != null && (
                       <SlotPips
@@ -1321,24 +1418,32 @@ function InventoryTab({ character }: { character: Character }) {
                         }
                       />
                     )}
-                    {containers.length > 0 && !item?.containerCapacity && (
-                      <label className="flex items-center gap-1 text-[10px] uppercase text-ink/50 print:hidden">
-                        In
-                        <select
-                          value={entry.containedIn ?? ""}
-                          aria-label={`Container for ${entry.name}`}
-                          onChange={(e) => setContainedIn(i, e.target.value || undefined)}
-                          className="rounded border border-ink/20 bg-white px-1 py-0.5 normal-case"
-                        >
-                          <option value="">— carried —</option>
-                          {containers.map((c) => (
-                            <option key={c.entry.id} value={c.entry.id}>
-                              {c.entry.name}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
+                    {item?.containerCapacity != null && entry.id && (
+                      <ContainerLoad character={character} containerId={entry.id} capacity={item.containerCapacity} />
                     )}
+                    {(() => {
+                      // Any container except itself/descendants can hold this row.
+                      const targets = containers.filter((c) => !wouldCycle(entry, c.entry));
+                      if (targets.length === 0) return null;
+                      return (
+                        <label className="flex items-center gap-1 text-[10px] uppercase text-ink/50 print:hidden">
+                          In
+                          <select
+                            value={entry.containedIn ?? ""}
+                            aria-label={`Container for ${entry.name}`}
+                            onChange={(e) => setContainedIn(i, e.target.value || undefined)}
+                            className="rounded border border-ink/20 bg-white px-1 py-0.5 normal-case"
+                          >
+                            <option value="">— carried —</option>
+                            {targets.map((c) => (
+                              <option key={c.entry.id} value={c.entry.id}>
+                                {c.entry.name}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                      );
+                    })()}
                   </div>
                 )}
                 {open && item && (
@@ -1382,6 +1487,33 @@ function InventoryTab({ character }: { character: Character }) {
         {attuned > 0 && ` · Attuned: ${attuned}/3`}
       </p>
     </div>
+  );
+}
+
+/** A container row's load line: direct+nested contents weight vs capacity. */
+function ContainerLoad({
+  character,
+  containerId,
+  capacity,
+}: {
+  character: Character;
+  containerId: string;
+  capacity: { weight?: number[]; weightless?: boolean };
+}) {
+  const index = useContentStore((s) => s.index);
+  const load = containerContentsWeight(character, index, containerId);
+  const cap = capacity.weight?.[0];
+  const over = cap !== undefined && load > cap;
+  if (load === 0 && cap === undefined) return null;
+  return (
+    <span
+      className={`text-[10px] uppercase ${over ? "font-bold text-blood" : "text-ink/50"}`}
+      title={capacity.weightless ? "Contents weigh nothing while inside" : undefined}
+    >
+      holds {formatWeight(load)}
+      {cap !== undefined && ` / ${cap} lb`}
+      {over && " — over capacity"}
+    </span>
   );
 }
 

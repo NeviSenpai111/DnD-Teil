@@ -232,6 +232,7 @@ function BackgroundDetails({ background }: { background: Background }) {
               <div className="space-y-3">
                 {defs.length > 0 && <AbilityChoices defs={defs} />}
                 <SkillChoiceSelects prefixes={[`feat:${keyPrefix}:`]} />
+                <LanguageChoiceSelects prefixes={[`feat:${keyPrefix}:lang`]} />
                 <FeatSpellPicker featRef={{ name: feat.name, source: feat.source }} keyPrefix={keyPrefix} />
                 {feat.entries && <Entries entries={feat.entries} />}
               </div>

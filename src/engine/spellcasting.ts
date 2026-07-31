@@ -143,6 +143,30 @@ export function cantripDiceMultiplier(characterLevel: number): number {
   return characterLevel >= 17 ? 4 : characterLevel >= 11 ? 3 : characterLevel >= 5 ? 2 : 1;
 }
 
+/**
+ * A cantrip's damage dice scaled to the character's level, read from the
+ * first `{@damage NdX}` tag in its text (e.g. "1d8" -> "2d8" at level 5).
+ * Undefined below level 5, for leveled spells, or when no dice tag exists.
+ */
+export function scaledCantripDice(
+  spell: { level: number; entries?: unknown[] },
+  characterLevel: number,
+): string | undefined {
+  if (spell.level !== 0) return undefined;
+  const multiplier = cantripDiceMultiplier(characterLevel);
+  if (multiplier === 1) return undefined;
+  const parts: string[] = [];
+  const walk = (entry: unknown) => {
+    if (typeof entry === "string") parts.push(entry);
+    else if (Array.isArray(entry)) entry.forEach(walk);
+    else if (entry && typeof entry === "object") walk((entry as { entries?: unknown }).entries);
+  };
+  walk(spell.entries);
+  const m = parts.join(" ").match(/\{@damage (\d+)d(\d+)\}/);
+  if (!m) return undefined;
+  return `${Number(m[1]) * multiplier}d${m[2]}`;
+}
+
 export interface PactSlots {
   count: number;
   slotLevel: number;

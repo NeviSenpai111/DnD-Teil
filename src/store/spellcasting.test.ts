@@ -35,7 +35,7 @@ describe("Phase 4 acceptance: spellcasting for a Channeler", () => {
   it("lists only Channeler spells up to the max castable level", () => {
     const spells = availableSpells(entities, "Channeler", 1);
     expect(spells.filter((s) => s.level === 0)).toHaveLength(3);
-    expect(spells.filter((s) => s.level === 1)).toHaveLength(3);
+    expect(spells.filter((s) => s.level === 1)).toHaveLength(4); // incl. Warding Aegis
   });
 
   it("returns undefined for a non-caster (Warden)", () => {

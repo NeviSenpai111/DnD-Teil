@@ -149,6 +149,8 @@ export interface PlayState {
   usedResources: Record<string, number>;
   /** Spent magic-item charges keyed by item name; restored on a long rest. */
   usedItemCharges: Record<string, number>;
+  /** Toggled-on effects (Mage-Armor-style spell AC formulas), by name. */
+  activeEffects: string[];
 }
 
 export function emptyPlayState(): PlayState {
@@ -161,6 +163,7 @@ export function emptyPlayState(): PlayState {
     deathSaves: { successes: 0, failures: 0 },
     usedResources: {},
     usedItemCharges: {},
+    activeEffects: [],
   };
 }
 

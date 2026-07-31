@@ -172,7 +172,10 @@ export const useCharacterStore = create<CharacterState>((set) => {
         abilityChoices: clearChoicesByPrefix(d.abilityChoices, ["primary:", "bgfeat"]),
         featSpells: clearChoicesByPrefix(d.featSpells, ["bgfeat"]),
         featSpellSets: clearChoicesByPrefix(d.featSpellSets, ["bgfeat"]),
-        languageChoices: clearChoicesByPrefix(d.languageChoices, ["background:lang"]),
+        languageChoices: clearChoicesByPrefix(d.languageChoices, [
+          "background:lang",
+          "feat:bgfeat",
+        ]),
       })),
 
     setClass: (ref) =>
@@ -337,6 +340,7 @@ export const useCharacterStore = create<CharacterState>((set) => {
           asis,
           abilityChoices: clearChoicesByPrefix(d.abilityChoices, [`asifeat:${index}:`]),
           skillChoices: clearChoicesByPrefix(d.skillChoices, [`feat:asifeat:${index}:`]),
+          languageChoices: clearChoicesByPrefix(d.languageChoices, [`feat:asifeat:${index}:`]),
           featSpells: clearChoicesByPrefix(d.featSpells, [`asifeat:${index}:`]),
           featSpellSets: clearChoicesByPrefix(d.featSpellSets, [`asifeat:${index}`]),
         };

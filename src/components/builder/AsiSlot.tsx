@@ -8,6 +8,7 @@ import { featPrerequisiteCheck } from "../../engine/prerequisites";
 import { AbilityChoices } from "./AbilityChoices";
 import { SkillChoiceSelects } from "./SkillChoices";
 import { FeatSpellPicker } from "./FeatSpellPicker";
+import { LanguageChoiceSelects } from "./LanguageChoices";
 
 /**
  * One level-up improvement slot: +2 ability increase or a feat (with the feat's
@@ -111,6 +112,8 @@ export function AsiSlot({ index }: { index: number }) {
           <FeatAbilityChoices index={index} refValue={choice?.type === "feat" ? choice.ref : undefined} />
           {/* Free-choice skill grants (e.g. Skilled's "any 3") for this slot's feat. */}
           <SkillChoiceSelects prefixes={[`feat:asifeat:${index}:`]} />
+          {/* Free-choice language grants for this slot's feat. */}
+          <LanguageChoiceSelects prefixes={[`feat:asifeat:${index}:lang`]} />
           {/* Spell grants (Magic Initiate, Fey Touched, …). */}
           <FeatSpellPicker
             featRef={choice?.type === "feat" ? choice.ref : undefined}

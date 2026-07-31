@@ -80,10 +80,18 @@ Following the reference's own §19 ordering, adapted to what's already here:
    magic-item charges (pips; long-rest recharge), custom items (name/weight/damage)
    and custom attacks (rollable), and an Extras tab attaching imported creatures with
    mini statblocks.
-9. What's deliberately left: campaign/VTT/marketplace features (out of scope), plus
-   the 🟡 edges noted in the tables below (Mage-Armor-style toggles, feat language
-   choices, nested containers, per-spell cantrip dice rewriting, encumbrance speed
-   penalties, proficiency/advantage-type modifiers).
+9. ~~The 🟡 edges~~ — **DONE** (2026-07-31): toggleable effects (Mage-Armor-style AC
+   formulas detected in known spells' text become sheet "Effects" toggles), feat
+   language choices (pickable in ASI slots / background feat accordions), nested
+   containers (cycle-safe packing, ancestor-aware weightless rule, load-vs-capacity
+   line), per-spell cantrip dice (the first `{@damage}` tag scaled to character level
+   on the sheet), variant-encumbrance speed penalties (−10/−20/crawl applied to
+   derived speed), and proficiency/advantage-type modifiers (advantage parsed from
+   item text, marked on skills, auto-applied to rolls).
+10. What's left is only the out-of-scope column (campaign/VTT/marketplace/shared dice)
+   and small notes in the tables: feature-granted spells/resistances from items,
+   ad-hoc custom resource counters, half-proficiency, per-skill manual overrides,
+   capacity hard-blocking, and non-ability prerequisite kinds.
 
 ---
 
@@ -98,7 +106,7 @@ Following the reference's own §19 ordering, adapted to what's already here:
 | Build at any level 1–20 | ✅ | `setClassLevel` |
 | Homebrew enable | ✅ (implicit) | all content is user-imported |
 | Source/content toggling | 🟡 | source **filter** in browser; no per-character legal-source gating |
-| Encumbrance variant | 🟡 | weight vs capacity + over-capacity warning; no auto speed penalty |
+| Encumbrance variant | ✅ | variant thresholds auto-apply speed penalties (−10/−20/crawl) |
 | Campaign / privacy / avatar / backdrop | ❌ | out of scope (single-user, local) |
 
 ### Class (§3)
@@ -131,7 +139,7 @@ Following the reference's own §19 ordering, adapted to what's already here:
 | 2014 legacy backgrounds | 🟡 | skills/feat yes; characteristics **tables** no |
 | Character detail fields (alignment/faith/etc.) | ✅ | free-text, on the sheet |
 | **Personality/Ideal/Bond/Flaw pick-or-roll** | ✅ | tables detected in background entries; click-to-pick + roll |
-| **Language selection UI** | ✅ | race/subrace/background choose/any grants pickable (SRD tables); feat grants summarised |
+| **Language selection UI** | ✅ | race/subrace/background/feat choose/any grants all pickable (SRD tables) |
 | **Custom Background builder** | ✅ | name/description + 2 any-skills, tool and language via standard pickers |
 
 ### Abilities (§6)
@@ -176,12 +184,12 @@ Following the reference's own §19 ordering, adapted to what's already here:
 | Total weight | ✅ | |
 | Starting gold (rolled) + in-builder shop | 🟡 | gold mode exists; no roll/shop |
 | **Attunement + 3-slot limit** | ✅ | sheet Attune toggle; item modifiers gated on attunement |
-| **Containers (nested)** | 🟡 | single-level packing; weightless containers exclude contents; no nesting/capacity cap |
-| **Encumbrance thresholds/variant** | 🟡 | capacity (Str×15) + variant thresholds computed/shown; no auto speed penalty |
+| **Containers (nested)** | ✅ | nested cycle-safe packing; ancestor weightless rule; load vs capacity shown (not hard-blocked) |
+| **Encumbrance thresholds/variant** | ✅ | thresholds applied to derived speed; state shown on the Speed chip |
 | **Currency CP/SP/EP/GP/PP + conversion** | ✅ | five-coin purse + gp total (builder & sheet); legacy gold migrates |
 | **Custom items with modifiers** | 🟡 | name/weight/damage (joins the attack list); no modifiers |
 | **Magic-item charges** | ✅ | charge pips per item; long rest restores (recharge string not parsed) |
-| **Item-granted modifiers** (AC/set-score/spells) | 🟡 | `bonusAc` + `ability.static` apply while equipped; granted spells/resistances TODO |
+| **Item-granted modifiers** (AC/set-score/spells) | 🟡 | `bonusAc`, `ability.static`, text-derived advantage; granted spells/resistances TODO |
 | **Custom attacks/actions** | ✅ | name/to-hit/damage rows on the sheet, rollable like weapons |
 
 ### Spells (§10)
@@ -195,7 +203,7 @@ Following the reference's own §19 ordering, adapted to what's already here:
 | Save DC / attack bonus per source | ✅ | |
 | Known vs Prepared + preparation counter | 🟡 | progression read; swap-on-level-up & strict prepared cap not enforced |
 | **Ritual flag** | ✅ | badge on spell cards + sheet rows |
-| **Cantrip damage scaling by level** | 🟡 | ×2/×3/×4 multiplier noted on the sheet; dice not rewritten per spell |
+| **Cantrip damage scaling by level** | ✅ | per-spell scaled dice (e.g. 2d8) shown on sheet cantrip rows |
 | **Advanced spell search** (school/time/concentration/ritual) | ❌ | name/type/source only |
 | Non-class spell own casting ability for DC | 🟡 | feat spells don't use chosen ability (README TODO) |
 
@@ -219,12 +227,12 @@ Following the reference's own §19 ordering, adapted to what's already here:
 ### Engine (§14) — highest leverage
 | Feature | Status | Notes |
 |---|---|---|
-| **General modifier system** (type/target/value/condition) | 🟡 | `bonus`/`set` vs abilities/AC/initiative/speed; proficiency/advantage types TODO |
+| **General modifier system** (type/target/value/condition) | ✅ | `bonus`/`set`/`proficiency`/`advantage` with equipment conditions |
 | **Modifier stacking rules** | ✅ | same-source bonuses count once; highest `set` wins as a floor |
-| **Competing AC formulas** | 🟡 | Unarmored Defense/Draconic detected from text, best wins; Mage Armor toggle TODO |
+| **Competing AC formulas** | ✅ | features + Mage-Armor-style spells (as toggles); best formula wins |
 | Level-gated unlocks | 🟡 | features by level yes; spell/trait gating partial |
 | Duplicate-grant detection | 🟡 | skills only; not cross-source generally |
-| **Conditional / toggleable modifiers** | 🟡 | armored/unarmored/shield conditions; sheet toggles TODO |
+| **Conditional / toggleable modifiers** | ✅ | equipment conditions + spell-effect toggles on the sheet |
 
 ### Data (§15) — the differentiator, done
 | Feature | Status | Notes |

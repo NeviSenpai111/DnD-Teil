@@ -91,13 +91,16 @@ Open the app, click **Sample** in the sidebar to load the bundled samples
     toggle on items that require attunement (3-item limit enforced; an
     attunement item's modifiers apply only while attuned), **charge pips**
     on items with charges (restored by a long rest), and a **container**
-    dropdown when a container is carried — contents of a weightless
-    (bag-of-holding-style) container don't count toward carry weight. The
-    tab ends with the editable **purse** and weight-vs-capacity line, plus a
-    **custom item** mini-form (name/weight/damage — damaging items join the
-    attack list). Spell rows tag **Feat**/**Species** grants and **Ritual**
-    spells; the cantrip group notes the current **damage-dice multiplier**
-    (×2/×3/×4 at levels 5/11/17). The Actions tab also holds **custom
+    dropdown when a container is carried — containers **nest** (cycle-safe),
+    each shows its **load vs. capacity**, and anything inside a weightless
+    (bag-of-holding-style) container doesn't count toward carry weight.
+    Carried weight past the variant-encumbrance thresholds **reduces speed**
+    automatically (−10 / −20 / crawl at the Str×15 cap, flagged on the Speed
+    chip). The tab ends with the editable **purse** and weight-vs-capacity
+    line, plus a **custom item** mini-form (name/weight/damage — damaging
+    items join the attack list). Spell rows tag **Feat**/**Species** grants
+    and **Ritual** spells; cantrips show their **damage dice scaled to your
+    level** (e.g. 2d8 at level 5). The Actions tab also holds **custom
     attacks** (name/to-hit/damage, rollable like weapons), and the **Extras**
     tab attaches imported creatures (companions/familiars) as mini
     statblocks with their traits and actions.
@@ -106,7 +109,14 @@ Open the app, click **Sample** in the sidebar to load the bundled samples
   - **Everything rolls**: click any skill, save, ability modifier, attack
     to-hit or damage expression to roll it — results appear in a dice toast,
     and an **Adv/Dis** toggle in the header applies to every d20. (Damage
-    without dice, like an unarmed strike's flat 1, isn't rollable.)
+    without dice, like an unarmed strike's flat 1, isn't rollable.) Skills
+    with **item-granted advantage** (parsed from equipped items' "advantage
+    on … checks" text) show an *adv* marker and roll with advantage
+    automatically.
+  - **Effects toggles**: Mage-Armor-style spells — any known spell whose text
+    sets a base AC formula ("base Armor Class becomes 13 + Dexterity…") —
+    appear as toggle pills; switch one on when cast and the AC derivation
+    picks the best formula.
   - The **HP chip is a tracker**: click it for a damage/heal strip with an
     amount input, temp HP (absorbs damage first), **Short/Long Rest** buttons,
     and a **hit-dice pool** per class ("Spend" rolls the die + Con and heals).
@@ -196,19 +206,22 @@ The importer handles real 5eTools dumps, not just the bundled samples:
   (both the 2024 A/B choice-group form and the 2014 `defaultData` form); the
   Equipment step's "Add starting equipment" button populates the default loadout.
 - **Tool / language / armor / weapon** proficiencies from race, background, class
-  and feats are gathered and shown on the sheet. Race/subrace/background
-  "choose/any N language" grants are **pickable** (feat language choices are
-  still summarised), and species `additionalSpells` grants appear on the
+  and feats are gathered and shown on the sheet. "Choose/any N language"
+  grants are **pickable** wherever they come from — race, subrace,
+  background or feat — and species `additionalSpells` grants appear on the
   sheet tagged **Species**.
 - **A general modifier engine** (`engine/modifierEngine.ts`) resolves typed
-  `bonus`/`set` modifiers against targets (abilities, AC, initiative, speed)
-  with DDB-style stacking rules: bonuses add but same-source bonuses count
-  once, `set` acts as a floor and the highest wins, and modifiers can carry
-  equipment conditions (armored / unarmored / shield). **Equipped items feed
-  it**: `bonusAc` (+1 rings/cloaks/armor) raises AC and `ability.static`
-  set-scores (Headband-of-Intellect-style items) floor an ability while worn —
-  a manual Override Score still wins. **Species passives** (`resist`/`immune`
-  damage types, `darkvision`) surface as Defenses and Senses on the sheet.
+  `bonus`/`set`/`proficiency`/`advantage` modifiers against targets
+  (abilities, AC, initiative, speed, skills) with DDB-style stacking rules:
+  bonuses add but same-source bonuses count once, `set` acts as a floor and
+  the highest wins, and modifiers can carry equipment conditions (armored /
+  unarmored / shield). **Equipped items feed it**: `bonusAc` (+1
+  rings/cloaks/armor) raises AC, `ability.static` set-scores
+  (Headband-of-Intellect-style items) floor an ability while worn — a manual
+  Override Score still wins — and "advantage on X (Skill) checks" item text
+  becomes an advantage marker on that skill. **Species passives**
+  (`resist`/`immune` damage types, `darkvision`) surface as Defenses and
+  Senses on the sheet.
 - **Choice-driven class features**: a class or subclass
   `optionalfeatureProgression` (fighting styles, invocations, metamagic,
   maneuvers, artificer infusions, …) surfaces an interactive picker in the
@@ -256,10 +269,11 @@ selected at once.
   chosen ability for DCs. Schema validation remains TODO.
 - Starting equipment grants the first option of each choice; alternate options
   and gold-alternative parsing are simplified.
-- The modifier engine covers `bonus`/`set` with equipment conditions;
-  proficiency/advantage-type modifiers and toggleable effects (e.g. Mage
-  Armor, which needs a cast-state toggle) are still TODO. Optional-feature
-  prerequisites beyond a simple level (pact, spells known) are not validated.
+- Modifier-engine edges: item-granted spells/resistances and structured
+  proficiency grants from items are still TODO (advantage comes from item
+  text only). Optional-feature prerequisites beyond a simple level (pact,
+  spells known) are not validated. Container capacity is displayed but not
+  hard-blocked.
 - Rest simplifications: a long rest restores **all** hit dice, resources and
   item charges (RAW restores half the dice; item `recharge` strings aren't
   parsed); which resources a short rest restores is a name heuristic

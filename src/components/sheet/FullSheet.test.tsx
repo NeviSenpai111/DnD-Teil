@@ -427,6 +427,69 @@ describe("FullSheet interactivity", () => {
     expect(screen.getByText("11 (2d6 + 4)", { exact: false })).toBeInTheDocument();
   });
 
+  it("toggles a Mage-Armor-style spell effect on and off the AC", () => {
+    useCharacterStore.getState().toggleSpell({ name: "Warding Aegis", source: "SRDLite" }, "Channeler");
+    open();
+
+    // Off: base 10 + dex −1 = 9.
+    expect(screen.getByText("AC").parentElement?.textContent).toContain("9");
+    fireEvent.click(screen.getByRole("button", { name: "Warding Aegis", pressed: false }));
+    expect(useCharacterStore.getState().draft.play.activeEffects).toEqual(["Warding Aegis"]);
+    // On: 13 + dex −1 = 12.
+    expect(screen.getByText("AC").parentElement?.textContent).toContain("12");
+    fireEvent.click(screen.getByRole("button", { name: "Warding Aegis", pressed: true }));
+    expect(screen.getByText("AC").parentElement?.textContent).toContain("9");
+  });
+
+  it("marks item-granted advantage on the skill and rolls with it", () => {
+    const store = useCharacterStore.getState();
+    store.addItem({ ref: { name: "Whispering Boots", source: "SRDLite" }, name: "Whispering Boots" });
+    store.toggleEquip(0);
+    vi.spyOn(Math, "random").mockReturnValueOnce(0.1).mockReturnValueOnce(0.9); // 3, 19
+    open();
+
+    expect(screen.getByText("adv")).toBeInTheDocument();
+    fireEvent.click(screen.getByLabelText("Roll Stealth"));
+    const toast = screen.getByRole("status");
+    // Advantage keeps the 19; stealth dex −1 -> 18.
+    expect(within(toast).getByText("18")).toBeInTheDocument();
+    expect(within(toast).getByText(/advantage/)).toBeInTheDocument();
+    vi.restoreAllMocks();
+  });
+
+  it("shows a cantrip's damage dice scaled to the character level", () => {
+    const store = useCharacterStore.getState();
+    store.toggleCantrip({ name: "Spark Touch", source: "SRDLite" }, "Channeler");
+    store.setClassLevel(0, 5);
+    open();
+    fireEvent.click(screen.getByText("Spells"));
+    expect(screen.getByText("2d8")).toBeInTheDocument();
+  });
+
+  it("nests containers and shows the load against capacity", () => {
+    const store = useCharacterStore.getState();
+    store.addItem({ ref: { name: "Sack of Deep Holding", source: "SRDLite" }, name: "Sack of Deep Holding" });
+    store.addItem({ ref: { name: "Sack of Deep Holding", source: "SRDLite" }, name: "Sack of Deep Holding" });
+    store.addItem({ ref: { name: "Rod of Embers", source: "SRDLite" }, name: "Rod of Embers" });
+    open();
+    fireEvent.click(screen.getByText("Inventory"));
+
+    const [sackAId, sackBId] = useCharacterStore
+      .getState()
+      .draft.inventory.slice(0, 2)
+      .map((e) => e.id!);
+    // Rod -> sack B -> sack A: everything inside A is weightless.
+    fireEvent.change(screen.getByLabelText("Container for Rod of Embers"), {
+      target: { value: sackBId },
+    });
+    fireEvent.change(screen.getAllByLabelText("Container for Sack of Deep Holding")[1], {
+      target: { value: sackAId },
+    });
+    expect(screen.getByText(/Total Weight: 5 lb \//)).toBeInTheDocument();
+    // Sack A holds sack B (5) + its rod (2) against its 250 lb capacity.
+    expect(screen.getByText(/holds 7 lb \/ 250 lb/)).toBeInTheDocument();
+  });
+
   it("expands a weapon on the Actions tab into its item card", () => {
     useCharacterStore.getState().addItem({ ref: { name: "Longsword", source: "SRDLite" }, name: "Longsword" });
     open();

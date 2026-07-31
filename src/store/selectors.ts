@@ -45,7 +45,8 @@ import {
   type SkillGrants,
 } from "../engine/character";
 import { ABILITIES, SKILLS, type Ability } from "../engine/constants";
-import { detectAcFormulas } from "../engine/acFormulas";
+import { detectAcFormulas, detectSpellAcFormulas } from "../engine/acFormulas";
+import type { UnarmoredFormula } from "../engine/armor";
 import { masteryNames, weaponMasteryCount } from "../engine/mastery";
 import { isWeapon } from "../engine/attacks";
 import { toolChoiceDefs, type ToolChoiceDef } from "../engine/tools";
@@ -148,22 +149,66 @@ export function itemForEntry(
 }
 
 /**
- * Total carried weight. Custom items count their inline weight; items packed
- * into a WEIGHTLESS container (bag-of-holding style `containerCapacity`) are
- * excluded, while normal containers' contents still count.
+ * Total carried weight. Custom items count their inline weight; an item is
+ * weightless when ANY container up its chain (containers can nest) is a
+ * weightless bag-of-holding style container. Cycle-safe.
  */
 export function inventoryWeight(character: Character, index: ContentIndex): number {
   const byId = new Map(character.inventory.map((e) => [e.id, e]));
   const inWeightlessContainer = (entry: { containedIn?: string }): boolean => {
-    const holder = entry.containedIn ? byId.get(entry.containedIn) : undefined;
-    const item = holder && itemForEntry(holder, index);
-    return !!item?.containerCapacity?.weightless;
+    const visited = new Set<string>();
+    let holderId = entry.containedIn;
+    while (holderId && !visited.has(holderId)) {
+      visited.add(holderId);
+      const holder = byId.get(holderId);
+      if (!holder) return false;
+      const item = itemForEntry(holder, index);
+      if (item?.containerCapacity?.weightless) return true;
+      holderId = holder.containedIn;
+    }
+    return false;
   };
   return character.inventory.reduce((sum, entry) => {
     if (inWeightlessContainer(entry)) return sum;
     const item = itemForEntry(entry, index);
     return sum + (item?.weight ?? 0) * entry.quantity;
   }, 0);
+}
+
+/** Total weight of a container's DIRECT contents (for its capacity line). */
+export function containerContentsWeight(
+  character: Character,
+  index: ContentIndex,
+  containerId: string,
+): number {
+  return character.inventory
+    .filter((entry) => entry.containedIn === containerId)
+    .reduce((sum, entry) => {
+      const item = itemForEntry(entry, index);
+      // Nested containers bring their own contents along.
+      const nested = entry.id ? containerContentsWeight(character, index, entry.id) : 0;
+      return sum + (item?.weight ?? 0) * entry.quantity + nested;
+    }, 0);
+}
+
+/**
+ * Mage-Armor-style AC formulas offered by the character's known/granted
+ * spells — shown as sheet TOGGLES; only active ones join the derivation.
+ */
+export function effectAcFormulaCandidates(
+  character: Character,
+  index: ContentIndex,
+): UnarmoredFormula[] {
+  const refs = [
+    ...character.cantrips,
+    ...character.spells,
+    ...featGrantedSpellsFor(character, index),
+    ...speciesGrantedSpellsFor(character, index),
+  ];
+  const spells = refs
+    .map((ref) => resolve<Spell>(index, "spell", ref))
+    .filter((s): s is Spell => s !== undefined);
+  return detectSpellAcFormulas(spells);
 }
 
 /** Total mastered-weapon slots across every class (2024 Weapon Mastery). */
@@ -333,9 +378,16 @@ export function buildDeriveInput(character: Character, index: ContentIndex): Der
     shield: defense.shield,
     modifiers: equippedItemModifiers(character, index),
     expertise: Object.values(character.expertiseChoices).flat(),
-    acFormulas: detectAcFormulas([...gained.features, ...gained.subclassFeatures]),
+    acFormulas: [
+      ...detectAcFormulas([...gained.features, ...gained.subclassFeatures]),
+      // Spell formulas (Mage-Armor style) apply only while toggled on.
+      ...effectAcFormulaCandidates(character, index).filter((f) =>
+        character.play.activeEffects.includes(f.name),
+      ),
+    ],
     extraLanguages: Object.values(character.languageChoices).flat(),
     extraTools: Object.values(character.toolChoices).flat(),
+    carriedWeight: inventoryWeight(character, index),
   };
 }
 
@@ -372,7 +424,7 @@ export function abilityBreakdownFor(character: Character, index: ContentIndex): 
   return sources;
 }
 
-/** Pickable language grants from the race, subrace and background. */
+/** Pickable language grants from the race, subrace, background and feats. */
 export function languageChoiceDefsFor(character: Character, index: ContentIndex): LanguageChoiceDef[] {
   const race = resolveRace(index, character.race);
   const subrace = resolveSubrace(index, character.subrace);
@@ -384,6 +436,9 @@ export function languageChoiceDefsFor(character: Character, index: ContentIndex)
       background?.languageProficiencies,
       "background:lang",
       background?.name ?? "Background",
+    ),
+    ...resolveCharacterFeats(character, index).flatMap((rf) =>
+      languageChoiceDefs(rf.feat.languageProficiencies, `feat:${rf.keyPrefix}:lang`, rf.feat.name),
     ),
   ];
 }

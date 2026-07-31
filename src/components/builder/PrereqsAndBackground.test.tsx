@@ -84,6 +84,23 @@ describe("prerequisites, mastery and background extras", () => {
     expect(useCharacterStore.getState().draft.weaponMasteries).toEqual(["Longsword", "Shortbow"]);
   });
 
+  it("offers a feat's language choices in its ASI slot and derives them", () => {
+    const store = useCharacterStore.getState();
+    store.setClass({ name: "Warden", source: "SRDLite" });
+    store.setClassLevel(0, 4);
+    store.setAsi(0, { type: "feat", ref: { name: "Polyglot Scholar", source: "SRDLite" } });
+    open("1. Class");
+    fireEvent.click(screen.getByText("Ability Score Improvement"));
+
+    fireEvent.change(screen.getByLabelText("Polyglot Scholar language 1"), {
+      target: { value: "Elvish" },
+    });
+    const draft = useCharacterStore.getState().draft;
+    expect(draft.languageChoices["feat:asifeat:0:lang:0:anyStandard"]).toEqual(["Elvish"]);
+    const derived = deriveFromCharacter(draft, useContentStore.getState().index);
+    expect(derived.proficiencies.languages.fixed).toContain("Elvish");
+  });
+
   it("builds a custom background with tool and language picks that derive", () => {
     open("2. Background");
     fireEvent.click(screen.getByText("Build a custom background"));

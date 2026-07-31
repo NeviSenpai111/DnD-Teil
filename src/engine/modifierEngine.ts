@@ -10,17 +10,20 @@
  * state (armored / unarmored / wielding a shield).
  */
 
-import { ABILITIES } from "./constants";
+import { ABILITIES, SKILL_BY_ID, skillNameToId } from "./constants";
 import type { Race } from "../data/types/character-content";
 import type { Item } from "../data/types/item-content";
 
-/** An ability id ("str".."cha"), "ac", "initiative" or "speed". */
+/** An ability id ("str".."cha"), "ac", "initiative", "speed", or a skill id. */
 export type ModifierTarget = string;
 
 export interface Modifier {
-  type: "bonus" | "set";
+  /** `bonus`/`set` are numeric; `proficiency` grants the target skill;
+   * `advantage` marks the target's d20 rolls (skill id or "initiative"). */
+  type: "bonus" | "set" | "proficiency" | "advantage";
   target: ModifierTarget;
-  value: number;
+  /** Required for bonus/set; ignored for proficiency/advantage. */
+  value?: number;
   /** Granting entity's name — used for display and same-source stacking. */
   source: string;
   condition?: "armored" | "unarmored" | "shield";
@@ -54,17 +57,23 @@ export function resolveTarget(
   target: ModifierTarget,
   ctx: ModifierContext,
 ): ResolvedTarget {
-  const active = modifiers.filter((m) => m.target === target && conditionMet(m.condition, ctx));
+  const active = modifiers.filter(
+    (m) =>
+      m.target === target &&
+      (m.type === "bonus" || m.type === "set") &&
+      conditionMet(m.condition, ctx),
+  );
 
   // Same-source bonuses don't stack: keep the largest per source.
   const bonusBySource = new Map<string, number>();
   let set: number | undefined;
   for (const m of active) {
+    const value = m.value ?? 0;
     if (m.type === "set") {
-      set = set === undefined ? m.value : Math.max(set, m.value);
+      set = set === undefined ? value : Math.max(set, value);
     } else {
       const prev = bonusBySource.get(m.source);
-      if (prev === undefined || m.value > prev) bonusBySource.set(m.source, m.value);
+      if (prev === undefined || value > prev) bonusBySource.set(m.source, value);
     }
   }
   return {
@@ -72,6 +81,30 @@ export function resolveTarget(
     set,
     sources: [...new Set(active.map((m) => m.source))],
   };
+}
+
+/** Targets of active `proficiency` modifiers (skill ids to mark proficient). */
+export function proficiencyTargets(modifiers: Modifier[], ctx: ModifierContext): string[] {
+  return [
+    ...new Set(
+      modifiers
+        .filter((m) => m.type === "proficiency" && conditionMet(m.condition, ctx))
+        .map((m) => m.target),
+    ),
+  ];
+}
+
+/** Active `advantage` markers: target -> granting source names. */
+export function advantageTargets(
+  modifiers: Modifier[],
+  ctx: ModifierContext,
+): Record<string, string[]> {
+  const out: Record<string, string[]> = {};
+  for (const m of modifiers) {
+    if (m.type !== "advantage" || !conditionMet(m.condition, ctx)) continue;
+    (out[m.target] ??= []).push(m.source);
+  }
+  return out;
 }
 
 /** Apply a target's modifiers to a base value: floor at `set`, then add bonuses. */
@@ -94,10 +127,30 @@ function parseBonus(value: number | string | undefined): number {
   return 0;
 }
 
+/** Plain-text of an item's entries (for text-derived modifiers). */
+function itemText(item: Item): string {
+  const parts: string[] = [];
+  const walk = (entry: unknown) => {
+    if (typeof entry === "string") parts.push(entry);
+    else if (Array.isArray(entry)) entry.forEach(walk);
+    else if (entry && typeof entry === "object") walk((entry as { entries?: unknown }).entries);
+  };
+  walk(item.entries);
+  return parts.join(" ");
+}
+
+/** Resolve a written skill name to a known skill id, else undefined. */
+function knownSkillId(name: string): string | undefined {
+  const id = skillNameToId(name.trim());
+  return SKILL_BY_ID[id] ? id : undefined;
+}
+
 /**
  * Modifiers emitted by an item: `bonusAc` (rings/cloaks of protection, magic
- * armor variants) and `ability.static` set-scores (Circlet of Insight-style
- * "your score is N while worn").
+ * armor variants), `ability.static` set-scores (Circlet of Insight-style
+ * "your score is N while worn"), and text-derived advantage — items whose
+ * description says "advantage on Dexterity (Stealth) checks" (or
+ * "advantage on Stealth checks") mark that skill while equipped.
  */
 export function itemModifiers(item: Item): Modifier[] {
   const out: Modifier[] = [];
@@ -108,6 +161,23 @@ export function itemModifiers(item: Item): Modifier[] {
   for (const [ab, value] of Object.entries(staticSet ?? {})) {
     if ((ABILITIES as readonly string[]).includes(ab) && typeof value === "number") {
       out.push({ type: "set", target: ab, value, source: item.name });
+    }
+  }
+
+  const text = itemText(item);
+  const seen = new Set<string>();
+  for (const m of text.matchAll(/advantage on (?:\w+ )?\(([^)]+)\) checks/gi)) {
+    const id = knownSkillId(m[1]);
+    if (id && !seen.has(id)) {
+      seen.add(id);
+      out.push({ type: "advantage", target: id, source: item.name });
+    }
+  }
+  for (const m of text.matchAll(/advantage on ([A-Za-z][A-Za-z' ]*?) checks/gi)) {
+    const id = knownSkillId(m[1]);
+    if (id && !seen.has(id)) {
+      seen.add(id);
+      out.push({ type: "advantage", target: id, source: item.name });
     }
   }
   return out;

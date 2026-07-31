@@ -5,6 +5,7 @@ import { deriveFromCharacter, inventoryWeight, itemForEntry, listByType, startin
 import { itemTypeCode } from "../../data/types/item-content";
 import { isWeapon } from "../../engine/attacks";
 import { COINS, carryingCapacity, currencyInGp } from "../../engine/currency";
+import { itemModifiers } from "../../engine/modifierEngine";
 import { categoryLine, formatWeight, itemIcon } from "../common/itemDisplay";
 import { Accordion } from "./Accordion";
 
@@ -159,13 +160,19 @@ export function PageEquipment() {
               const code = itemTypeCode(item?.type);
               const canWear = wearable(code);
               const canWield = !!item && isWeapon(item);
+              // Modifier-carrying wondrous items are equippable as "Use".
+              const canUse = !canWear && !canWield && !!item && itemModifiers(item).length > 0;
               const equipLabel = canWear
                 ? entry.equipped
                   ? "Worn"
                   : "Wear"
-                : entry.equipped
-                  ? "Wielding"
-                  : "Wield";
+                : canWield
+                  ? entry.equipped
+                    ? "Wielding"
+                    : "Wield"
+                  : entry.equipped
+                    ? "Using"
+                    : "Use";
               return (
                 <li
                   key={i}
@@ -196,7 +203,7 @@ export function PageEquipment() {
                     />
                   </label>
 
-                  {(canWear || canWield) && (
+                  {(canWear || canWield || canUse) && (
                     <button
                       type="button"
                       onClick={() => toggleEquip(i)}

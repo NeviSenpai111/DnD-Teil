@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { detectAcFormulas } from "./acFormulas";
+import { detectAcFormulas, detectSpellAcFormulas } from "./acFormulas";
 import { bestArmorClass } from "./armor";
 import type { Ability } from "./constants";
 
@@ -56,6 +56,22 @@ describe("detectAcFormulas", () => {
     expect(
       detectAcFormulas([{ name: "Second Wind", entries: ["Regain hit points as a bonus action."] }]),
     ).toEqual([]);
+  });
+
+  it("detects Mage-Armor-style spell wording (base AC becomes / dons armor)", () => {
+    const formulas = detectSpellAcFormulas([
+      {
+        name: "Warding Aegis",
+        source: "X",
+        level: 1,
+        entries: [
+          "While it wears no armor, its base Armor Class becomes 13 + its Dexterity modifier. The ward ends early if the target dons armor.",
+        ],
+      },
+    ]);
+    expect(formulas).toEqual([
+      { name: "Warding Aegis", base: 13, abilities: ["dex"], allowShield: true },
+    ]);
   });
 });
 
