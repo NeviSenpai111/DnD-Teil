@@ -38,11 +38,18 @@ const TAG_TO_TYPE: Record<string, ContentType> = {
   language: "language",
 };
 
+/** Fold a name down to letters and digits, so "Thieves' Tools" == "thievestools". */
+export function looseName(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, "");
+}
+
 export class ContentIndex {
   /** type|name|source -> entity */
   private readonly byFullKey = new Map<string, ImportedEntity>();
   /** type|name -> first entity with that name (source-agnostic fallback) */
   private readonly byNameKey = new Map<string, ImportedEntity>();
+  /** type|looseName -> first entity matching ignoring case and punctuation */
+  private readonly byLooseKey = new Map<string, ImportedEntity>();
   /** type -> every entity of that type, in import order */
   private readonly byType = new Map<string, ImportedEntity[]>();
 
@@ -55,6 +62,8 @@ export class ContentIndex {
       this.byFullKey.set(entityKey(e.__type, e.name, e.source), e);
       const nameKey = `${e.__type}|${e.name}`.toLowerCase();
       if (!this.byNameKey.has(nameKey)) this.byNameKey.set(nameKey, e);
+      const looseKey = `${e.__type}|${looseName(e.name)}`;
+      if (!this.byLooseKey.has(looseKey)) this.byLooseKey.set(looseKey, e);
       const list = this.byType.get(e.__type);
       if (list) list.push(e);
       else this.byType.set(e.__type, [e]);
@@ -64,6 +73,23 @@ export class ContentIndex {
   /** Every indexed entity of a content type. */
   list(type: ContentType): ImportedEntity[] {
     return this.byType.get(type) ?? [];
+  }
+
+  /**
+   * Look an entity up by name alone, ignoring case and punctuation. Used by the
+   * character importer, where names arrive as free text from another tool
+   * ("Thieves' Tools", "Crossbow, Light") rather than as `name|source` refs.
+   */
+  findByName(types: ContentType | ContentType[], name: string): ImportedEntity | undefined {
+    const wanted = looseName(name);
+    if (!wanted) return undefined;
+    for (const type of Array.isArray(types) ? types : [types]) {
+      const hit =
+        this.byNameKey.get(`${type}|${name.trim()}`.toLowerCase()) ??
+        this.byLooseKey.get(`${type}|${wanted}`);
+      if (hit) return hit;
+    }
+    return undefined;
   }
 
   /**

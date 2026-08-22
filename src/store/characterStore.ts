@@ -97,6 +97,8 @@ interface CharacterState {
 
   // Library / roster
   hydrateSaved: (characters: Character[]) => void;
+  /** Add a character built outside the builder (D&D Beyond PDF / JSON import). */
+  addCharacter: (character: Character) => void;
   saveDraftToLibrary: () => void;
   newDraft: () => void;
   loadCharacter: (id: string) => void;
@@ -362,6 +364,13 @@ export const useCharacterStore = create<CharacterState>((set) => {
     loadDraft: (character) => set({ draft: normalizeCharacter(character) }),
 
     hydrateSaved: (characters) => set({ saved: characters.map(normalizeCharacter) }),
+
+    addCharacter: (character) =>
+      set((s) => {
+        const stored = normalizeCharacter({ ...character, updatedAt: Date.now() });
+        void saveCharacter(stored);
+        return { saved: upsert(s.saved, stored) };
+      }),
 
     saveDraftToLibrary: () =>
       set((s) => {

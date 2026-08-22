@@ -135,7 +135,9 @@ Open the app, click **Sample** in the sidebar to load the bundled samples
   flow into the builder as usual. Interactive controls are hidden when
   printing.
 - **Characters** to save/load/duplicate/delete, **View** the full-page sheet, and
-  export to JSON; **Print** outputs just the sheet.
+  export to JSON; **Print** outputs just the sheet. **Import character…** brings
+  in a finished character from a D&D Beyond PDF export (or a character JSON) —
+  see [Importing a D&D Beyond character](#importing-a-dd-beyond-character).
 
 ## Architecture
 
@@ -149,6 +151,8 @@ src/
     tagParser/      {@...} tokenizer (TDD) + React TagRenderer
     entryRenderer/  recursive `entries` renderer
     exportCharacter.ts  JSON export/download
+    pdfForm.ts      minimal PDF AcroForm reader (no dependency)
+    ddbImport.ts    D&D Beyond PDF sheet -> Character
   engine/           pure, unit-tested rules (modifiers, hp, armor,
                     spellcasting slots, character derivation, edition gating,
                     the typed modifier engine, optional-feature progressions)
@@ -166,6 +170,48 @@ The single recursive `EntryRenderer` + `TagRenderer` render any content type.
 
 Both `classic` (2014) and `one` (2024) are supported and gated via
 `engine/edition.ts` — notably ASIs come from race (classic) vs background (2024).
+
+## Importing a D&D Beyond character
+
+**Characters → Import character…** takes a D&D Beyond **PDF export** (DDB's
+*Export → PDF* on the character sheet) and adds the finished character to the
+roster. It also re-imports a character JSON this app exported.
+
+The PDF is the official fillable WotC sheet with its form fields filled in, so
+the importer reads the fields directly (`data/pdfForm.ts` — a small AcroForm
+reader, no PDF dependency) rather than scraping page text. Encrypted PDFs are
+rejected, and object streams (a DDB export re-saved by Acrobat or Preview) are
+inflated via `DecompressionStream`.
+
+Mapping a DDB sheet onto this app's model means turning *results* back into
+*choices* (`data/ddbImport.ts`):
+
+- **Everything is resolved against your imported content by name**, so import
+  the 5eTools files first — a character imported against an empty library keeps
+  its numbers but loses its class, species, items and spells.
+- **Ability scores** are stored as base scores *plus* a matching Override Score
+  (DDB's own escape hatch), so the totals match the sheet exactly no matter what
+  the content computes. Clear the overrides on the Abilities page to hand them
+  back to the builder — the base scores already have the race/feat bonuses
+  backed out, so the totals stay put.
+- **Skills, languages and tools** are dealt into the choice slots your race,
+  background and class actually grant, most restrictive slot first. Anything
+  with no slot to live in is reported.
+- **Max HP** is matched exactly by fitting per-level hit-dice rolls, since DDB
+  tracks a fixed total.
+- **Spells**: a prepared caster's sheet lists everything the class *could*
+  prepare, so when the list runs past the class's own prepared limit only the
+  always-prepared entries are imported and the rest are re-picked in the
+  builder. Feat- and species-granted spells are reported rather than filed under
+  the class.
+- **Equipment** comes in with quantities and per-item weights; worn armour, a
+  shield, attuned items and anything named in an attack row are marked equipped.
+  Attack rows with no item or spell behind them become custom attack lines.
+- **Feats** are placed into ASI slots in the order the sheet lists them — DDB
+  doesn't record which slot each came from, so check the What's Next page.
+
+Anything that can't be resolved is listed after the import instead of being
+guessed at.
 
 ## Real 5eTools data
 

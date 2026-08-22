@@ -1,4 +1,4 @@
-import { NavLink, Navigate, Route, Routes } from "react-router-dom";
+import { Link, NavLink, Navigate, Route, Routes } from "react-router-dom";
 import { ImportButton } from "./components/common/ImportButton";
 import { SourceToggle } from "./components/common/SourceToggle";
 import { BrowseView } from "./components/browser/BrowseView";
@@ -52,8 +52,18 @@ export default function App() {
       <div className="grid grid-cols-[16rem_1fr] overflow-hidden">
         <aside className="flex flex-col gap-4 overflow-y-auto border-r border-blood/20 bg-parchment/40 p-3">
           <section>
-            <h2 className="mb-2 text-xs font-bold uppercase tracking-wide text-blood">Import</h2>
+            <h2 className="mb-2 text-xs font-bold uppercase tracking-wide text-blood">
+              Import content
+            </h2>
             <ImportButton />
+            <p className="mt-2 text-xs text-ink/60">
+              5eTools data files — classes, spells, items. To bring in a finished character
+              from a D&amp;D Beyond PDF, use{" "}
+              <Link to="/characters" className="text-blood underline">
+                Characters → Import character
+              </Link>
+              .
+            </p>
           </section>
           <section>
             <h2 className="mb-2 text-xs font-bold uppercase tracking-wide text-blood">Sources</h2>

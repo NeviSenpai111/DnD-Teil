@@ -238,7 +238,8 @@ Following the reference's own §19 ordering, adapted to what's already here:
 | Feature | Status | Notes |
 |---|---|---|
 | JSON import (5eTools) | ✅ | incl. `_copy`/`_mod` resolution |
-| JSON export | ✅ | |
+| **D&D Beyond character import** | ✅ | reads a DDB PDF export's form fields; see [Importing a D&D Beyond character](README.md#importing-a-dd-beyond-character) |
+| JSON export / re-import | ✅ | round-trips a character through the same Import button |
 | Character duplicate | ✅ | |
 | Local persistence + **offline** | ✅ | Dexie; the key advantage over DDB |
 

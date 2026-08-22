@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useCharacterStore } from "../../store/characterStore";
 import { downloadCharacterJson } from "../../data/exportCharacter";
 import { characterLevel } from "../../model/character";
+import { ImportCharacterButton } from "./ImportCharacterButton";
 
 /** Roster of saved characters with load / duplicate / delete / export actions. */
 export function CharactersView() {
@@ -45,6 +46,8 @@ export function CharactersView() {
           </button>
         </div>
       </div>
+
+      <ImportCharacterButton />
 
       <div className="rounded border border-blood/20 bg-parchment/60 p-3 text-sm">
         <span className="font-semibold">Working draft:</span> {draft.name} — Level{" "}
