@@ -26,7 +26,7 @@ export function CharactersView() {
     [c.classes[0]?.name, c.race?.name].filter(Boolean).join(" · ") || "Unfinished";
 
   return (
-    <div className="mx-auto max-w-3xl space-y-4">
+    <div className="mx-auto h-full max-w-3xl space-y-4 overflow-y-auto">
       <div className="flex items-center gap-2">
         <h1 className="text-xl font-bold text-blood">Characters</h1>
         <div className="ml-auto flex gap-2">
