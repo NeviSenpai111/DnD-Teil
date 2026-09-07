@@ -49,9 +49,24 @@ export async function bootstrapPersistence(): Promise<void> {
       activeSources: s.activeSources,
       edition: s.edition,
       spellClasses: s.spellClasses,
+      showReprinted: s.showReprinted,
     });
   }, 400);
-  useContentStore.subscribe(persistContent);
+  // Only the persisted slices trigger a save: a full 5eTools import is tens of
+  // megabytes, so writing it again on every unrelated state change (issues,
+  // index rebuilds) would stall the UI.
+  useContentStore.subscribe((state, prev) => {
+    if (
+      state.entities !== prev.entities ||
+      state.metaSources !== prev.metaSources ||
+      state.activeSources !== prev.activeSources ||
+      state.edition !== prev.edition ||
+      state.spellClasses !== prev.spellClasses ||
+      state.showReprinted !== prev.showReprinted
+    ) {
+      persistContent();
+    }
+  });
 
   const persistDraft = debounce(() => void saveDraft(useCharacterStore.getState().draft), 500);
   useCharacterStore.subscribe((state, prev) => {

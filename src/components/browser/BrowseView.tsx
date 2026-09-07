@@ -1,31 +1,36 @@
 import { useMemo, useState } from "react";
-import { useActiveEntities } from "../../store/contentStore";
+import { useActiveEntities, useReprintedEntities } from "../../store/contentStore";
 import type { ContentType, ImportedEntity } from "../../data/types";
-import { entityKey } from "../../data/types";
+import { entityIdentity, isAuxType } from "../../data/types";
 import { EntityDetail } from "./EntityDetail";
 
 /** Browse imported content: a grouped list on the left, a detail pane on the right. */
 export function BrowseView() {
   const entities = useActiveEntities();
+  const reprinted = useReprintedEntities();
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [query, setQuery] = useState("");
 
+  // Fluff / templates / glue data are indexed for cross-references but not listed.
+  const browsable = useMemo(() => entities.filter((e) => !isAuxType(e.__type)), [entities]);
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return entities;
-    return entities.filter(
+    if (!q) return browsable;
+    return browsable.filter(
       (e) =>
         e.name.toLowerCase().includes(q) ||
         e.__type.toLowerCase().includes(q) ||
-        e.source.toLowerCase().includes(q),
+        e.source.toLowerCase().includes(q) ||
+        (entityMeta(e)?.toLowerCase().includes(q) ?? false),
     );
-  }, [entities, query]);
+  }, [browsable, query]);
 
   const grouped = useMemo(() => groupByType(filtered), [filtered]);
   const selected = useMemo(
     () =>
-      entities.find((e) => entityKey(e.__type, e.name, e.source) === selectedKey) ?? null,
-    [entities, selectedKey],
+      browsable.find((e) => entityIdentity(e) === selectedKey) ?? null,
+    [browsable, selectedKey],
   );
 
   if (entities.length === 0) {
@@ -69,18 +74,26 @@ export function BrowseView() {
                 </h3>
                 <ul>
                   {items.map((e) => {
-                    const key = entityKey(e.__type, e.name, e.source);
+                    const key = entityIdentity(e);
+                    const meta = entityMeta(e);
+                    const isReprinted = reprinted.has(e);
                     return (
                       <li key={key}>
                         <button
                           type="button"
                           onClick={() => setSelectedKey(key)}
-                          className={`w-full truncate rounded px-2 py-1 text-left text-sm hover:bg-blood/10 ${
+                          className={`w-full rounded px-2 py-1 text-left text-sm hover:bg-blood/10 ${
                             key === selectedKey ? "bg-blood/15 font-semibold" : ""
-                          }`}
-                          title={`${e.name} (${e.source})`}
+                          } ${isReprinted ? "opacity-60" : ""}`}
+                          title={entityTitle(e, isReprinted)}
                         >
-                          {e.name}
+                          <span className="flex items-baseline justify-between gap-2">
+                            <span className="truncate">{e.name}</span>
+                            <span className="shrink-0 text-[10px] uppercase text-ink/40">{e.source}</span>
+                          </span>
+                          {meta && (
+                            <span className="block truncate text-[10px] leading-tight text-ink/50">{meta}</span>
+                          )}
                         </button>
                       </li>
                     );
@@ -103,6 +116,40 @@ export function BrowseView() {
       </div>
     </div>
   );
+}
+
+const str = (v: unknown): string | undefined => (typeof v === "string" && v.length > 0 ? v : undefined);
+
+/**
+ * Second line disambiguating same-name entries: the parent class / subclass /
+ * race, pantheon or card set that is part of the entry's identity. Same-name
+ * *reprints* differ by source instead, shown next to the name.
+ */
+function entityMeta(e: ImportedEntity): string | undefined {
+  const cls = str(e.className) ? `${e.className} (${str(e.classSource) ?? "?"})` : undefined;
+  const level = typeof e.level === "number" ? `L${e.level}` : undefined;
+  switch (e.__type) {
+    case "subclass":
+      return cls;
+    case "classFeature":
+      return [cls, level].filter(Boolean).join(" · ");
+    case "subclassFeature":
+      return [str(e.subclassShortName), cls, level].filter(Boolean).join(" · ");
+    case "subrace":
+      return str(e.raceName) ? `${e.raceName} (${str(e.raceSource) ?? "?"})` : undefined;
+    case "deity":
+      return str(e.pantheon);
+    case "card":
+      return str(e.set);
+    default:
+      return undefined;
+  }
+}
+
+/** Tooltip: full identity plus whether a newer printing is hiding it by default. */
+function entityTitle(e: ImportedEntity, isReprinted: boolean): string {
+  const meta = entityMeta(e);
+  return `${e.name} (${e.source})${meta ? ` · ${meta}` : ""}${isReprinted ? " · reprinted in a newer source" : ""}`;
 }
 
 function groupByType(entities: ImportedEntity[]): Map<ContentType, ImportedEntity[]> {

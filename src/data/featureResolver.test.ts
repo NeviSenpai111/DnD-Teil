@@ -58,3 +58,42 @@ describe("feature assembly", () => {
     ]);
   });
 });
+
+describe("feature refs across class sources", () => {
+  const fe = (over: Record<string, unknown>) =>
+    ({ __type: "subclassFeature", source: "PHB", className: "Fighter", classSource: "PHB", subclassSource: "PHB", ...over }) as unknown as import("./types/content").ImportedEntity;
+  const pool = [
+    { __type: "class", name: "Fighter", source: "XPHB" },
+    { __type: "class", name: "Fighter", source: "PHB" },
+    // The 2014 subclass as offered under the 2024 class: same feature refs, different classSource.
+    { __type: "subclass", name: "Battle Master", shortName: "Battle Master", source: "PHB", className: "Fighter", classSource: "XPHB", subclassFeatures: ["Battle Master|Fighter||Battle Master||3", "Relentless|Fighter||Battle Master||15"] },
+    fe({ name: "Battle Master", subclassShortName: "Battle Master", level: 3, entries: ["intro", { type: "refSubclassFeature", subclassFeature: "Combat Superiority|Fighter||Battle Master||3" }] }),
+    fe({ name: "Combat Superiority", subclassShortName: "Battle Master", level: 3, entries: ["dice"] }),
+    fe({ name: "Relentless", subclassShortName: "Battle Master", level: 15 }),
+    // Another subclass's feature must not leak in.
+    fe({ name: "Improved Critical", subclassShortName: "Champion", level: 3 }),
+  ] as unknown as import("./types/content").ImportedEntity[];
+  const fighter2024 = pool[0] as unknown as ClassData;
+  const battleMaster = pool[2] as unknown as Subclass;
+
+  it("resolves refs with PHB defaults and follows nested refSubclassFeature entries", () => {
+    expect(resolveSubclassFeatures(pool, fighter2024, battleMaster, 3).map((f) => f.name)).toEqual([
+      "Battle Master",
+      "Combat Superiority",
+    ]);
+    expect(resolveSubclassFeatures(pool, fighter2024, battleMaster, 20).map((f) => f.name)).toEqual([
+      "Battle Master",
+      "Combat Superiority",
+      "Relentless",
+    ]);
+  });
+
+  it("still lists features by plain class/subclass match when refs are absent", () => {
+    const sub = { ...battleMaster, subclassFeatures: undefined, classSource: "PHB" } as unknown as Subclass;
+    const fighter2014 = pool[1] as unknown as ClassData;
+    expect(resolveSubclassFeatures(pool, fighter2014, sub, 3).map((f) => f.name)).toEqual([
+      "Battle Master",
+      "Combat Superiority",
+    ]);
+  });
+});

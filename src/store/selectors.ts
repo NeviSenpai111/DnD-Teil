@@ -481,9 +481,17 @@ export function classFeaturesFor(
     if (!cls) continue;
     features.push(...resolveClassFeatures(entities, cls, choice.level));
 
+    // Look the chosen subclass up in the full pool: `entities` is the
+    // list-able view (enabled sources, reprints hidden), and a character may
+    // well have picked a printing that is hidden from the pickers now.
     const sub = choice.subclass;
     const subData = sub
-      ? listSubclasses(entities, cls).find((s) => s.name === sub.name && s.source === sub.source)
+      ? (index
+          .getAll("subclass", sub.name, sub.source)
+          .find(
+            (s) => s.className === cls.name && (s.classSource === undefined || s.classSource === cls.source),
+          ) as Subclass | undefined) ??
+        listSubclasses(entities, cls).find((s) => s.name === sub.name && s.source === sub.source)
       : undefined;
     if (subData) subclassFeatures.push(...resolveSubclassFeatures(entities, cls, subData, choice.level));
   }

@@ -9,11 +9,17 @@ export const REF_TAGS = new Set([
   "item",
   "creature",
   "condition",
+  "disease",
+  "status",
   "background",
   "feat",
   "race",
   "class",
+  "subclass",
+  "classFeature",
+  "subclassFeature",
   "vehicle",
+  "vehupgrade",
   "object",
   "action",
   "deity",
@@ -22,20 +28,37 @@ export const REF_TAGS = new Set([
   "trap",
   "optfeature",
   "language",
-]);
-
-/** Tags that reference rules/glossary text we don't store as entities. */
-export const GLOSSARY_REF_TAGS = new Set([
   "skill",
   "sense",
-  "status",
-  "disease",
   "variantrule",
   "table",
+  "legroup",
+  "itemMastery",
+  "itemProperty",
+  "itemType",
+  "itemEntry",
+  "charoption",
+  "psionic",
+  "cult",
+  "boon",
+  "card",
+  "deck",
+  "facility",
+  "recipe",
+]);
+
+/** Tags that reference pages/sections we don't store as entities. */
+export const GLOSSARY_REF_TAGS = new Set([
   "quickref",
   "book",
   "adventure",
   "filter",
+  "5etools",
+  "loader",
+  "link",
+  "cite",
+  "area",
+  "homebrew",
 ]);
 
 /** Inline formatting tags → the style to apply to their (recursive) content. */

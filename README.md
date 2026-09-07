@@ -12,6 +12,7 @@ npm run dev        # start the app (Vite)
 npm test           # run the unit/acceptance tests (Vitest)
 npm run build      # typecheck + production build
 npm run typecheck  # types only
+npm run validate-data   # import a real 5eTools data/ tree and report (see below)
 ```
 
 Open the app, click **Sample** in the sidebar to load the bundled samples
@@ -145,8 +146,9 @@ Open the app, click **Sample** in the sidebar to load the bundled samples
 src/
   data/
     types/          TS interfaces for _meta + each content type
-    importer.ts     parse / merge / dedupe by name+source
-    contentIndex.ts cross-reference lookup + distinct sources
+    importer.ts     classify files, parse, normalise, dedupe by identity
+    copyResolver.ts _copy/_mod/_templates inheritance + _versions expansion
+    contentIndex.ts identity / name+source / tag lookups + distinct sources
     featureResolver.ts  assemble class/subclass features per level
     tagParser/      {@...} tokenizer (TDD) + React TagRenderer
     entryRenderer/  recursive `entries` renderer
@@ -217,10 +219,52 @@ guessed at.
 
 The importer handles real 5eTools dumps, not just the bundled samples:
 
+- **Import the whole `data/` folder at once** with **Import folder…** (or pick
+  files with **Import JSON…**). Every file kind in a 5eTools tree is recognised
+  and reported instead of silently yielding nothing: content files,
+  `spells/sources.json`, `index.json` maps, `book-*`/`adventure-*` prose, and
+  `foundry*.json` VTT data — which is always skipped, because its entries share
+  names with real content and would shadow it. The status line under the
+  buttons shows counts per type and every warning (skipped entries, unresolved
+  copies, failed mods).
+- **Identity is per content type**, matching the site: class features are keyed
+  by `name|source|className|classSource|level`, subclass features add the
+  subclass, subclasses add their class, subraces their race, deities their
+  pantheon, item types/properties their abbreviation. (A plain `name|source`
+  key silently dropped hundreds of "Ability Score Improvement" / "Spellcasting"
+  / "Extra Attack" features and every 2014 subclass offered under a 2024 class.)
+  Magic variants take their source from `inherits`; nameless "base" subraces
+  (where e.g. the PHB Human's +1-to-all lives) are kept, named after their race
+  and flagged `_isBaseVariant`.
 - **`_copy` / `_mod` inheritance** is resolved over the full imported pool
-  (`data/copyResolver.ts`) — supported `_mod` ops: `appendArr`, `prependArr`,
-  `insertArr`, `removeArr`, `replaceArr`, `replaceTxt`. So subraces/monsters/items
-  that copy a base import fully.
+  (`data/copyResolver.ts`), ported from the site's copy applier: bases are found
+  by full identity (cross-file), metadata (`page`, `srd`, `reprintedAs`, …) is
+  only inherited via `_preserve`, a `null` child field deletes the base's, and
+  every `_mod` mode the site supports is implemented — array ops, regex
+  `replaceTxt` (tag-aware), `setProp`, scalar ops, and the bestiary ops
+  (`addSkills`/`addSaves`/`addSenses`, `addSpells`/`replaceSpells`/`removeSpells`,
+  `scalarAddHit`/`scalarAddDc`, `maxSize`, …) with `<$short_name$>`/`<$dc__con$>`
+  variables. Monster `_templates` apply their root props and mods.
+- **`_versions`** expand into sibling entities — "Archmage (Familiar)", "Magic
+  Initiate; Cleric", "Aasimar; Necrotic Shroud". Subrace versions are expanded
+  against the subrace merged into its race and emitted as races ("Dragonborn
+  (Black)"), exactly as the site lists them.
+- **Feature refs** (`Name|Class||Level`, nested `refSubclassFeature` entries)
+  are resolved with the site's defaults (an omitted source means PHB), so a
+  2014 subclass picked under the 2024 class still lists its features.
+- **Fluff, templates and glue data** (`*Fluff`, `monsterTemplate`, `itemEntry`,
+  …) are imported and indexed for cross-references but hidden from the browser
+  list and source counts.
+- **Reprinted entries are hidden by default**, as on the site: an entry whose
+  `reprintedAs` target is imported and enabled — the 2014 Fighter once the 2024
+  one is loaded, the PHB Battle Master under either Fighter, PHB Fireball next
+  to XPHB Fireball — is left out of the browser and the builder's pickers
+  (`data/reprints.ts`). Tick **Show reprinted** under Sources to list them
+  (dimmed), or disable the newer source to bring the originals back. Options a
+  character already chose always resolve against the full pool. The browser
+  shows each entry's source and, for class/subclass features, subclasses,
+  subraces, deities and cards, the parent that makes same-named entries
+  distinct.
 - **Spell → class lists** come from the `spells/sources.json` reverse-index
   (real spells have no inline `classes`). Import that file alongside the spell
   files and the spells step filters correctly per class; spells with no mapping
@@ -296,11 +340,21 @@ The importer handles real 5eTools dumps, not just the bundled samples:
   re-picked when already granted), point-buy budget, and feats (the same feat
   can't be taken in two ASI slots).
 
-Import the actual data files (e.g. `class/class-*.json`, `spells/spells-*.json`
-+ `spells/sources.json`, `races.json`, `backgrounds.json`, `items-base.json`,
-`items.json`, `optionalfeature.json` — needed for invocations / infusions /
-metamagic / fighting styles — and `vehicles.json`). Multiple files can be
-selected at once.
+The simplest path is **Import folder…** on a 5eTools `data/` directory. To
+import selectively, the builder needs `class/class-*.json`,
+`spells/spells-*.json` + `spells/sources.json`, `races.json`,
+`backgrounds.json`, `feats.json`, `items-base.json`, `items.json`,
+`magicvariants.json`, `optionalfeatures.json` (invocations / infusions /
+metamagic / fighting styles) and `bestiary/template.json` if you import
+monsters that use templates.
+
+`npm run validate-data` runs the whole pipeline over a real data tree
+(`~/Dokumente/5ETools/data` by default; override with `FIVETOOLS_DATA=…`) and
+prints a report — file kinds, entities per type, and every warning. On the
+current official dump it imports 24,115 entities from 501 files with zero
+warnings, and asserts the cases above (all same-named class features present,
+legacy subclasses resolving under 2024 classes, versions expanded, Foundry
+files skipped).
 
 ## Known simplifications / TODOs
 
