@@ -3,6 +3,7 @@ import { useActiveEntities, useReprintedEntities } from "../../store/contentStor
 import type { ContentType, ImportedEntity } from "../../data/types";
 import { entityIdentity, isAuxType } from "../../data/types";
 import { EmptyState } from "../common/EmptyState";
+import { Icon } from "../common/Icon";
 import { LoadSampleButton } from "../common/ImportButton";
 import { useMediaQuery } from "../common/useMediaQuery";
 import { EntityDetail } from "./EntityDetail";
@@ -60,7 +61,7 @@ export function BrowseView() {
 
   if (entities.length === 0) {
     return (
-      <EmptyState title="Nothing to browse yet" actions={<LoadSampleButton />}>
+      <EmptyState title="Nothing to browse yet" icon="book" actions={<LoadSampleButton />}>
         Load the bundled sample, or import your own 5eTools JSON files from the Import content
         panel.
       </EmptyState>
@@ -70,39 +71,41 @@ export function BrowseView() {
   const totalMatches = filtered.length;
 
   return (
-    <div className="grid h-full gap-4 md:grid-cols-[18rem_1fr]">
+    <div className="grid h-full gap-4 md:grid-cols-[18rem_1fr] lg:grid-cols-[20rem_1fr] lg:gap-6">
       <h1 className="sr-only">Browse content</h1>
-      <div className={`flex min-h-0 flex-col gap-2 ${narrowDetail ? "hidden" : ""}`}>
-        <div className="relative">
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search name, type or source…"
-            aria-label="Search content"
-            aria-describedby="browse-match-count"
-            className="w-full rounded border border-blood/30 bg-white/70 py-1.5 pl-2 pr-16 text-sm"
-          />
-          <span
-            id="browse-match-count"
-            aria-live="polite"
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-2xs text-ink-muted"
-          >
-            {query ? `${totalMatches} match${totalMatches === 1 ? "" : "es"}` : ""}
-          </span>
+      <div className={`panel flex min-h-0 flex-col overflow-hidden ${narrowDetail ? "hidden" : ""}`}>
+        <div className="border-b border-line p-2">
+          <div className="relative">
+            <Icon name="search" className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search name, type or source…"
+              aria-label="Search content"
+              aria-describedby="browse-match-count"
+              className={`field w-full border-transparent bg-surface-sunk pl-8 shadow-none ${query ? "pr-20" : "pr-3"}`}
+            />
+            <span
+              id="browse-match-count"
+              aria-live="polite"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 font-mono text-2xs text-ink-muted"
+            >
+              {query ? `${totalMatches} match${totalMatches === 1 ? "" : "es"}` : ""}
+            </span>
+          </div>
         </div>
-        <nav
-          ref={listRef}
-          aria-label="Entries"
-          className="flex-1 overflow-y-auto rounded border border-blood/20 bg-parchment/60 p-2"
-        >
+        <nav ref={listRef} aria-label="Entries" className="flex-1 overflow-y-auto px-2 pb-2">
           {totalMatches === 0 ? (
-            <p className="px-1 py-2 text-sm text-ink-muted">No matches for “{query}”.</p>
+            <p className="px-2 py-6 text-sm text-ink-muted">
+              No matches for “{query}”. Try a source code like <span className="font-mono">PHB</span> or a
+              type like <span className="font-mono">spell</span>.
+            </p>
           ) : (
             [...grouped.entries()].map(([type, items]) => (
-              <section key={type} className="mb-3">
-                <h2 className="mb-1 px-1 text-xs font-bold uppercase tracking-wide text-blood">
-                  {type} <span className="font-semibold text-ink-muted">({items.length})</span>
+              <section key={type}>
+                <h2 className="eyebrow sticky top-0 z-10 flex items-baseline justify-between bg-surface/95 px-2 pb-1.5 pt-3 backdrop-blur-sm">
+                  {type} <span className="text-ink-faint">{items.length}</span>
                 </h2>
                 <ul>
                   {items.map((e) => {
@@ -119,8 +122,8 @@ export function BrowseView() {
                             setShowDetail(true);
                           }}
                           aria-current={isSelected ? "true" : undefined}
-                          className={`w-full rounded px-2 py-1 text-left text-sm hover:bg-blood/10 ${
-                            isSelected ? "bg-blood/15 font-semibold" : ""
+                          className={`w-full rounded-md px-2.5 py-1.5 text-left text-sm transition-colors ${
+                            isSelected ? "row-selected font-medium" : "hover:bg-ink/5"
                           } ${isReprinted ? "italic text-ink-muted" : ""}`}
                           title={entityTitle(e, isReprinted)}
                         >
@@ -129,7 +132,7 @@ export function BrowseView() {
                               {e.name}
                               {isReprinted && <span className="sr-only"> (reprinted)</span>}
                             </span>
-                            <span className="shrink-0 text-2xs uppercase not-italic text-ink-muted">{e.source}</span>
+                            <span className="shrink-0 font-mono text-2xs uppercase not-italic text-ink-muted">{e.source}</span>
                           </span>
                           {meta && (
                             <span className="block truncate text-2xs leading-tight text-ink-muted">{meta}</span>
@@ -150,23 +153,29 @@ export function BrowseView() {
         aria-label="Entry details"
         // Focusable so keyboard users can scroll a long entry.
         tabIndex={0}
-        className={`min-w-0 overflow-y-auto ${!isWide && !showDetail ? "hidden" : ""}`}
+        className={`min-w-0 overflow-y-auto rounded-[var(--radius-panel)] pb-6 ${!isWide && !showDetail ? "hidden" : ""}`}
       >
         {narrowDetail && (
           <button
             ref={backRef}
             type="button"
             onClick={() => setShowDetail(false)}
-            className="mb-3 rounded border border-blood/40 px-3 py-1.5 text-sm font-medium text-blood hover:bg-blood/10"
+            className="btn btn-ghost -ml-2 mb-2"
           >
-            ← All entries
+            <Icon name="arrow-left" />
+            All entries
           </button>
         )}
         {selected ? (
-          <EntityDetail entity={selected} />
+          <EntityDetail key={selectedKey} entity={selected} />
         ) : (
-          <div className="grid h-full place-items-center text-ink-muted">
-            Select an entry to view it.
+          <div className="grid h-full max-w-md content-start gap-2 pt-[clamp(1rem,10vh,6rem)] text-sm text-ink-muted">
+            <Icon name="book" className="h-6 w-6 text-ink-faint" />
+            <p className="text-base font-medium text-ink">Select an entry to view it.</p>
+            <p>
+              <span className="font-mono">{browsable.length.toLocaleString("en-US")}</span> entries
+              imported. Search narrows the list by name, type or source.
+            </p>
           </div>
         )}
       </div>

@@ -5,18 +5,16 @@ import { Entries } from "../../data/entryRenderer/EntryRenderer";
 export function VehicleStatblock({ vehicle }: { vehicle: Vehicle }) {
   const { hull } = vehicle;
   return (
-    <article className="mx-auto max-w-2xl rounded border border-blood/30 bg-parchment p-5 shadow">
-      <header>
-        <h2 className="text-2xl font-bold text-blood">{vehicle.name}</h2>
-        <p className="text-sm italic text-ink/70">
+    <article className="detail">
+      <header className="detail-head">
+        <h2 className="detail-title">{vehicle.name}</h2>
+        <p className="mt-1 text-sm text-ink-muted">
           {[vehicle.vehicleType, vehicle.dimensions?.join(" × ")].filter(Boolean).join(", ")}
         </p>
-        <p className="text-xs uppercase tracking-wide text-ink-muted">{vehicle.source}</p>
+        <p className="eyebrow mt-2">{vehicle.source}</p>
       </header>
 
-      <div className="statblock-rule my-3" />
-
-      <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm sm:grid-cols-3">
+      <dl className="mt-5 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-3">
         <Stat label="Speed" value={vehicle.speed != null ? `${vehicle.speed} ft.` : undefined} />
         <Stat label="Pace" value={vehicle.pace != null ? `${vehicle.pace} mph` : undefined} />
         <Stat label="Crew" value={vehicle.capCrew} />
@@ -27,8 +25,7 @@ export function VehicleStatblock({ vehicle }: { vehicle: Vehicle }) {
 
       {hull && (
         <>
-          <div className="statblock-rule my-3" />
-          <dl className="grid grid-cols-3 gap-x-4 text-sm">
+          <dl className="mt-3 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-3">
             <Stat
               label="Hull AC"
               value={hull.ac != null ? `${hull.ac}${hull.acFrom ? ` (${hull.acFrom.join(", ")})` : ""}` : undefined}
@@ -40,15 +37,14 @@ export function VehicleStatblock({ vehicle }: { vehicle: Vehicle }) {
       )}
 
       {vehicle.entries && vehicle.entries.length > 0 && (
-        <div className="mt-3 text-sm">
+        <div className="prose-rules mt-5">
           <Entries entries={vehicle.entries} />
         </div>
       )}
 
       {vehicle.weapon && vehicle.weapon.length > 0 && (
-        <section className="mt-4 space-y-3">
-          <div className="statblock-rule" />
-          <h3 className="text-lg font-bold text-blood">Weapons</h3>
+        <section className="mt-6 space-y-3 border-t border-line pt-5">
+          <h3 className="eyebrow">Weapons</h3>
           {vehicle.weapon.map((w, i) => (
             <WeaponBlock key={`${w.name}-${i}`} weapon={w} />
           ))}
@@ -68,11 +64,11 @@ function WeaponBlock({ weapon }: { weapon: VehicleWeapon }) {
   ].filter(Boolean);
 
   return (
-    <div className="rounded border border-blood/20 bg-white/40 p-3">
-      <h4 className="font-bold text-blood">{weapon.name}</h4>
-      {meta.length > 0 && <p className="text-xs text-ink-muted">{meta.join(" · ")}</p>}
+    <div className="rounded-lg border border-line bg-surface p-4">
+      <h4 className="font-semibold tracking-tight text-ink">{weapon.name}</h4>
+      {meta.length > 0 && <p className="mt-0.5 font-mono text-2xs text-ink-muted">{meta.join(" · ")}</p>}
       {weapon.entries && weapon.entries.length > 0 && (
-        <div className="mt-1 text-sm">
+        <div className="prose-rules mt-2">
           <Entries entries={weapon.entries} />
         </div>
       )}
@@ -89,8 +85,9 @@ function WeaponBlock({ weapon }: { weapon: VehicleWeapon }) {
 function Stat({ label, value }: { label: string; value?: string | number }) {
   if (value == null || value === "") return null;
   return (
-    <div>
-      <dt className="inline font-semibold">{label}:</dt> <dd className="inline">{value}</dd>
+    <div className="bg-surface px-3 py-2.5">
+      <dt className="eyebrow">{label}</dt>
+      <dd className="mt-0.5 font-mono text-sm text-ink">{value}</dd>
     </div>
   );
 }

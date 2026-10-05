@@ -126,7 +126,7 @@ describe("prerequisites, mastery and background extras", () => {
 
     fireEvent.click(screen.getByText("Suggested Characteristics"));
     vi.spyOn(Math, "random").mockReturnValue(0); // roll -> first row
-    fireEvent.click(screen.getByText("🎲 Roll Personality Trait"));
+    fireEvent.click(screen.getByText("Roll Personality Trait"));
     expect(useCharacterStore.getState().draft.details.personalityTraits).toBe(
       "I always have a plan for when things go wrong.",
     );

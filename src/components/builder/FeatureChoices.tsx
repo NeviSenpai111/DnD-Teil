@@ -10,6 +10,7 @@ import {
 } from "../../engine/optionalFeatures";
 import { SKILL_BY_ID } from "../../engine/constants";
 import { Entries } from "../../data/entryRenderer/EntryRenderer";
+import { Icon } from "../common/Icon";
 
 /**
  * Picker for one optional-feature progression (fighting styles, invocations,
@@ -38,7 +39,7 @@ export function OptionalFeaturePicker({
       .map((t) => `${featureTypeLabel(t)} ("${t}")`)
       .join(", ");
     return (
-      <p className="rounded border border-warning-border/60 bg-warning-surface p-2 text-sm">
+      <p className="rounded-lg border border-warning-border/50 bg-warning-surface px-3 py-2.5 text-sm">
         No imported options of type {types || "unknown"}. These aren't in the class file —
         in 5eTools data they're book content in the separate{" "}
         <code className="font-semibold">optionalfeature.json</code> file. Import it alongside the
@@ -57,7 +58,7 @@ export function OptionalFeaturePicker({
 
   return (
     <div className="space-y-1">
-      <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
+      <p className="eyebrow">
         Chosen {picks.length} / {def.count}
       </p>
       {options.map((o) => {
@@ -66,7 +67,7 @@ export function OptionalFeaturePicker({
         const picked = isPicked(o.name, o.source);
         const open = expanded === o.name;
         return (
-          <div key={`${o.name}|${o.source}`} className="rounded border border-ink/10 bg-white/50 px-2 py-1">
+          <div key={`${o.name}|${o.source}`} className={`rounded-lg border bg-surface px-3 py-2 transition-colors ${picked ? "row-selected border-accent/40" : "border-line"}`}>
             <div className="flex items-center gap-2">
               <input
                 type="checkbox"
@@ -78,18 +79,23 @@ export function OptionalFeaturePicker({
               <button
                 type="button"
                 onClick={() => setExpanded(open ? undefined : o.name)}
-                className={`flex-1 text-left text-sm font-semibold ${locked ? "text-ink-muted" : "text-ink"}`}
+                aria-expanded={open}
+                className={`flex flex-1 items-center gap-1.5 text-left text-sm font-medium ${locked ? "text-ink-muted" : "text-ink"}`}
               >
-                {o.name} {open ? "▴" : "▾"}
+                {o.name}
+                <Icon
+                  name="chevron-down"
+                  className={`h-3.5 w-3.5 text-ink-muted transition-transform duration-300 ease-snap ${open ? "rotate-180" : ""}`}
+                />
               </button>
               {locked && (
-                <span className="text-xs uppercase tracking-wide text-ink-muted">
+                <span className="eyebrow">
                   Requires level {prereq}
                 </span>
               )}
             </div>
             {open && o.entries && (
-              <div className="mt-1 border-t border-ink/10 pt-1 text-sm">
+              <div className="prose-rules mt-2 animate-settle-in border-t border-line pt-2">
                 <Entries entries={o.entries} />
               </div>
             )}
@@ -127,7 +133,7 @@ export function WeaponMasteryPicker({ count }: { count: number }) {
 
   return (
     <div className="space-y-1">
-      <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
+      <p className="eyebrow">
         Chosen {picks.length} / {count}
       </p>
       {options.map((o) => {
@@ -135,7 +141,7 @@ export function WeaponMasteryPicker({ count }: { count: number }) {
         return (
           <label
             key={o.name}
-            className="flex items-center gap-2 rounded border border-ink/10 bg-white/50 px-2 py-1 text-sm"
+            className={`flex min-h-9 cursor-pointer items-center gap-2.5 rounded-lg border px-3 py-1.5 text-sm transition-colors ${picked ? "row-selected border-accent/40" : "border-line bg-surface hover:border-line-strong"}`}
           >
             <input
               type="checkbox"
@@ -144,8 +150,8 @@ export function WeaponMasteryPicker({ count }: { count: number }) {
               onChange={() => toggle(o.name)}
               aria-label={`Master ${o.name}`}
             />
-            <span className="flex-1 font-semibold">{o.name}</span>
-            <span className="text-xs uppercase tracking-wide text-ink-muted">{o.mastery}</span>
+            <span className="flex-1 font-medium">{o.name}</span>
+            <span className="eyebrow">{o.mastery}</span>
           </label>
         );
       })}
@@ -186,7 +192,7 @@ export function ExpertiseSelects({ choiceKey, count }: { choiceKey: string; coun
             next[i] = e.target.value;
             setExpertiseChoice(choiceKey, next.filter(Boolean));
           }}
-          className="rounded border border-ink/20 bg-white px-2 py-1 text-sm"
+          className="field field-sm"
         >
           <option value="">— choose a skill —</option>
           {proficient

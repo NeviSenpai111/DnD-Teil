@@ -5,6 +5,7 @@ import type { Spell } from "../../data/types/spell-content";
 import type { EntityRef, SpellPick } from "../../model/character";
 import { formatMod } from "../../engine/modifiers";
 import { ABILITY_NAMES, type Ability } from "../../engine/constants";
+import { Icon } from "../common/Icon";
 
 /**
  * The SPELLS sub-tab of one class's section on the Class page: stats, slots
@@ -53,13 +54,16 @@ export function SpellsPanel({ classIndex = 0 }: { classIndex?: number }) {
   return (
     <div className="space-y-4">
       {!listKnown && spells.length > 0 && (
-        <p className="rounded border border-warning-border/60 bg-warning-surface p-2 text-sm text-ink/80">
-          ⚠️ No spell-list data found for <strong>{className}</strong>, so every imported spell
+        <p className="flex gap-2.5 rounded-lg border border-warning-border/50 bg-warning-surface px-3 py-2.5 text-sm text-ink">
+          <Icon name="alert" className="mt-0.5 h-4 w-4 text-warning-border" />
+          <span>
+          No spell-list data found for <strong>{className}</strong>, so every imported spell
           is shown. Import <code>spells/sources.json</code> (it sits next to the spell files in
           a 5eTools dump) and each class will only see its own spells.
+          </span>
         </p>
       )}
-      <div className="grid grid-cols-2 gap-2 text-center text-sm sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-4">
         <Box label="Ability" value={ABILITY_NAMES[summary.ability as Ability] ?? summary.ability} />
         <Box label="Save DC" value={summary.saveDc} />
         <Box label="Attack" value={formatMod(summary.attackBonus)} />
@@ -92,13 +96,13 @@ function SlotBar({ slots, pact }: { slots: number[]; pact?: { count: number; slo
   return (
     <div className="flex flex-wrap gap-2 text-sm">
       {slots.map((count, i) => (
-        <span key={i} className="rounded border border-blood/30 px-2 py-1">
-          L{i + 1}: <strong>{count}</strong>
+        <span key={i} className="flex items-baseline gap-1.5 rounded-md border border-line bg-surface-sunk px-2 py-1 font-mono text-xs">
+          <span className="text-ink-muted">L{i + 1}</span> <strong className="font-medium">{count}</strong>
         </span>
       ))}
       {pact && (
-        <span className="rounded border border-blood bg-blood/10 px-2 py-1">
-          Pact: <strong>{pact.count}</strong> × L{pact.slotLevel}
+        <span className="chip chip-accent px-2 py-0.5 text-xs">
+          Pact: <strong className="font-medium">{pact.count}</strong> × L{pact.slotLevel}
         </span>
       )}
     </div>
@@ -119,31 +123,31 @@ function SpellGroup({
   onToggle: (ref: EntityRef) => void;
 }) {
   return (
-    <fieldset className="rounded border border-blood/20 p-2">
-      <legend className="px-1 text-xs font-semibold text-blood">{title}</legend>
+    <fieldset className="rounded-xl border border-line px-3 pb-3 pt-1">
+      <legend className="eyebrow px-1.5 text-ink">{title}</legend>
       {spells.length === 0 ? (
         <p className="text-sm text-ink-muted">No spells available for this class/level.</p>
       ) : (
-        <ul className="grid gap-1 sm:grid-cols-2">
+        <ul className="grid gap-1.5 sm:grid-cols-2">
           {spells.map((s) => {
             const on = selected(s);
             const disabled = !on && disabledWhenUnselected;
             return (
               <li key={`${s.name}|${s.source}`}>
                 <label
-                  className={`flex cursor-pointer items-center gap-2 rounded border px-2 py-1 text-sm ${
-                    on ? "border-blood bg-blood/10 font-semibold" : "border-ink/20"
+                  className={`flex min-h-9 cursor-pointer items-center gap-2.5 rounded-lg border px-2.5 py-1.5 text-sm transition-colors ${
+                    on ? "row-selected border-accent/40 font-medium" : "border-line-strong hover:bg-ink/5"
                   } ${disabled ? "opacity-40" : ""}`}
                 >
                   <input
                     type="checkbox"
-                    className="accent-blood"
+                    className="h-4 w-4"
                     checked={on}
                     disabled={disabled}
                     onChange={() => onToggle({ name: s.name, source: s.source })}
                   />
                   <span className="flex-1 truncate">{s.name}</span>
-                  <span className="text-2xs uppercase text-ink-muted">
+                  <span className="font-mono text-2xs uppercase text-ink-muted">
                     {s.level === 0 ? "cantrip" : `lvl ${s.level}`}
                   </span>
                 </label>
@@ -158,9 +162,9 @@ function SpellGroup({
 
 function Box({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded border border-blood/20 bg-white/50 p-2">
-      <div className="text-2xs font-bold uppercase text-ink-muted">{label}</div>
-      <div className="text-base font-bold">{value}</div>
+    <div className="bg-surface px-3 py-2.5">
+      <div className="eyebrow">{label}</div>
+      <div className="mt-0.5 font-mono text-base font-medium">{value}</div>
     </div>
   );
 }

@@ -42,11 +42,11 @@ export function AdditionalSpellPicker({
     <div className="space-y-2">
       {grants.sets.length > 1 && (
         <label className="flex items-center gap-2 text-sm">
-          <span className="font-semibold">Spell list:</span>
+          <span className="font-medium">Spell list:</span>
           <select
             value={chosenSet ?? ""}
             onChange={(e) => setFeatSpellSet(keyPrefix, e.target.value)}
-            className="rounded border border-ink/20 bg-white px-2 py-1"
+            className="field field-sm"
           >
             <option value="">— Choose —</option>
             {grants.sets.map((s) => (
@@ -60,7 +60,7 @@ export function AdditionalSpellPicker({
 
       {grants.fixed.length > 0 && (
         <p className="text-sm">
-          <span className="font-bold">Grants:</span>{" "}
+          <span className="font-medium">Grants:</span>{" "}
           {grants.fixed.map((f) => f.name).join(", ")}
         </p>
       )}
@@ -82,7 +82,7 @@ export function AdditionalSpellPicker({
           def.level === 0 ? `cantrip${def.count === 1 ? "" : "s"}` : `level-${def.level ?? 1} spell${def.count === 1 ? "" : "s"}`;
         return (
           <div key={def.key} className="space-y-1.5">
-            <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
+            <p className="eyebrow">
               {def.origin}: choose {def.count} {label} ({picks.length}/{def.count})
             </p>
             {options.length === 0 ? (
@@ -100,7 +100,7 @@ export function AdditionalSpellPicker({
                     key={slot}
                     value={current}
                     onChange={(e) => setSlot(slot, e.target.value)}
-                    className="block w-full max-w-xs rounded border border-ink/20 bg-white px-2 py-1.5 text-sm"
+                    className="block w-full max-w-xs field"
                   >
                     <option value="">— Choose a Spell —</option>
                     {options.map((s) => {

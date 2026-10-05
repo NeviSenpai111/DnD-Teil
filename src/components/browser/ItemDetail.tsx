@@ -8,6 +8,7 @@ import {
   itemIcon,
   propertyLabels,
 } from "../common/itemDisplay";
+import { Icon } from "../common/Icon";
 
 /** Extra fields real items carry beyond the builder's Item interface. */
 interface ItemExtras extends Item {
@@ -54,33 +55,36 @@ export function ItemDetail({ item, embedded }: { item: Item; embedded?: boolean 
     <article
       className={
         embedded
-          ? "rounded border border-blood/20 bg-white/50 p-3"
-          : "mx-auto max-w-2xl rounded border border-blood/30 bg-parchment p-5 shadow"
+          ? "rounded-lg border border-line bg-surface p-4"
+          : "detail"
       }
     >
-      <header className="border-b border-blood/30 pb-2">
-        <h2 className={`font-bold text-blood ${embedded ? "text-lg" : "text-2xl"}`}>
-          <span aria-hidden>{itemIcon(item)}</span> {item.name}
+      <header className="detail-head">
+        <h2 className={`detail-title ${embedded ? "text-lg" : ""}`}>
+          <span className="flex items-center gap-2.5">
+            <Icon name={itemIcon(item)} className={embedded ? "h-4 w-4 text-ink-muted" : "h-6 w-6 text-ink-muted"} />
+            {item.name}
+          </span>
         </h2>
-        <p className="text-xs uppercase tracking-wide text-ink-muted">
+        <p className="eyebrow mt-2">
           {categoryLine(item)}
           {it.rarity && it.rarity !== "none" && ` · ${it.rarity}`} · {item.source}
         </p>
       </header>
 
-      <dl className="mt-3 space-y-1 text-sm">
+      <dl className="detail-facts">
         {rows
           .filter((r): r is [string, string] => !!r[1])
           .map(([label, value]) => (
             <div key={label}>
-              <dt className="inline font-semibold">{label}: </dt>
-              <dd className="inline text-ink/80">{value}</dd>
+              <dt>{label}: </dt>
+              <dd>{value}</dd>
             </div>
           ))}
       </dl>
 
       {item.entries && item.entries.length > 0 && (
-        <div className="mt-3 border-t border-blood/15 pt-3 text-sm">
+        <div className="prose-rules mt-5 border-t border-line pt-5">
           <Entries entries={item.entries} />
         </div>
       )}

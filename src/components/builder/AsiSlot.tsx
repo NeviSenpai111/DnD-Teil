@@ -50,18 +50,18 @@ export function AsiSlot({ index }: { index: number }) {
 
   return (
     <div className="space-y-2">
-      <div className="flex gap-2">
+      <div className="segmented">
         <button
           type="button"
           onClick={() => onChange({ type: "asi", increases })}
-          className={`rounded border px-2 py-1 text-sm ${!isFeat ? "border-blood bg-blood/10 font-semibold" : "border-ink/20"}`}
+          aria-current={!isFeat ? "true" : undefined}
         >
           Ability Increase
         </button>
         <button
           type="button"
           onClick={() => onChange({ type: "feat", ref: undefined })}
-          className={`rounded border px-2 py-1 text-sm ${isFeat ? "border-blood bg-blood/10 font-semibold" : "border-ink/20"}`}
+          aria-current={isFeat ? "true" : undefined}
         >
           Feat
         </button>
@@ -74,7 +74,7 @@ export function AsiSlot({ index }: { index: number }) {
               key={slot}
               value={picks[slot] ?? ""}
               onChange={(e) => setIncrease(slot as 0 | 1, e.target.value as Ability | "")}
-              className="rounded border border-ink/20 bg-white px-2 py-1 text-sm"
+              className="field field-sm"
             >
               <option value="">+1 to…</option>
               {ABILITIES.map((ab) => (
@@ -94,7 +94,7 @@ export function AsiSlot({ index }: { index: number }) {
               const [name, source] = e.target.value.split("|");
               onChange({ type: "feat", ref: name ? { name, source } : undefined });
             }}
-            className="rounded border border-ink/20 bg-white px-2 py-1 text-sm"
+            className="field field-sm"
           >
             <option value="">Choose a feat…</option>
             {feats.map((f) => {

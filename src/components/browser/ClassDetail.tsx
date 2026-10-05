@@ -25,17 +25,17 @@ function FeatureSections({ features }: { features: LeveledFeature[] }) {
     return <p className="text-sm text-ink-muted">No features imported for this entry.</p>;
   }
   return (
-    <div className="space-y-3">
+    <div className="divide-y divide-line">
       {features.map((f, i) => (
-        <section key={`${f.name}:${f.level}:${i}`}>
-          <h3 className="font-bold text-blood">
+        <section key={`${f.name}:${f.level}:${i}`} className="py-4 first:pt-0 last:pb-0">
+          <h3 className="flex items-baseline gap-2 font-semibold tracking-tight text-ink">
             {f.name}{" "}
-            <span className="text-xs font-semibold uppercase text-ink-muted">
+            <span className="chip">
               {ordinal(f.level)} level
             </span>
           </h3>
           {f.entries && (
-            <div className="text-sm">
+            <div className="prose-rules mt-1.5">
               <Entries entries={f.entries} />
             </div>
           )}
@@ -73,31 +73,31 @@ export function ClassDetail({ cls }: { cls: ClassData }) {
   ];
 
   return (
-    <article className="mx-auto max-w-2xl rounded border border-blood/30 bg-parchment p-5 shadow">
-      <header className="border-b border-blood/30 pb-2">
-        <h2 className="text-2xl font-bold text-blood">{cls.name}</h2>
-        <p className="text-xs uppercase tracking-wide text-ink-muted">class · {cls.source}</p>
+    <article className="detail">
+      <header className="detail-head">
+        <h2 className="detail-title">{cls.name}</h2>
+        <p className="eyebrow mt-2">class · {cls.source}</p>
       </header>
 
-      <dl className="mt-3 space-y-1 text-sm">
+      <dl className="detail-facts">
         {rows
           .filter((r): r is [string, string] => !!r[1])
           .map(([label, value]) => (
             <div key={label}>
-              <dt className="inline font-semibold">{label}: </dt>
-              <dd className="inline text-ink/80">{value}</dd>
+              <dt>{label}: </dt>
+              <dd>{value}</dd>
             </div>
           ))}
       </dl>
 
       {cls.entries && cls.entries.length > 0 && (
-        <div className="mt-3 text-sm">
+        <div className="prose-rules mt-5">
           <Entries entries={cls.entries} />
         </div>
       )}
 
-      <div className="mt-4 border-t border-blood/15 pt-3">
-        <h3 className="mb-2 text-sm font-bold uppercase tracking-wide text-ink-muted">
+      <div className="mt-6 border-t border-line pt-5">
+        <h3 className="eyebrow mb-4">
           Class Features
         </h3>
         <FeatureSections features={features} />
@@ -122,14 +122,14 @@ export function SubclassDetail({ subclass }: { subclass: Subclass }) {
     .sort((a, b) => a.level - b.level || a.name.localeCompare(b.name));
 
   return (
-    <article className="mx-auto max-w-2xl rounded border border-blood/30 bg-parchment p-5 shadow">
-      <header className="border-b border-blood/30 pb-2">
-        <h2 className="text-2xl font-bold text-blood">{subclass.name}</h2>
-        <p className="text-xs uppercase tracking-wide text-ink-muted">
+    <article className="detail">
+      <header className="detail-head">
+        <h2 className="detail-title">{subclass.name}</h2>
+        <p className="eyebrow mt-2">
           {subclass.className} subclass · {subclass.source}
         </p>
       </header>
-      <div className="mt-3">
+      <div className="mt-5">
         <FeatureSections features={features} />
       </div>
     </article>

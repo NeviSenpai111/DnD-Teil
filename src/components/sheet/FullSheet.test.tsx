@@ -130,7 +130,7 @@ describe("FullSheet interactivity", () => {
   it("levels up from the sheet header", () => {
     open();
     expect(screen.getByText("Level 1 · Channeler 1")).toBeInTheDocument();
-    fireEvent.click(screen.getByText("▲ Level Up"));
+    fireEvent.click(screen.getByText("Level Up"));
     expect(useCharacterStore.getState().draft.classes[0].level).toBe(2);
     expect(screen.getByText("Level 2 · Channeler 2")).toBeInTheDocument();
   });

@@ -6,6 +6,7 @@ import { deriveFromCharacter } from "../../store/selectors";
 import { characterLevel } from "../../model/character";
 import { speciesLabel } from "../../engine/edition";
 import { EmptyState } from "../common/EmptyState";
+import { Icon } from "../common/Icon";
 import { LoadSampleButton } from "../common/ImportButton";
 import { PageHome } from "./PageHome";
 import { PageClass } from "./PageClass";
@@ -16,9 +17,9 @@ import { PageEquipment } from "./PageEquipment";
 import { PageWhatsNext } from "./PageWhatsNext";
 
 /**
- * D&D-Beyond-style builder: a dark tab bar (Home · 1. Class · 2. Background ·
+ * D&D-Beyond-style builder: a tab bar (Home · 1. Class · 2. Background ·
  * 3. Species · 4. Abilities · 5. Equipment · What's Next), a character-name
- * header shared by every page, and prev/next arrows on the content edges.
+ * header shared by every page, and a prev/next pager row under the content.
  */
 export function BuildView() {
   const draft = useCharacterStore((s) => s.draft);
@@ -55,7 +56,7 @@ export function BuildView() {
 
   if (!hasContent) {
     return (
-      <EmptyState title="No content imported" actions={<LoadSampleButton />}>
+      <EmptyState title="No content imported" icon="sigil" actions={<LoadSampleButton />}>
         The builder needs classes, backgrounds and species to choose from. Load the bundled sample,
         or import your own 5eTools files from the Import content panel.
       </EmptyState>
@@ -63,20 +64,20 @@ export function BuildView() {
   }
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded border border-blood/20">
-      {/* dark builder bar: title + page tabs + quick actions */}
-      <div data-surface="dark" className="bg-ink px-3 pt-2 text-parchment sm:px-4">
-        <div className="flex items-center gap-3">
+    <div className="panel flex h-full flex-col overflow-hidden">
+      {/* builder bar: title + live readouts + page tabs */}
+      <div className="border-b border-line">
+        <div className="flex items-center gap-3 px-4 pt-3 sm:px-5">
           <div className="min-w-0">
-            <h1 className="text-sm font-bold leading-tight">Character Builder</h1>
-            <div className="truncate text-xs text-parchment/70">{draft.name}</div>
+            <h1 className="eyebrow">Character Builder</h1>
+            <DraftTitle />
           </div>
           <HeaderActions />
         </div>
         <nav
           ref={tabsRef}
           aria-label="Builder steps"
-          className="-mx-3 mt-1 flex gap-1 overflow-x-auto px-3 text-xs font-bold uppercase tracking-wide sm:-mx-4 sm:px-4"
+          className="mt-1.5 flex gap-0.5 overflow-x-auto px-2 sm:px-3"
         >
           {pages.map((p, i) => (
             <button
@@ -84,55 +85,83 @@ export function BuildView() {
               type="button"
               onClick={() => goTo(p.id)}
               aria-current={i === current ? "step" : undefined}
-              className={`shrink-0 whitespace-nowrap border-b-2 px-2 py-2 ${
-                i === current
-                  ? "border-parchment text-parchment"
-                  : "border-transparent text-parchment/70 hover:text-parchment"
-              }`}
+              className="tab"
             >
               {tabLabel(p)}
-              {p.id === "next" ? " ▸" : ""}
             </button>
           ))}
         </nav>
       </div>
 
-      {/* content with side prev/next arrows (md+) or a footer pager (narrow) */}
-      <div className="relative flex-1 overflow-hidden bg-parchment/60">
-        {prev && <PagerArrow side="left" target={tabLabel(prev)} onClick={() => goTo(prev.id)} />}
-        {next && <PagerArrow side="right" target={tabLabel(next)} onClick={() => goTo(next.id)} />}
-        <div ref={scrollRef} className="h-full overflow-y-auto">
-          <div className="mx-auto max-w-3xl px-4 py-5 sm:px-6 md:px-12 md:py-6">
-            <CharacterNameHeader />
-            {pages[current].el(goTo)}
-            <nav
-              aria-label="Step navigation"
-              className="mt-8 flex justify-between gap-2 border-t border-blood/15 pt-4 md:hidden"
-            >
-              {prev ? (
-                <button
-                  type="button"
-                  onClick={() => goTo(prev.id)}
-                  className="rounded border border-blood/40 px-3 py-2 text-sm font-semibold text-blood hover:bg-blood/10"
-                >
-                  ‹ {tabLabel(prev)}
-                </button>
-              ) : (
-                <span />
-              )}
-              {next && (
-                <button
-                  type="button"
-                  onClick={() => goTo(next.id)}
-                  className="rounded bg-blood px-3 py-2 text-sm font-semibold text-parchment hover:bg-blood-light"
-                >
-                  {tabLabel(next)} ›
-                </button>
-              )}
-            </nav>
-          </div>
+      <div ref={scrollRef} className="flex-1 overflow-y-auto">
+        <div key={pages[current].id} className="mx-auto max-w-[46rem] animate-settle-in px-4 py-6 sm:px-8 md:py-8">
+          <CharacterNameHeader />
+          {pages[current].el(goTo)}
         </div>
       </div>
+
+      {/* step pager: its own row, never over the content */}
+      <nav
+        aria-label="Step navigation"
+        className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 border-t border-line bg-surface-sunk px-2 py-2 sm:px-3"
+      >
+        <span>
+          {prev && (
+            <button
+              type="button"
+              onClick={() => goTo(prev.id)}
+              aria-label={`Back: ${tabLabel(prev)}`}
+              className="btn btn-ghost max-w-full max-sm:px-2.5"
+            >
+              <Icon name="chevron-left" />
+              <span className="truncate max-sm:hidden">{`Back: ${tabLabel(prev)}`}</span>
+            </button>
+          )}
+        </span>
+        <span className="flex items-center gap-1" aria-hidden="true">
+          {pages.map((p, i) => (
+            <span
+              key={p.id}
+              className={`h-1.5 rounded-full transition-all duration-300 ease-snap ${
+                i === current ? "w-4 bg-accent" : i < current ? "w-1.5 bg-ink-faint" : "w-1.5 bg-line-strong"
+              }`}
+            />
+          ))}
+        </span>
+        <span className="flex justify-end">
+          {next && (
+            <button
+              type="button"
+              onClick={() => goTo(next.id)}
+              aria-label={`Next: ${tabLabel(next)}`}
+              className="btn btn-primary max-w-full"
+            >
+              <span className="truncate max-sm:hidden">{`Next: ${tabLabel(next)}`}</span>
+              <span className="sm:hidden">Next</span>
+              <Icon name="chevron-right" />
+            </button>
+          )}
+        </span>
+      </nav>
+    </div>
+  );
+}
+
+/** Draft name with a live "unsaved" marker while it differs from the library copy. */
+function DraftTitle() {
+  const draft = useCharacterStore((s) => s.draft);
+  const savedCopy = useCharacterStore((s) => s.saved.find((c) => c.id === s.draft.id));
+  const unsaved = !savedCopy || savedCopy.updatedAt !== draft.updatedAt;
+
+  return (
+    <div className="flex min-w-0 items-center gap-2">
+      <span className="truncate text-base font-semibold tracking-tight">{draft.name}</span>
+      {unsaved && (
+        <span className="flex shrink-0 items-center gap-1.5 font-mono text-2xs text-ink-muted">
+          <span className="pulse-dot h-1.5 w-1.5 text-accent" aria-hidden="true" />
+          Unsaved
+        </span>
+      )}
     </div>
   );
 }
@@ -150,26 +179,26 @@ function CharacterNameHeader() {
     .toUpperCase();
 
   return (
-    <div className="mb-6 flex items-center gap-3 border-b border-blood/15 pb-4 sm:gap-4">
+    <div className="mb-8 flex items-end gap-4 border-b border-line pb-6">
       <div
-        className="grid h-12 w-12 shrink-0 place-items-center rounded border-2 border-dashed border-ink/30 bg-ink/5 text-lg font-bold text-ink-muted sm:h-16 sm:w-16 sm:text-xl"
+        className="grid h-14 w-14 shrink-0 place-items-center rounded-xl border border-line bg-surface-sunk font-mono text-lg font-medium text-ink-muted sm:h-16 sm:w-16 sm:text-xl"
         aria-hidden
       >
-        {initials || "+"}
+        {initials || <Icon name="plus" className="h-5 w-5" />}
       </div>
       <label className="min-w-0 flex-1">
-        <span className="block text-sm font-bold">Character Name</span>
+        <span className="block text-sm font-medium text-ink-muted">Character Name</span>
         <input
           value={draft.name}
           onChange={(e) => setName(e.target.value)}
-          className="mt-0.5 block w-full max-w-sm rounded border border-ink/20 bg-white px-2 py-1.5 text-sm"
+          className="field mt-1.5 w-full max-w-sm text-base font-medium"
         />
       </label>
     </div>
   );
 }
 
-/** Level/HP/AC chips + Save + Full view, right-aligned in the dark bar. */
+/** Level/HP/AC readouts + Save + Sheet, right-aligned in the builder bar. */
 function HeaderActions() {
   const draft = useCharacterStore((s) => s.draft);
   const index = useContentStore((s) => s.index);
@@ -184,8 +213,8 @@ function HeaderActions() {
   }, [savedNote]);
 
   return (
-    <div className="ml-auto flex shrink-0 items-center gap-2 text-xs">
-      <span className="hidden gap-2 sm:flex">
+    <div className="ml-auto flex shrink-0 items-center gap-2">
+      <span className="mr-1 hidden items-center gap-1.5 md:flex">
         <Stat label="LVL" value={characterLevel(draft)} />
         <Stat label="HP" value={derived.maxHp ?? "—"} />
         <Stat label="AC" value={derived.ac} />
@@ -196,18 +225,23 @@ function HeaderActions() {
           saveDraftToLibrary();
           setSavedNote(true);
         }}
-        className="rounded bg-blood px-2.5 py-1 font-bold uppercase tracking-wide text-parchment hover:bg-blood-light"
+        className="btn btn-primary btn-sm"
       >
-        {savedNote ? "Saved ✓" : "Save"}
+        {savedNote ? (
+          <>
+            <Icon name="check" />
+            Saved
+          </>
+        ) : (
+          "Save"
+        )}
       </button>
       <span role="status" className="sr-only">
         {savedNote ? `${draft.name} saved to your characters.` : ""}
       </span>
-      <Link
-        to="/sheet/draft"
-        className="rounded border border-parchment/40 px-2.5 py-1 font-bold uppercase tracking-wide text-parchment hover:bg-white/10"
-      >
-        Sheet ↗
+      <Link to="/sheet/draft" className="btn btn-secondary btn-sm">
+        Sheet
+        <Icon name="arrow-up-right" className="h-3.5 w-3.5" />
       </Link>
     </div>
   );
@@ -215,25 +249,9 @@ function HeaderActions() {
 
 function Stat({ label, value }: { label: string; value: string | number }) {
   return (
-    <span className="rounded bg-white/10 px-2 py-1">
-      <span className="text-parchment/70">{label}</span>{" "}
-      <span className="font-bold">{value}</span>
+    <span className="flex items-baseline gap-1.5 rounded-md border border-line bg-surface-sunk px-2 py-1 font-mono text-xs">
+      <span className="text-2xs text-ink-muted">{label}</span>
+      <span className="font-medium text-ink">{value}</span>
     </span>
-  );
-}
-
-function PagerArrow({ side, target, onClick }: { side: "left" | "right"; target: string; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={`${side === "left" ? "Previous" : "Next"} step: ${target}`}
-      title={target}
-      className={`absolute top-1/2 z-10 hidden h-10 w-8 -translate-y-1/2 place-items-center rounded bg-blood/80 text-lg font-bold text-parchment shadow-sm hover:bg-blood md:grid ${
-        side === "left" ? "left-1" : "right-1"
-      }`}
-    >
-      {side === "left" ? "‹" : "›"}
-    </button>
   );
 }

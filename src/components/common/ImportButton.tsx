@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { useContentStore } from "../../store/contentStore";
+import { Icon } from "./Icon";
 import { FILE_KIND_LABELS, type FileKind, type ImportIssue, type ImportResult } from "../../data/importer";
 
 /** Only `.json` files are read; a 5eTools `data/` tree also holds READMEs and images. */
@@ -99,36 +100,44 @@ export function ImportButton() {
           e.target.value = "";
         }}
       />
-      <div className="flex gap-2">
+      <div className="grid grid-cols-[1fr_auto] gap-2">
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={busy !== null}
-          className="flex-1 rounded bg-blood px-3 py-2 text-sm font-semibold text-parchment hover:bg-blood-light disabled:opacity-60"
+          className="btn btn-primary"
         >
+          <Icon name="import" />
           Import JSON…
         </button>
         <button
           type="button"
           onClick={() => void loadSample()}
           disabled={busy !== null}
-          className="rounded border border-blood px-3 py-2 text-sm font-medium text-blood hover:bg-blood/10 disabled:opacity-60"
+          className="btn btn-secondary"
           title="Load the bundled Space Galleon + SRD-lite samples"
         >
           Sample
         </button>
+        <button
+          type="button"
+          onClick={() => folderInputRef.current?.click()}
+          disabled={busy !== null}
+          className="btn btn-secondary col-span-2"
+          title="Pick a 5eTools data/ folder; every JSON file inside (recursively) is imported"
+        >
+          <Icon name="folder" className="h-4 w-4 text-ink-muted" />
+          Import folder…
+        </button>
       </div>
-      <button
-        type="button"
-        onClick={() => folderInputRef.current?.click()}
-        disabled={busy !== null}
-        className="rounded border border-blood/60 px-3 py-1.5 text-sm font-medium text-blood hover:bg-blood/10 disabled:opacity-60"
-        title="Pick a 5eTools data/ folder; every JSON file inside (recursively) is imported"
-      >
-        Import folder…
-      </button>
       <div role="status" aria-live="polite">
-        {busy && <p className="text-xs text-ink/70">{busy}</p>}
+        {busy && (
+          <div className="mt-1 space-y-1.5" aria-busy="true">
+            <p className="text-xs text-ink-muted">{busy}</p>
+            <div className="skeleton h-2 w-full" />
+            <div className="skeleton h-2 w-2/3" />
+          </div>
+        )}
         {!busy && last && <ImportReport result={last.result} issues={last.issues} />}
       </div>
     </div>
@@ -161,8 +170,11 @@ function ImportReport({ result, issues }: { result: ImportResult; issues: Import
   if (warnings.length) headline.push(plural(warnings.length, "warning"));
 
   return (
-    <div className="text-xs text-ink/70">
-      <p>{headline.join(" · ")}</p>
+    <div className="mt-1 animate-fade-in rounded-lg border border-line bg-surface p-2.5 text-xs text-ink-muted">
+      <p className="flex items-center gap-1.5 font-medium text-ink">
+        <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${warnings.length ? "bg-warning-border" : "bg-success"}`} aria-hidden="true" />
+        {headline.join(" · ")}
+      </p>
       {kinds.length > 1 && (
         <p className="mt-0.5 text-ink-muted">
           Files: {kinds.map((k) => `${k.count} ${FILE_KIND_LABELS[k.kind]}`).join(", ")}
@@ -177,7 +189,7 @@ function ImportReport({ result, issues }: { result: ImportResult; issues: Import
             {typeCounts.map(([type, count]) => (
               <li key={type} className="flex justify-between gap-2">
                 <span className="truncate">{type}</span>
-                <span className="text-ink-muted">{count}</span>
+                <span className="font-mono text-ink-muted">{count}</span>
               </li>
             ))}
           </ul>
@@ -193,7 +205,7 @@ function ImportReport({ result, issues }: { result: ImportResult; issues: Import
             {[...warnings, ...notes].map((issue, i) => (
               <li
                 key={`${issue.fileName}:${i}`}
-                className={issue.level === "error" ? "text-blood" : issue.level === "warn" ? "text-ink" : "text-ink-muted"}
+                className={issue.level === "error" ? "text-accent" : issue.level === "warn" ? "text-ink" : "text-ink-muted"}
                 title={issue.fileName}
               >
                 <span className="font-medium">{issue.fileName.split("/").pop()}</span>: {issue.message}
@@ -225,7 +237,7 @@ export function LoadSampleButton() {
       type="button"
       onClick={() => void load()}
       disabled={busy}
-      className="rounded bg-blood px-4 py-2 text-sm font-semibold text-parchment hover:bg-blood-light disabled:opacity-60"
+      className="btn btn-primary"
     >
       {busy ? "Loading sample…" : "Load sample content"}
     </button>

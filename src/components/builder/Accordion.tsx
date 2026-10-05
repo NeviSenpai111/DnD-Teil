@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react";
+import { Icon } from "../common/Icon";
 
 /**
  * D&D-Beyond-style collapsible feature card: bold title, a muted subtitle line
@@ -29,32 +30,34 @@ export function Accordion({
   const toggle = () => (onToggle ? onToggle(!open) : setOpenState(!open));
 
   return (
-    <div className="rounded border border-blood/20 bg-white/50 shadow-sm">
+    <div
+      className={`rounded-xl border bg-surface transition-[border-color,box-shadow] duration-200 ease-snap ${
+        open ? "border-line-strong shadow-[var(--shadow-panel)]" : "border-line"
+      }`}
+    >
       <button
         type="button"
         onClick={toggle}
-        className="flex w-full items-center gap-2 px-3 py-2.5 text-left hover:bg-blood/5"
+        className="group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left transition-colors hover:bg-ink/[0.025]"
         aria-expanded={open}
       >
-        <span className="flex-1">
-          <span className="font-semibold text-ink">
+        <span className="min-w-0 flex-1">
+          <span className="font-medium tracking-tight text-ink">
             {title}
-            {badge && (
-              <span className="ml-2 rounded border border-blood/30 bg-blood/10 px-1.5 py-0.5 text-2xs font-semibold uppercase tracking-wide text-blood">
-                {badge}
-              </span>
-            )}
+            {badge && <span className="chip chip-accent ml-2 align-[0.125rem]">{badge}</span>}
           </span>
-          {subtitle && <span className="block text-xs text-ink-muted">{subtitle}</span>}
+          {subtitle && <span className="mt-0.5 block text-xs text-ink-muted">{subtitle}</span>}
         </span>
         <span
-          className={`text-ink-muted transition-transform ${open ? "rotate-180" : ""}`}
+          className={`grid h-7 w-7 shrink-0 place-items-center rounded-full border border-line text-ink-muted transition-[transform,color,border-color] duration-(--duration-settle) ease-spring group-hover:border-line-strong group-hover:text-ink ${
+            open ? "rotate-180" : ""
+          }`}
           aria-hidden
         >
-          ▾
+          <Icon name="chevron-down" className="h-4 w-4" />
         </span>
       </button>
-      {open && <div className="border-t border-blood/10 px-3 py-3 text-sm">{children}</div>}
+      {open && <div className="animate-settle-in border-t border-line px-4 py-4 text-sm">{children}</div>}
     </div>
   );
 }

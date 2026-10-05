@@ -82,12 +82,13 @@ export function categoryLine(item?: Item): string {
   return specific && specific !== broad ? `${broad} · ${specific}` : broad;
 }
 
-export function itemIcon(item?: Item): string {
-  if (!item) return "🎒";
+/** Outline icon for an item's broad category (see `Icon`). */
+export function itemIcon(item?: Item): "sword" | "shield" | "pack" {
+  if (!item) return "pack";
   const code = itemTypeCode(item.type);
-  if (isWeapon(item)) return "⚔️";
-  if (code === "LA" || code === "MA" || code === "HA" || code === "S") return "🛡️";
-  return "🎒";
+  if (isWeapon(item)) return "sword";
+  if (code === "LA" || code === "MA" || code === "HA" || code === "S") return "shield";
+  return "pack";
 }
 
 export function formatWeight(lb: number): string {

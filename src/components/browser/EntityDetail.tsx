@@ -48,10 +48,10 @@ function OptionalFeatureDetail({ feature }: { feature: OptionalFeature }) {
   const prereqLevel = levelPrerequisite(feature);
 
   return (
-    <article className="mx-auto max-w-2xl rounded border border-blood/30 bg-parchment p-5 shadow">
-      <header className="border-b border-blood/30 pb-2">
-        <h2 className="text-2xl font-bold text-blood">{feature.name}</h2>
-        <p className="text-xs uppercase tracking-wide text-ink-muted">
+    <article className="detail">
+      <header className="detail-head">
+        <h2 className="detail-title">{feature.name}</h2>
+        <p className="eyebrow mt-2">
           {typeLine} · {feature.source}
         </p>
       </header>
@@ -60,7 +60,7 @@ function OptionalFeatureDetail({ feature }: { feature: OptionalFeature }) {
           <span className="font-semibold">Prerequisite:</span> level {prereqLevel}
         </p>
       )}
-      <div className="mt-3 text-sm">
+      <div className="prose-rules mt-5">
         {feature.entries ? (
           <Entries entries={feature.entries} />
         ) : (
@@ -74,14 +74,14 @@ function OptionalFeatureDetail({ feature }: { feature: OptionalFeature }) {
 function GenericCard({ entity, entries }: { entity: ImportedEntity; entries?: Entry[] }) {
 
   return (
-    <article className="mx-auto max-w-2xl rounded border border-blood/30 bg-parchment p-5 shadow">
-      <header className="border-b border-blood/30 pb-2">
-        <h2 className="text-2xl font-bold text-blood">{entity.name}</h2>
-        <p className="text-xs uppercase tracking-wide text-ink-muted">
+    <article className="detail">
+      <header className="detail-head">
+        <h2 className="detail-title">{entity.name}</h2>
+        <p className="eyebrow mt-2">
           {entity.__type} · {entity.source}
         </p>
       </header>
-      <div className="mt-3 text-sm">
+      <div className="prose-rules mt-5">
         {entries ? (
           <Entries entries={entries} />
         ) : (

@@ -21,6 +21,7 @@ import { ABILITY_NAMES, type Ability } from "../../engine/constants";
 import { Accordion, ordinal, subtitleParts } from "./Accordion";
 import { EntityPicker } from "./EntityPicker";
 import { SkillChoiceSelects } from "./SkillChoices";
+import { Icon } from "../common/Icon";
 import { AsiSlot } from "./AsiSlot";
 import { SpellsPanel } from "./SpellsPanel";
 import { ExpertiseSelects, OptionalFeaturePicker, WeaponMasteryPicker } from "./FeatureChoices";
@@ -39,7 +40,7 @@ export function PageClass() {
   if (draft.classes.length === 0) {
     return (
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-ink">Choose a Class</h2>
+        <h2 className="text-2xl font-semibold tracking-tight text-ink">Choose a Class</h2>
         <EntityPicker
           items={listByType(entities, "class")}
           selected={undefined}
@@ -55,22 +56,22 @@ export function PageClass() {
   return (
     <div className="space-y-6">
       {/* Character Level + HP summary row */}
-      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-blood/15 pb-3">
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-line pb-3">
         <div>
-          <h2 className="text-xl font-bold text-ink">Character Level: {characterLevel(draft)}</h2>
+          <h2 className="text-xl font-semibold tracking-tight text-ink">Character Level: {characterLevel(draft)}</h2>
           <p className="text-sm text-ink-muted">Milestone Advancement</p>
         </div>
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded border border-blood/20 bg-white/60 px-3 py-2 text-sm shadow-sm">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-line bg-surface-sunk py-2 pl-3.5 pr-2 text-sm">
           <span>
-            <span className="font-bold">Max Hit Points:</span> {derived.maxHp ?? "—"}
+            <span className="text-ink-muted">Max Hit Points:</span> <span className="font-mono font-medium">{derived.maxHp ?? "—"}</span>
           </span>
           <span>
-            <span className="font-bold">Hit Dice:</span> {derived.hitDie ?? "—"}
+            <span className="text-ink-muted">Hit Dice:</span> <span className="font-mono font-medium">{derived.hitDie ?? "—"}</span>
           </span>
           <button
             type="button"
             onClick={() => setHpOpen(true)}
-            className="rounded bg-blood px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-parchment hover:bg-blood-light"
+            className="btn btn-primary btn-sm"
           >
             Manage HP
           </button>
@@ -119,10 +120,10 @@ function ClassSection({
 
   if (!classData) {
     return (
-      <p className="rounded border border-warning-border/60 bg-warning-surface p-2 text-sm">
+      <p className="rounded-lg border border-warning-border/50 bg-warning-surface px-3 py-2.5 text-sm">
         <strong>{choice.name}</strong> ({choice.source}) isn't in the imported content — import its
         class file or{" "}
-        <button type="button" onClick={() => removeClass(classIndex)} className="font-semibold text-blood underline">
+        <button type="button" onClick={() => removeClass(classIndex)} className="font-semibold text-accent underline">
           remove it
         </button>
         .
@@ -134,19 +135,16 @@ function ClassSection({
     <section className="space-y-4">
       {/* class header: icon, name, level select, remove */}
       <div className="flex flex-wrap items-center gap-3">
-        <div
-          className="grid h-11 w-11 place-items-center rounded border border-blood/30 bg-blood/10 text-xl"
-          aria-hidden
-        >
-          ⚔️
+        <div className="grid h-11 w-11 place-items-center rounded-xl border border-line bg-surface-sunk text-ink-muted">
+          <Icon name={classData.spellcastingAbility ? "book" : "sword"} className="h-5 w-5" />
         </div>
-        <h3 className="text-2xl font-bold text-ink">{classData.name}</h3>
-        <label className="ml-auto flex items-center gap-2 text-sm font-semibold">
+        <h3 className="text-2xl font-semibold tracking-tight text-ink">{classData.name}</h3>
+        <label className="ml-auto flex items-center gap-2 text-sm font-medium text-ink-muted">
           Level
           <select
             value={choice.level}
             onChange={(e) => setClassLevel(classIndex, Number(e.target.value))}
-            className="rounded border border-ink/20 bg-white px-2 py-1"
+            className="field field-sm"
           >
             {Array.from({ length: 20 }, (_, i) => i + 1).map((l) => (
               <option key={l} value={l}>
@@ -160,24 +158,22 @@ function ClassSection({
           onClick={() => removeClass(classIndex)}
           title="Remove class"
           aria-label={`Remove ${classData.name}`}
-          className="grid h-9 w-9 place-items-center rounded text-xl font-bold text-blood hover:bg-blood/10 hover:text-blood-light"
+          className="btn btn-ghost btn-icon hover:text-accent"
         >
-          ✕
+          <Icon name="close" />
         </button>
       </div>
 
       {/* CLASS FEATURES / SPELLS sub-tabs */}
-      <nav className="flex gap-5 border-b border-blood/15 text-sm font-bold uppercase tracking-wide">
+      <nav className="segmented">
         {(["features", "spells"] as const).map((t) => (
           <button
             key={t}
             type="button"
             onClick={() => setTab(t)}
-            className={`-mb-px border-b-2 pb-1.5 ${
-              tab === t ? "border-blood text-blood" : "border-transparent text-ink-muted hover:text-ink"
-            }`}
+            aria-current={tab === t ? "true" : undefined}
           >
-            {t === "features" ? "Class Features" : "Spells"} {tab === t ? "▴" : "▾"}
+            {t === "features" ? "Class Features" : "Spells"}
           </button>
         ))}
       </nav>
@@ -211,11 +207,11 @@ function AddAnotherClass() {
   if (options.length === 0) return null;
 
   return (
-    <div className="space-y-3 border-t border-blood/15 pt-4">
+    <div className="space-y-3 border-t border-line pt-4">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="rounded border border-blood/40 px-4 py-2 text-sm font-bold uppercase tracking-wide text-blood hover:bg-blood/10"
+        className="btn btn-secondary"
       >
         + Add Another Class
       </button>
@@ -226,7 +222,7 @@ function AddAnotherClass() {
             class; spell slots are shared across casting classes.
           </p>
           {blocked && (
-            <p className="rounded border border-warning-border/60 bg-warning-surface p-2 text-sm">
+            <p className="rounded-lg border border-warning-border/50 bg-warning-surface px-3 py-2.5 text-sm">
               {blocked}
             </p>
           )}
@@ -407,7 +403,7 @@ function FeaturesTab({
             defaultOpen={picks.length < def.count}
           >
             {feature?.entries && (
-              <div className="mb-2 text-sm text-ink/70">
+              <div className="mb-2 text-sm text-ink-muted">
                 <Entries entries={feature.entries} />
               </div>
             )}
@@ -434,7 +430,7 @@ function FeaturesTab({
                 {(() => {
                   const feature = gainedAll.find((f) => /^weapon mastery$/i.test(f.name));
                   return feature?.entries ? (
-                    <div className="mb-2 text-sm text-ink/70">
+                    <div className="mb-2 text-sm text-ink-muted">
                       <Entries entries={feature.entries} />
                     </div>
                   ) : null;
@@ -458,7 +454,7 @@ function FeaturesTab({
             defaultOpen={(draft.expertiseChoices[key] ?? []).length < 2}
           >
             {f.entries && (
-              <div className="mb-2 text-sm text-ink/70">
+              <div className="mb-2 text-sm text-ink-muted">
                 <Entries entries={f.entries} />
               </div>
             )}
@@ -505,21 +501,19 @@ function HitPointsPanel({ classData, totalLevel }: { classData: ClassData; total
 
   return (
     <div className="space-y-2">
-      <p className="text-ink/70">
+      <p className="text-ink-muted">
         <strong>Hit Die:</strong> d{faces} · level 1 grants {faces} + your Constitution modifier;
         later levels add each class's die average or a roll.
       </p>
       {totalLevel > 1 && (
         <>
-          <div className="flex gap-2">
+          <div className="segmented">
             {(["average", "rolled"] as const).map((mode) => (
               <button
                 key={mode}
                 type="button"
                 onClick={() => setHpMode(mode)}
-                className={`rounded border px-2 py-1 text-xs ${
-                  draft.hpMode === mode ? "border-blood bg-blood/10 font-semibold" : "border-ink/20"
-                }`}
+                aria-current={draft.hpMode === mode ? "true" : undefined}
               >
                 {mode === "average" ? "Average HP" : "Rolled HP"}
               </button>
@@ -540,7 +534,7 @@ function HitPointsPanel({ classData, totalLevel }: { classData: ClassData; total
                       rolls[i] = Number(e.target.value) || 0;
                       setHpRolls(rolls);
                     }}
-                    className="ml-1 w-14 rounded border border-ink/20 px-1 py-0.5"
+                    className="field field-sm ml-1 w-14 font-mono"
                   />
                 </label>
               ))}
@@ -570,13 +564,13 @@ function ProficienciesPanel({ classData }: { classData: ClassData }) {
 
   return (
     <div className="space-y-3">
-      <dl className="space-y-1">
+      <dl className="detail-facts mt-0">
         {rows
           .filter(([, v]) => v)
           .map(([label, value]) => (
-            <div key={label} className="text-sm">
-              <dt className="inline font-semibold">{label}: </dt>
-              <dd className="inline text-ink/70">{value}</dd>
+            <div key={label}>
+              <dt>{label}: </dt>
+              <dd>{value}</dd>
             </div>
           ))}
       </dl>
@@ -588,11 +582,11 @@ function ProficienciesPanel({ classData }: { classData: ClassData }) {
 function HigherLevels({ features }: { features: { name: string; level: number; entries?: Entry[] }[] }) {
   return (
     <Accordion title={`Available at Higher Levels (${features.length})`}>
-      <ul className="space-y-1 text-sm text-ink/70">
+      <ul className="space-y-1 text-sm text-ink-muted">
         {features.map((f, i) => (
-          <li key={`${f.name}:${i}`} className="flex justify-between gap-2 border-b border-ink/5 pb-1">
+          <li key={`${f.name}:${i}`} className="flex justify-between gap-2 border-b border-line pb-1.5 last:border-0">
             <span>{f.name}</span>
-            <span className="text-xs uppercase text-ink-muted">{ordinal(f.level)} level</span>
+            <span className="chip">{ordinal(f.level)} level</span>
           </li>
         ))}
       </ul>

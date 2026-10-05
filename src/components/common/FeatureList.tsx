@@ -26,11 +26,11 @@ export function FeatureList({ features }: { features: FeatureLike[] }) {
         .sort((a, b) => a[0] - b[0])
         .map(([level, items]) => (
           <div key={level}>
-            <h4 className="text-xs font-bold uppercase tracking-wide text-ink-muted">Level {level}</h4>
+            <h4 className="eyebrow">Level {level}</h4>
             <div className="space-y-2">
               {items.map((f) => (
                 <div key={f.name}>
-                  <h5 className="font-semibold text-blood">{f.name}</h5>
+                  <h5 className="font-semibold tracking-tight text-ink">{f.name}</h5>
                   {f.entries && <Entries entries={f.entries} />}
                 </div>
               ))}

@@ -23,7 +23,7 @@ export function LanguageChoiceSelects({ prefixes }: { prefixes: string[] }) {
         const picks = draft.languageChoices[def.key] ?? [];
         return (
           <div key={def.key}>
-            <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
+            <p className="eyebrow">
               {def.origin}: choose {def.count} language{def.count === 1 ? "" : "s"} ({picks.length}/
               {def.count})
             </p>
@@ -39,7 +39,7 @@ export function LanguageChoiceSelects({ prefixes }: { prefixes: string[] }) {
                     else next.splice(slot, 1);
                     setLanguageChoice(def.key, next.filter(Boolean).slice(0, def.count));
                   }}
-                  className="rounded border border-ink/20 bg-white px-2 py-1 text-sm"
+                  className="field field-sm"
                 >
                   <option value="">— choose a language —</option>
                   {def.from
