@@ -50,6 +50,7 @@ import { schoolName } from "../common/spellDisplay";
 import { formatWeight } from "../common/itemDisplay";
 import { ItemDetail } from "../browser/ItemDetail";
 import { SpellDetail } from "../browser/SpellDetail";
+import { Icon } from "../common/Icon";
 
 const TABS = ["Actions", "Spells", "Inventory", "Features & Traits", "Background", "Notes", "Extras"] as const;
 type Tab = (typeof TABS)[number];
@@ -113,22 +114,23 @@ export function FullSheet({ character }: { character: Character }) {
 
   return (
     <article className="space-y-4">
-      <header className="flex items-start justify-between gap-2 rounded border border-blood/30 bg-parchment p-4 shadow-sm">
-        <div>
-          <h2 className="text-2xl font-bold text-blood">{character.name}</h2>
-          <p className="text-sm text-ink/70">{subtitle}</p>
+      <header className="panel flex flex-wrap items-end justify-between gap-x-4 gap-y-3 p-5 sm:px-6">
+        <div className="detail-head min-w-0 flex-1 pb-3">
+          <h1 className="detail-title">{character.name}</h1>
+          <p className="mt-1 text-sm text-ink-muted">{subtitle}</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 pb-3">
           <AdvToggle mode={rollMode} onChange={setRollMode} />
           <LevelUp character={character} />
         </div>
       </header>
 
-      <section className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+      <section className="stagger grid grid-cols-3 gap-2.5 sm:grid-cols-6">
         {ABILITIES.map((ab) => (
           <AbilityCard
             key={ab}
             label={ABILITY_NAMES[ab]}
+            abbr={ab.toUpperCase()}
             mod={derived.mods[ab]}
             score={derived.abilities[ab]}
             onRoll={() => rollCheck(`${ABILITY_NAMES[ab]} Check`, derived.mods[ab])}
@@ -136,7 +138,7 @@ export function FullSheet({ character }: { character: Character }) {
         ))}
       </section>
 
-      <section className="grid grid-cols-3 gap-2 text-center text-sm sm:grid-cols-6">
+      <section className="grid grid-cols-3 gap-2.5 text-sm sm:grid-cols-6">
         <Chip label="Prof" value={formatMod(derived.pb)} />
         <Chip
           label="Speed"
@@ -156,15 +158,16 @@ export function FullSheet({ character }: { character: Character }) {
             onClick={() => setHpOpen(!hpOpen)}
             aria-label="Hit Points"
             title={derived.hitDie ?? undefined}
-            className={`rounded border p-2 text-center hover:bg-blood/5 ${
-              hpOpen ? "border-blood bg-blood/10" : "border-blood/20 bg-white/50"
+            aria-expanded={hpOpen}
+            className={`rounded-xl border px-3 py-2.5 text-left transition-colors ${
+              hpOpen ? "row-selected border-accent/40" : "border-line bg-surface hover:border-line-strong"
             }`}
           >
-            <div className="text-[10px] font-bold uppercase tracking-wide text-ink/60">HP</div>
-            <div className={`text-base font-bold ${currentHp === 0 ? "text-blood" : ""}`}>
+            <div className="eyebrow">HP</div>
+            <div className={`mt-0.5 font-mono text-base font-medium ${currentHp === 0 ? "text-accent" : ""}`}>
               {currentHp}/{maxHp}
               {character.play.tempHp > 0 && (
-                <span className="ml-1 text-xs font-semibold text-ink/50">
+                <span className="ml-1 text-xs text-ink-muted">
                   +{character.play.tempHp}
                 </span>
               )}
@@ -196,16 +199,15 @@ export function FullSheet({ character }: { character: Character }) {
 
         <Skills derived={derived} onRoll={rollCheck} />
 
-        <div className="rounded border border-blood/30 bg-parchment p-3 shadow-sm">
-          <nav className="mb-3 flex flex-wrap gap-1 border-b border-blood/20 pb-2">
+        <div className="panel min-w-0 p-4 pt-1">
+          <nav className="-mx-1 mb-4 flex gap-0.5 overflow-x-auto border-b border-line">
             {TABS.map((t) => (
               <button
                 key={t}
                 type="button"
                 onClick={() => setTab(t)}
-                className={`rounded px-2 py-1 text-xs font-semibold uppercase tracking-wide ${
-                  t === tab ? "bg-blood text-parchment" : "text-ink/60 hover:bg-blood/10"
-                }`}
+                aria-current={t === tab ? "true" : undefined}
+                className="tab"
               >
                 {t}
               </button>
@@ -224,23 +226,24 @@ export function FullSheet({ character }: { character: Character }) {
       {lastRoll && (
         <aside
           role="status"
-          className="fixed bottom-4 right-4 z-20 w-60 rounded border-2 border-blood/50 bg-parchment p-3 shadow-lg print:hidden"
+          key={`${lastRoll.label}:${lastRoll.total}:${lastRoll.detail}`}
+          className="fixed bottom-4 right-4 z-20 w-64 animate-settle-in rounded-xl border border-line bg-surface p-4 shadow-xl print:hidden"
         >
           <div className="flex items-start justify-between gap-2">
-            <span className="text-xs font-bold uppercase tracking-wide text-ink/60">
+            <span className="eyebrow">
               {lastRoll.label}
             </span>
             <button
               type="button"
               onClick={() => setLastRoll(undefined)}
               aria-label="Dismiss roll"
-              className="text-ink/50 hover:text-blood"
+              className="btn btn-ghost btn-icon -mr-2 -mt-2 min-h-8 min-w-8"
             >
-              ✕
+              <Icon name="close" />
             </button>
           </div>
-          <div className="text-3xl font-bold text-blood">{lastRoll.total}</div>
-          <div className="text-xs text-ink/60">{lastRoll.detail}</div>
+          <div className="mt-1 font-mono text-4xl font-medium tracking-tight text-ink">{lastRoll.total}</div>
+          <div className="mt-1 font-mono text-xs text-ink-muted">{lastRoll.detail}</div>
         </aside>
       )}
     </article>
@@ -268,8 +271,8 @@ function EffectsStrip({ character }: { character: Character }) {
     }));
 
   return (
-    <section className="flex flex-wrap items-center gap-2 rounded border border-blood/20 bg-white/40 p-2 text-sm print:hidden">
-      <span className="text-[10px] font-bold uppercase tracking-wide text-ink/50">Effects</span>
+    <section className="panel flex flex-wrap items-center gap-2 px-4 py-2.5 text-sm print:hidden">
+      <span className="eyebrow">Effects</span>
       {candidates.map((f) => {
         const active = character.play.activeEffects.includes(f.name);
         return (
@@ -279,10 +282,10 @@ function EffectsStrip({ character }: { character: Character }) {
             aria-pressed={active}
             onClick={() => toggle(f.name)}
             title={`AC ${f.base} + ${f.abilities.join("/")} while unarmored — toggle when cast`}
-            className={`rounded-full border px-2.5 py-0.5 text-xs font-semibold ${
+            className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
               active
-                ? "border-blood bg-blood text-parchment"
-                : "border-ink/30 text-ink/60 hover:border-blood/40 hover:text-blood"
+                ? "border-accent bg-accent text-on-accent"
+                : "border-line-strong text-ink-muted hover:text-ink"
             }`}
           >
             {f.name}
@@ -296,7 +299,7 @@ function EffectsStrip({ character }: { character: Character }) {
 /** Advantage / disadvantage toggle for every d20 roll on the sheet. */
 function AdvToggle({ mode, onChange }: { mode: RollMode; onChange: (mode: RollMode) => void }) {
   return (
-    <span className="flex overflow-hidden rounded border border-ink/30 text-[10px] font-bold uppercase tracking-wide print:hidden">
+    <span className="segmented print:hidden">
       {(["advantage", "disadvantage"] as const).map((m) => (
         <button
           key={m}
@@ -304,9 +307,7 @@ function AdvToggle({ mode, onChange }: { mode: RollMode; onChange: (mode: RollMo
           aria-pressed={mode === m}
           title={`Roll d20s with ${m}`}
           onClick={() => onChange(mode === m ? "normal" : m)}
-          className={`px-2 py-1 ${
-            mode === m ? "bg-blood text-parchment" : "text-ink/60 hover:bg-blood/10"
-          }`}
+          className="px-2.5 py-1 text-xs"
         >
           {m === "advantage" ? "Adv" : "Dis"}
         </button>
@@ -372,23 +373,23 @@ function ExtrasTab({ character }: { character: Character }) {
         <AddButton open={adding} onClick={() => setAdding(!adding)} label="Add Creature" />
       </div>
       {adding && (
-        <div className="rounded border border-blood/20 bg-white/50 p-2 print:hidden">
+        <div className="rounded-lg border border-line bg-surface-sunk p-3 print:hidden">
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search creatures to add…"
-            className="w-full rounded border border-ink/20 bg-white px-2 py-1 text-sm"
+            className="w-full field field-sm"
             autoFocus
           />
           {query && (
-            <ul className="mt-1 max-h-40 overflow-y-auto rounded border border-blood/15 bg-white/70">
-              {matches.length === 0 && <li className="px-2 py-1 text-sm text-ink/50">No matches.</li>}
+            <ul className="mt-1.5 max-h-48 animate-fade-in overflow-y-auto rounded-lg border border-line bg-surface p-1 shadow-[var(--shadow-lg)]">
+              {matches.length === 0 && <li className="px-2 py-1 text-sm text-ink-muted">No matches.</li>}
               {matches.map((m) => (
                 <li key={`${m.name}|${m.source}`}>
                   <button
                     type="button"
                     onClick={() => addExtra({ name: m.name, source: m.source })}
-                    className="block w-full px-2 py-1 text-left text-sm hover:bg-blood/10"
+                    className="block w-full rounded-md px-2.5 py-1.5 text-left text-sm hover:bg-ink/5"
                   >
                     {m.name}
                   </button>
@@ -447,23 +448,24 @@ function MiniStatblock({
   );
 
   return (
-    <section className="rounded border border-blood/30 bg-white/50 p-3">
+    <section className="rounded-xl border border-line bg-surface p-4">
       <div className="flex items-start justify-between gap-2">
-        <h4 className="font-bold text-blood">{name}</h4>
+        <h3 className="font-semibold tracking-tight text-ink">{name}</h3>
         <button
           type="button"
           onClick={onRemove}
           title="Remove creature"
-          className="text-blood hover:text-blood-light print:hidden"
+          aria-label={`Remove ${name}`}
+          className="btn btn-ghost btn-icon min-h-8 min-w-8 hover:text-accent print:hidden"
         >
-          ✕
+          <Icon name="close" />
         </button>
       </div>
       {!entity ? (
-        <p className="text-sm text-ink/50">Not in the imported content.</p>
+        <p className="text-sm text-ink-muted">Not in the imported content.</p>
       ) : (
         <>
-          <p className="text-sm text-ink/70">
+          <p className="text-sm text-ink-muted">
             {ac && (
               <>
                 <strong>AC</strong> {ac} ·{" "}
@@ -481,14 +483,14 @@ function MiniStatblock({
               </>
             )}
           </p>
-          <p className="text-xs uppercase tracking-wide text-ink/50">
+          <p className="eyebrow">
             {ABILITIES.map((ab) => `${ab} ${m[ab] ?? "—"}`).join(" · ")}
           </p>
           {blocks.length > 0 && (
-            <div className="mt-2 space-y-1 border-t border-ink/10 pt-2 text-sm">
+            <div className="mt-2 space-y-1 border-t border-line pt-2 text-sm">
               {blocks.map((b, i) => (
                 <div key={`${b.name}-${i}`}>
-                  <span className="font-semibold text-blood">{b.name}. </span>
+                  <span className="font-semibold text-ink">{b.name}. </span>
                   {b.entries && (
                     <span className="[&>*]:inline">
                       <Entries entries={b.entries} />
@@ -508,28 +510,34 @@ function MiniStatblock({
 
 function AbilityCard({
   label,
+  abbr,
   mod,
   score,
   onRoll,
 }: {
   label: string;
+  /** "STR", "DEX", … — shown instead of the full name where cards are too narrow. */
+  abbr: string;
   mod: number;
   score: number;
   onRoll: () => void;
 }) {
   return (
-    <div className="rounded-lg border-2 border-blood/40 bg-white/60 px-2 pb-3 pt-1 text-center">
-      <div className="text-[10px] font-bold uppercase tracking-wide text-ink/60">{label}</div>
+    <div className="rounded-xl border border-line bg-surface px-2 pb-3 pt-2.5 text-center shadow-sm">
+      <div className="eyebrow" title={label}>
+        <span className="md:hidden">{abbr}</span>
+        <span className="max-md:hidden">{label}</span>
+      </div>
       <button
         type="button"
         onClick={onRoll}
         aria-label={`Roll ${label} check`}
         title="Roll an ability check"
-        className="w-full text-2xl font-bold leading-tight hover:text-blood"
+        className="mt-1 w-full rounded-md font-mono text-2xl font-medium leading-tight tracking-tight transition-colors hover:text-accent"
       >
         {formatMod(mod)}
       </button>
-      <div className="mx-auto -mb-4 mt-1 w-9 rounded-full border border-blood/40 bg-parchment py-0.5 text-sm font-semibold">
+      <div className="mx-auto mt-2 w-10 rounded-full border border-line bg-surface-sunk py-0.5 font-mono text-xs text-ink-muted">
         {score}
       </div>
     </div>
@@ -538,17 +546,17 @@ function AbilityCard({
 
 function Chip({ label, value, title }: { label: string; value: string | number; title?: string }) {
   return (
-    <div className="rounded border border-blood/20 bg-white/50 p-2" title={title}>
-      <div className="text-[10px] font-bold uppercase tracking-wide text-ink/60">{label}</div>
-      <div className="text-base font-bold">{value}</div>
+    <div className="rounded-xl border border-line bg-surface px-3 py-2.5" title={title}>
+      <div className="eyebrow">{label}</div>
+      <div className="mt-0.5 font-mono text-base font-medium">{value}</div>
     </div>
   );
 }
 
 function Panel({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className="rounded border border-blood/30 bg-parchment p-3 shadow-sm">
-      <h3 className="mb-2 text-center text-xs font-bold uppercase tracking-wide text-blood">{title}</h3>
+    <section className="panel p-4">
+      <h2 className="eyebrow mb-3">{title}</h2>
       {children}
     </section>
   );
@@ -573,7 +581,7 @@ function SavingThrows({
               onClick={() => onRoll(`${ABILITY_NAMES[ab]} Save`, derived.saves[ab].mod)}
               aria-label={`Roll ${ABILITY_NAMES[ab]} save`}
               title="Roll this saving throw"
-              className="font-semibold tabular-nums hover:text-blood hover:underline"
+              className="font-mono font-medium hover:text-accent hover:underline"
             >
               {formatMod(derived.saves[ab].mod)}
             </button>
@@ -595,13 +603,13 @@ function Senses({ derived }: { derived: ReturnType<typeof deriveFromCharacter> }
       <ul className="space-y-0.5 text-sm">
         {rows.map(([label, value]) => (
           <li key={label} className="flex items-center gap-2">
-            <span className="w-7 text-center font-semibold tabular-nums">{value}</span>
-            <span className="flex-1 text-ink/70">{label}</span>
+            <span className="w-7 text-center font-mono font-medium">{value}</span>
+            <span className="flex-1 text-ink-muted">{label}</span>
           </li>
         ))}
       </ul>
       {derived.senses.length > 0 && (
-        <p className="mt-1 border-t border-ink/10 pt-1 text-sm text-ink/70">
+        <p className="mt-1 border-t border-line pt-1 text-sm text-ink-muted">
           {derived.senses.join(", ")}
         </p>
       )}
@@ -619,10 +627,10 @@ function Defenses({ derived }: { derived: ReturnType<typeof deriveFromCharacter>
   if (shown.length === 0) return null;
   return (
     <Panel title="Defenses">
-      <ul className="space-y-1 text-xs text-ink/70">
+      <ul className="space-y-1 text-xs text-ink-muted">
         {shown.map(([label, values]) => (
           <li key={label}>
-            <span className="font-semibold uppercase text-ink/50">{label}</span>
+            <span className="eyebrow">{label}</span>
             <div className="capitalize">{values.join(", ")}</div>
           </li>
         ))}
@@ -643,10 +651,10 @@ function Proficiencies({ derived }: { derived: ReturnType<typeof deriveFromChara
   if (shown.length === 0) return null;
   return (
     <Panel title="Proficiencies & Languages">
-      <ul className="space-y-1 text-xs text-ink/70">
+      <ul className="space-y-1 text-xs text-ink-muted">
         {shown.map(([label, values]) => (
           <li key={label}>
-            <span className="font-semibold uppercase text-ink/50">{label}</span>
+            <span className="eyebrow">{label}</span>
             <div>{values.join(", ")}</div>
           </li>
         ))}
@@ -671,12 +679,12 @@ function Skills({
           return (
             <li key={skill.id} className="flex items-center gap-2">
               <ProfDot on={s.proficient} expertise={s.expertise} />
-              <span className="w-8 text-[10px] uppercase text-ink/40">{skill.ability}</span>
+              <span className="w-8 font-mono text-2xs uppercase text-ink-muted">{skill.ability}</span>
               <span className="flex-1">
                 {skill.name}
                 {advSources && (
                   <span
-                    className="ml-1 align-middle text-[9px] font-bold uppercase text-blood"
+                    className="ml-1 align-middle eyebrow"
                     title={`Advantage: ${advSources.join(", ")}`}
                   >
                     adv
@@ -688,7 +696,7 @@ function Skills({
                 onClick={() => onRoll(skill.name, s.mod, !!advSources)}
                 aria-label={`Roll ${skill.name}`}
                 title={advSources ? "Roll with advantage" : "Roll this skill check"}
-                className="font-semibold tabular-nums hover:text-blood hover:underline"
+                className="font-mono font-medium hover:text-accent hover:underline"
               >
                 {formatMod(s.mod)}
               </button>
@@ -742,21 +750,21 @@ function ActionsTab({
     <div className="space-y-4">
       <ResourceTracker character={character} />
       <div>
-        <div className="grid grid-cols-[1fr_auto_auto] gap-x-3 border-b border-blood/20 pb-1 text-[10px] font-bold uppercase text-ink/50">
+        <div className="eyebrow grid grid-cols-[1fr_auto_auto] gap-x-3 border-b border-line pb-1.5">
           <span>Attack</span>
           <span className="text-center">Hit/DC</span>
           <span>Damage</span>
         </div>
         <ul>
           {rows.map(({ item, line: l }, i) => (
-            <li key={`${l.name}-${i}`} className="border-b border-ink/10 py-1.5 text-sm">
+            <li key={`${l.name}-${i}`} className="border-b border-line py-1.5 text-sm">
               <div className="grid grid-cols-[1fr_auto_auto] items-center gap-x-3">
                 <span>
                   {item ? (
                     <button
                       type="button"
                       onClick={() => setExpanded(expanded === i ? undefined : i)}
-                      className="font-semibold hover:text-blood hover:underline"
+                      className="font-semibold hover:text-accent hover:underline"
                       title="Show item details"
                     >
                       {l.name}
@@ -764,7 +772,7 @@ function ActionsTab({
                   ) : (
                     <span className="font-semibold">{l.name}</span>
                   )}
-                  <span className="block text-[10px] uppercase text-ink/40">
+                  <span className="block font-mono text-2xs uppercase text-ink-muted">
                     {l.range}
                     {l.notes ? ` · ${l.notes}` : ""}
                   </span>
@@ -774,7 +782,7 @@ function ActionsTab({
                   onClick={() => onCheck(`${l.name} Attack`, parseHit(l.hit))}
                   aria-label={`Roll attack: ${l.name}`}
                   title="Roll to hit"
-                  className="rounded border border-ink/20 px-2 text-center font-semibold tabular-nums hover:border-blood hover:text-blood"
+                  className="rounded-md border border-line-strong px-2 text-center font-mono font-medium transition-colors hover:border-accent hover:text-accent"
                 >
                   {l.hit}
                 </button>
@@ -784,12 +792,12 @@ function ActionsTab({
                     onClick={() => onDamage(`${l.name} Damage`, l.damage)}
                     aria-label={`Roll damage: ${l.name}`}
                     title="Roll damage"
-                    className="text-left tabular-nums hover:text-blood hover:underline"
+                    className="text-left font-mono hover:text-accent hover:underline"
                   >
                     {l.damage}
                   </button>
                 ) : (
-                  <span className="tabular-nums">{l.damage}</span>
+                  <span className="font-mono">{l.damage}</span>
                 )}
               </div>
               {expanded === i && item && (
@@ -805,8 +813,8 @@ function ActionsTab({
       <CustomAttacks character={character} onCheck={onCheck} onDamage={onDamage} />
 
       <div>
-        <h4 className="mb-1 text-sm font-bold text-ink">Actions in Combat</h4>
-        <p className="border-l-2 border-blood/30 pl-2 text-sm text-ink/70">{ACTIONS_IN_COMBAT}</p>
+        <h3 className="mb-1.5 text-sm font-semibold tracking-tight text-ink">Actions in Combat</h3>
+        <p className="border-l-2 border-line pl-3 text-sm leading-relaxed text-ink-muted">{ACTIONS_IN_COMBAT}</p>
       </div>
     </div>
   );
@@ -846,57 +854,57 @@ function CustomAttacks({
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h4 className="text-sm font-bold text-ink">Custom Attacks</h4>
+        <h3 className="text-sm font-semibold tracking-tight text-ink">Custom Attacks</h3>
         <AddButton open={adding} onClick={() => setAdding(!adding)} label="Add Attack" />
       </div>
       {adding && (
-        <div className="mt-1 flex flex-wrap items-end gap-2 rounded border border-blood/20 bg-white/50 p-2 text-sm print:hidden">
-          <label className="text-xs text-ink/60">
+        <div className="mt-2 flex flex-wrap items-end gap-2 rounded-lg border border-line bg-surface-sunk p-3 text-sm print:hidden">
+          <label className="text-xs text-ink-muted">
             Name
             <input
               value={name}
               aria-label="Attack name"
               onChange={(e) => setName(e.target.value)}
-              className="block w-36 rounded border border-ink/20 bg-white px-2 py-1"
+              className="block w-36 field field-sm"
             />
           </label>
-          <label className="text-xs text-ink/60">
+          <label className="text-xs text-ink-muted">
             To hit
             <input
               type="number"
               value={hit}
               aria-label="Attack bonus"
               onChange={(e) => setHit(Number(e.target.value) || 0)}
-              className="block w-16 rounded border border-ink/20 bg-white px-2 py-1"
+              className="block w-16 field field-sm"
             />
           </label>
-          <label className="text-xs text-ink/60">
+          <label className="text-xs text-ink-muted">
             Damage
             <input
               value={damage}
               aria-label="Attack damage"
               placeholder="1d6+2 fire"
               onChange={(e) => setDamage(e.target.value)}
-              className="block w-32 rounded border border-ink/20 bg-white px-2 py-1"
+              className="block w-32 field field-sm"
             />
           </label>
           <button
             type="button"
             onClick={add}
-            className="rounded bg-blood px-3 py-1 text-xs font-bold uppercase text-parchment hover:bg-blood-light"
+            className="btn btn-primary btn-sm"
           >
             Add
           </button>
         </div>
       )}
       {character.customAttacks.length === 0 ? (
-        !adding && <p className="text-xs text-ink/50">None defined.</p>
+        !adding && <p className="text-xs text-ink-muted">None defined.</p>
       ) : (
         <ul>
           {character.customAttacks.map((a, i) => (
             <li
               key={`${a.name}-${i}`}
-              className="grid grid-cols-[1fr_auto_auto_auto] items-center gap-x-3 border-b border-ink/10 py-1.5 text-sm"
+              className="grid grid-cols-[1fr_auto_auto_auto] items-center gap-x-3 border-b border-line py-1.5 text-sm"
             >
               <span className="font-semibold">{a.name}</span>
               <button
@@ -904,7 +912,7 @@ function CustomAttacks({
                 onClick={() => onCheck(`${a.name} Attack`, a.hit)}
                 aria-label={`Roll attack: ${a.name}`}
                 title="Roll to hit"
-                className="rounded border border-ink/20 px-2 text-center font-semibold tabular-nums hover:border-blood hover:text-blood"
+                className="rounded-md border border-line-strong px-2 text-center font-mono font-medium transition-colors hover:border-accent hover:text-accent"
               >
                 {formatMod(a.hit)}
               </button>
@@ -914,20 +922,21 @@ function CustomAttacks({
                   onClick={() => onDamage(`${a.name} Damage`, a.damage)}
                   aria-label={`Roll damage: ${a.name}`}
                   title="Roll damage"
-                  className="text-left tabular-nums hover:text-blood hover:underline"
+                  className="text-left font-mono hover:text-accent hover:underline"
                 >
                   {a.damage}
                 </button>
               ) : (
-                <span className="tabular-nums">{a.damage || "—"}</span>
+                <span className="font-mono">{a.damage || "—"}</span>
               )}
               <button
                 type="button"
                 onClick={() => remove(i)}
                 title="Remove attack"
-                className="text-blood hover:text-blood-light print:hidden"
+                aria-label={`Remove ${a.name || "attack"}`}
+                className="btn btn-ghost btn-icon min-h-8 min-w-8 hover:text-accent print:hidden"
               >
-                ✕
+                <Icon name="close" />
               </button>
             </li>
           ))}
@@ -946,7 +955,7 @@ function ResourceTracker({ character }: { character: Character }) {
   if (resources.length === 0) return null;
 
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded border border-blood/20 bg-white/40 p-2 print:hidden">
+    <div className="flex flex-wrap items-center gap-3 rounded-lg border border-line bg-surface-sunk p-3 print:hidden">
       {resources.map((r) => (
         <SlotPips
           key={r.name}
@@ -1045,7 +1054,7 @@ function SpellsTab({ character }: { character: Character }) {
       <div className="flex items-start justify-between gap-2">
         <div className="space-y-1">
           {casters.length === 0 && byLevel.size === 0 && (
-            <p className="text-sm text-ink/50">Not a spellcaster.</p>
+            <p className="text-sm text-ink-muted">Not a spellcaster.</p>
           )}
           {casters.map((sc) => (
             <p key={sc.classIndex} className="text-sm">
@@ -1063,14 +1072,14 @@ function SpellsTab({ character }: { character: Character }) {
       </div>
 
       {adding && (
-        <div className="rounded border border-blood/20 bg-white/50 p-2 print:hidden">
+        <div className="rounded-lg border border-line bg-surface-sunk p-3 print:hidden">
           {casters.length > 1 && (
-            <label className="mb-1 flex items-center gap-2 text-xs text-ink/60">
+            <label className="mb-1 flex items-center gap-2 text-xs text-ink-muted">
               Add for
               <select
                 value={forClass ?? casters[0]?.className}
                 onChange={(e) => setForClass(e.target.value)}
-                className="rounded border border-ink/20 bg-white px-1 py-0.5 text-sm"
+                className="field field-sm"
               >
                 {casters.map((sc) => (
                   <option key={sc.classIndex} value={sc.className}>
@@ -1084,12 +1093,12 @@ function SpellsTab({ character }: { character: Character }) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search spells to add…"
-            className="w-full rounded border border-ink/20 bg-white px-2 py-1 text-sm"
+            className="w-full field field-sm"
             autoFocus
           />
           {query && (
-            <ul className="mt-1 max-h-40 overflow-y-auto rounded border border-blood/15 bg-white/70">
-              {matches.length === 0 && <li className="px-2 py-1 text-sm text-ink/50">No matches.</li>}
+            <ul className="mt-1.5 max-h-48 animate-fade-in overflow-y-auto rounded-lg border border-line bg-surface p-1 shadow-[var(--shadow-lg)]">
+              {matches.length === 0 && <li className="px-2 py-1 text-sm text-ink-muted">No matches.</li>}
               {matches.map((s) => {
                 const known = knownNames.has(s.name);
                 return (
@@ -1098,10 +1107,10 @@ function SpellsTab({ character }: { character: Character }) {
                       type="button"
                       disabled={known}
                       onClick={() => addSpell(s)}
-                      className="flex w-full justify-between px-2 py-1 text-left text-sm hover:bg-blood/10 disabled:opacity-40"
+                      className="flex w-full justify-between rounded-md px-2.5 py-1.5 text-left text-sm hover:bg-ink/5 disabled:opacity-40"
                     >
                       <span>{s.name}</span>
-                      <span className="text-[10px] uppercase text-ink/40">
+                      <span className="font-mono text-2xs uppercase text-ink-muted">
                         {known ? "added" : s.level === 0 ? "cantrip" : `lvl ${s.level}`}
                         {!known && s.school ? ` · ${schoolName(s.school)}` : ""}
                       </span>
@@ -1121,14 +1130,14 @@ function SpellsTab({ character }: { character: Character }) {
           .sort((a, b) => a[0] - b[0])
           .map(([level, spells]) => (
             <div key={level}>
-              <h4 className="text-xs font-bold uppercase tracking-wide text-blood">
+              <h3 className="eyebrow">
                 {levelLabel(level)}
                 {level === 0 && cantripDiceMultiplier(characterLevel(character)) > 1 && (
-                  <span className="ml-1 font-semibold normal-case text-ink/50">
+                  <span className="ml-1 font-semibold normal-case text-ink-muted">
                     · damage dice ×{cantripDiceMultiplier(characterLevel(character))}
                   </span>
                 )}
-              </h4>
+              </h3>
               <ul className="grid gap-0.5 sm:grid-cols-2">
                 {spells.map((s) => {
                   const open = expanded === s.ref.name;
@@ -1139,27 +1148,27 @@ function SpellsTab({ character }: { character: Character }) {
                           <button
                             type="button"
                             onClick={() => setExpanded(open ? undefined : s.ref.name)}
-                            className="text-left hover:text-blood hover:underline"
+                            className="text-left hover:text-accent hover:underline"
                             title="Show spell details"
                           >
                             {s.ref.name}
                           </button>
                           {s.tag && (
-                            <span className="ml-1 rounded border border-blood/40 bg-blood/10 px-1 text-[9px] font-semibold uppercase text-blood">
+                            <span className="chip chip-accent ml-1">
                               {s.tag}
                             </span>
                           )}
                           {s.spell?.meta?.ritual && (
-                            <span className="ml-1 rounded border border-ink/30 px-1 text-[9px] font-semibold uppercase text-ink/50">
+                            <span className="chip ml-1">
                               Ritual
                             </span>
                           )}
                         </span>
-                        <span className="text-[10px] uppercase text-ink/40">
+                        <span className="font-mono text-2xs uppercase text-ink-muted">
                           {s.spell &&
                             scaledCantripDice(s.spell, characterLevel(character)) && (
                               <span
-                                className="mr-1 font-semibold text-blood"
+                                className="mr-1 font-medium text-accent"
                                 title="Damage dice at your character level"
                               >
                                 {scaledCantripDice(s.spell, characterLevel(character))}
@@ -1173,19 +1182,19 @@ function SpellsTab({ character }: { character: Character }) {
                           {s.spell ? (
                             <SpellDetail spell={s.spell} embedded />
                           ) : (
-                            <p className="text-xs text-ink/50">
+                            <p className="text-xs text-ink-muted">
                               No imported spell data for this entry.
                             </p>
                           )}
                           {s.tag ? (
-                            <p className="text-[10px] text-ink/40 print:hidden">
+                            <p className="text-2xs text-ink-muted print:hidden">
                               Granted by a {s.tag.toLowerCase()} — manage it in the builder.
                             </p>
                           ) : (
                             <button
                               type="button"
                               onClick={() => removeSpell(s.ref)}
-                              className="text-xs text-blood underline print:hidden"
+                              className="text-xs text-accent underline print:hidden"
                             >
                               Remove spell
                             </button>
@@ -1273,26 +1282,26 @@ function InventoryTab({ character }: { character: Character }) {
       </div>
 
       {adding && (
-        <div className="rounded border border-blood/20 bg-white/50 p-2 print:hidden">
+        <div className="rounded-lg border border-line bg-surface-sunk p-3 print:hidden">
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search items to add…"
-            className="w-full rounded border border-ink/20 bg-white px-2 py-1 text-sm"
+            className="w-full field field-sm"
             autoFocus
           />
           {query && (
-            <ul className="mt-1 max-h-40 overflow-y-auto rounded border border-blood/15 bg-white/70">
-              {matches.length === 0 && <li className="px-2 py-1 text-sm text-ink/50">No matches.</li>}
+            <ul className="mt-1.5 max-h-48 animate-fade-in overflow-y-auto rounded-lg border border-line bg-surface p-1 shadow-[var(--shadow-lg)]">
+              {matches.length === 0 && <li className="px-2 py-1 text-sm text-ink-muted">No matches.</li>}
               {matches.map((i) => (
                 <li key={`${i.name}|${i.source}`}>
                   <button
                     type="button"
                     onClick={() => addItem({ name: i.name, source: i.source })}
-                    className="flex w-full justify-between px-2 py-1 text-left text-sm hover:bg-blood/10"
+                    className="flex w-full justify-between rounded-md px-2.5 py-1.5 text-left text-sm hover:bg-ink/5"
                   >
                     <span>{i.name}</span>
-                    <span className="text-[10px] uppercase text-ink/40">
+                    <span className="font-mono text-2xs uppercase text-ink-muted">
                       {itemTypeCode(i.type as string) ?? "item"}
                     </span>
                   </button>
@@ -1307,7 +1316,7 @@ function InventoryTab({ character }: { character: Character }) {
       {rows.length === 0 ? (
         <Empty>No items yet — use “+ Add Item” to search the imported gear.</Empty>
       ) : (
-        <ul className="divide-y divide-ink/10">
+        <ul className="divide-y divide-line">
           {rows.map(({ entry, i, item }) => {
             const code = itemTypeCode(item?.type);
             // Modifier-carrying wondrous items (AC bonuses, set-scores,
@@ -1324,7 +1333,7 @@ function InventoryTab({ character }: { character: Character }) {
                     <button
                       type="button"
                       onClick={() => setExpanded(open ? undefined : i)}
-                      className="flex-1 text-left hover:text-blood hover:underline"
+                      className="flex-1 text-left hover:text-accent hover:underline"
                       title="Show item details"
                     >
                       {entry.name}
@@ -1333,35 +1342,36 @@ function InventoryTab({ character }: { character: Character }) {
                     <span className="flex-1">{entry.name}</span>
                   )}
 
-                  <label className="flex items-center gap-1 text-xs text-ink/50 print:hidden">
+                  <label className="flex items-center gap-1 text-xs text-ink-muted print:hidden">
                     ×
                     <input
                       type="number"
                       min={1}
                       value={entry.quantity}
                       onChange={(e) => setQuantity(i, Number(e.target.value) || 1)}
-                      className="w-12 rounded border border-ink/20 bg-white px-1 py-0.5 text-center"
+                      className="w-12 field field-sm text-center"
                     />
                   </label>
                   {entry.quantity > 1 && (
-                    <span className="hidden text-xs text-ink/50 print:inline">×{entry.quantity}</span>
+                    <span className="hidden text-xs text-ink-muted print:inline">×{entry.quantity}</span>
                   )}
 
                   {equippable && (
                     <button
                       type="button"
                       onClick={() => toggleEquip(i)}
-                      className={`rounded border px-1.5 text-[10px] font-semibold uppercase print:hidden ${
+                      aria-pressed={entry.equipped}
+                      className={`rounded-full border px-2 py-px font-mono text-2xs uppercase transition-colors print:hidden ${
                         entry.equipped
-                          ? "border-blood bg-blood/10 text-blood"
-                          : "border-ink/30 text-ink/50 hover:border-blood/40 hover:text-blood"
+                          ? "border-accent/40 bg-accent/8 text-accent"
+                          : "border-line-strong text-ink-muted hover:text-ink"
                       }`}
                     >
                       {entry.equipped ? "Equipped" : "Equip"}
                     </button>
                   )}
                   {entry.equipped && (
-                    <span className="hidden rounded border border-blood/40 bg-blood/10 px-1.5 text-[10px] font-semibold uppercase text-blood print:inline-block">
+                    <span className="chip chip-accent hidden print:inline-flex">
                       Equipped
                     </span>
                   )}
@@ -1377,10 +1387,11 @@ function InventoryTab({ character }: { character: Character }) {
                             ? "Attunement limit reached (3 items)"
                             : "Attune to this item"
                       }
-                      className={`rounded border px-1.5 text-[10px] font-semibold uppercase print:hidden ${
+                      aria-pressed={entry.attuned}
+                      className={`rounded-full border px-2 py-px font-mono text-2xs uppercase transition-colors print:hidden ${
                         entry.attuned
-                          ? "border-blood bg-blood text-parchment"
-                          : "border-ink/30 text-ink/50 hover:border-blood/40 hover:text-blood disabled:cursor-default disabled:hover:border-ink/30 disabled:hover:text-ink/50"
+                          ? "border-accent bg-accent text-on-accent"
+                          : "border-line-strong text-ink-muted hover:text-ink disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:text-ink-muted"
                       }`}
                     >
                       {entry.attuned ? "Attuned" : "Attune"}
@@ -1390,10 +1401,11 @@ function InventoryTab({ character }: { character: Character }) {
                   <button
                     type="button"
                     onClick={() => removeItem(i)}
-                    className="text-blood hover:text-blood-light print:hidden"
+                    className="btn btn-ghost btn-icon min-h-8 min-w-8 hover:text-accent print:hidden"
                     title="Remove item"
+                    aria-label={`Remove ${entry.name}`}
                   >
-                    ✕
+                    <Icon name="close" />
                   </button>
                 </div>
                 {(item?.charges != null ||
@@ -1426,13 +1438,13 @@ function InventoryTab({ character }: { character: Character }) {
                       const targets = containers.filter((c) => !wouldCycle(entry, c.entry));
                       if (targets.length === 0) return null;
                       return (
-                        <label className="flex items-center gap-1 text-[10px] uppercase text-ink/50 print:hidden">
+                        <label className="flex items-center gap-1 text-2xs uppercase text-ink-muted print:hidden">
                           In
                           <select
                             value={entry.containedIn ?? ""}
                             aria-label={`Container for ${entry.name}`}
                             onChange={(e) => setContainedIn(i, e.target.value || undefined)}
-                            className="rounded border border-ink/20 bg-white px-1 py-0.5 normal-case"
+                            className="field field-sm normal-case"
                           >
                             <option value="">— carried —</option>
                             {targets.map((c) => (
@@ -1457,10 +1469,10 @@ function InventoryTab({ character }: { character: Character }) {
         </ul>
       )}
 
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-ink/10 pt-2">
-        <span className="text-[10px] font-bold uppercase tracking-wide text-ink/50">Currency</span>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-line pt-2">
+        <span className="eyebrow">Currency</span>
         {COINS.map((coin) => (
-          <label key={coin} className="flex items-center gap-1 text-xs uppercase text-ink/60">
+          <label key={coin} className="flex items-center gap-1 font-mono text-2xs uppercase text-ink-muted">
             {coin}
             <input
               type="number"
@@ -1471,15 +1483,15 @@ function InventoryTab({ character }: { character: Character }) {
                 const value = Math.max(0, Number(e.target.value) || 0);
                 updateSheet(character.id, (c) => ({ currency: { ...c.currency, [coin]: value } }));
               }}
-              className="w-14 rounded border border-ink/20 bg-white px-1 py-0.5 text-center print:border-0"
+              className="w-14 field field-sm text-center print:border-0"
             />
           </label>
         ))}
-        <span className="text-xs text-ink/50">≈ {currencyInGp(character.currency)} gp</span>
+        <span className="text-xs text-ink-muted">≈ {currencyInGp(character.currency)} gp</span>
       </div>
 
       <p
-        className={`text-xs ${totalWeight > capacity ? "font-semibold text-blood" : "text-ink/60"}`}
+        className={`text-xs ${totalWeight > capacity ? "font-semibold text-accent" : "text-ink-muted"}`}
         title="Carrying capacity: Strength × 15 lb."
       >
         Total Weight: {formatWeight(totalWeight)} / {capacity} lb.
@@ -1507,7 +1519,7 @@ function ContainerLoad({
   if (load === 0 && cap === undefined) return null;
   return (
     <span
-      className={`text-[10px] uppercase ${over ? "font-bold text-blood" : "text-ink/50"}`}
+      className={`font-mono text-2xs uppercase ${over ? "font-medium text-accent" : "text-ink-muted"}`}
       title={capacity.weightless ? "Contents weigh nothing while inside" : undefined}
     >
       holds {formatWeight(load)}
@@ -1548,8 +1560,8 @@ function CustomItemForm({ character }: { character: Character }) {
   };
 
   return (
-    <div className="mt-2 flex flex-wrap items-end gap-2 border-t border-ink/10 pt-2 text-sm">
-      <span className="text-[10px] font-bold uppercase tracking-wide text-ink/50">
+    <div className="mt-2 flex flex-wrap items-end gap-2 border-t border-line pt-2 text-sm">
+      <span className="eyebrow">
         Custom item
       </span>
       <input
@@ -1557,26 +1569,26 @@ function CustomItemForm({ character }: { character: Character }) {
         aria-label="Custom item name"
         placeholder="Name"
         onChange={(e) => setName(e.target.value)}
-        className="w-36 rounded border border-ink/20 bg-white px-2 py-1"
+        className="w-36 field field-sm"
       />
       <input
         value={weight}
         aria-label="Custom item weight"
         placeholder="lb."
         onChange={(e) => setWeight(e.target.value)}
-        className="w-16 rounded border border-ink/20 bg-white px-2 py-1"
+        className="w-16 field field-sm"
       />
       <input
         value={damage}
         aria-label="Custom item damage"
         placeholder="1d6 fire (optional)"
         onChange={(e) => setDamage(e.target.value)}
-        className="w-36 rounded border border-ink/20 bg-white px-2 py-1"
+        className="w-36 field field-sm"
       />
       <button
         type="button"
         onClick={add}
-        className="rounded bg-blood px-3 py-1 text-xs font-bold uppercase text-parchment hover:bg-blood-light"
+        className="btn btn-primary btn-sm"
       >
         Add custom
       </button>
@@ -1671,9 +1683,9 @@ function BackgroundTab({ character }: { character: Character }) {
       {shownChips.length > 0 && (
         <div className="flex flex-wrap gap-2 text-sm">
           {shownChips.map(([label, value]) => (
-            <span key={label} className="rounded border border-blood/20 bg-white/50 px-2 py-1">
-              <span className="text-[10px] font-bold uppercase text-ink/50">{label}</span>{" "}
-              <span className="font-semibold">{value}</span>
+            <span key={label} className="flex items-baseline gap-1.5 rounded-md border border-line bg-surface-sunk px-2 py-1">
+              <span className="eyebrow">{label}</span>{" "}
+              <span className="font-medium">{value}</span>
             </span>
           ))}
         </div>
@@ -1684,7 +1696,7 @@ function BackgroundTab({ character }: { character: Character }) {
           <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm sm:grid-cols-3">
             {shownPhysical.map(([label, value]) => (
               <div key={label}>
-                <dt className="text-[10px] font-bold uppercase text-ink/50">{label}</dt>
+                <dt className="eyebrow">{label}</dt>
                 <dd>{value}</dd>
               </div>
             ))}
@@ -1697,7 +1709,7 @@ function BackgroundTab({ character }: { character: Character }) {
           <dl className="space-y-2 text-sm">
             {shownPersonal.map(([label, value]) => (
               <div key={label}>
-                <dt className="text-[10px] font-bold uppercase text-ink/50">{label}</dt>
+                <dt className="eyebrow">{label}</dt>
                 <dd className="whitespace-pre-wrap">{value}</dd>
               </div>
             ))}
@@ -1707,7 +1719,7 @@ function BackgroundTab({ character }: { character: Character }) {
 
       {background && (
         <div className="space-y-2">
-          <h4 className="font-semibold text-blood">{background.name}</h4>
+          <h3 className="font-semibold tracking-tight text-ink">{background.name}</h3>
           {background.entries ? <Entries entries={background.entries} /> : <Empty>No description.</Empty>}
         </div>
       )}
@@ -1741,9 +1753,10 @@ function LevelUp({ character }: { character: Character }) {
         type="button"
         onClick={() => bump(0)}
         title={hint}
-        className="shrink-0 rounded border border-blood px-2 py-1 text-xs font-semibold text-blood hover:bg-blood/10 print:hidden"
+        className="btn btn-secondary btn-sm shrink-0 print:hidden"
       >
-        ▲ Level Up
+        <Icon name="arrow-up" className="h-3.5 w-3.5 text-ink-muted" />
+        Level Up
       </button>
     );
   }
@@ -1753,12 +1766,13 @@ function LevelUp({ character }: { character: Character }) {
         type="button"
         onClick={() => setOpen(!open)}
         title={hint}
-        className="rounded border border-blood px-2 py-1 text-xs font-semibold text-blood hover:bg-blood/10"
+        className="btn btn-secondary btn-sm"
       >
-        ▲ Level Up
+        <Icon name="arrow-up" className="h-3.5 w-3.5 text-ink-muted" />
+        Level Up
       </button>
       {open && (
-        <div className="absolute right-0 z-10 mt-1 w-max rounded border border-blood/30 bg-parchment shadow">
+        <div className="absolute right-0 z-10 mt-1.5 w-max animate-fade-in rounded-lg border border-line bg-surface p-1 shadow-[var(--shadow-lg)]">
           {classes.map((c, i) => (
             <button
               key={`${c.name}-${i}`}
@@ -1767,7 +1781,7 @@ function LevelUp({ character }: { character: Character }) {
                 bump(i);
                 setOpen(false);
               }}
-              className="block w-full px-3 py-1.5 text-left text-sm hover:bg-blood/10"
+              className="block w-full rounded-md px-3 py-1.5 text-left text-sm hover:bg-ink/5"
             >
               {c.name} {c.level} → {c.level + 1}
             </button>
@@ -1855,7 +1869,7 @@ function HpStrip({
   };
 
   return (
-    <section className="space-y-2 rounded border border-blood/30 bg-parchment p-2 text-sm shadow-sm print:hidden">
+    <section className="panel animate-settle-in space-y-3 p-4 text-sm print:hidden">
       <div className="flex flex-wrap items-center gap-2">
         <input
           type="number"
@@ -1863,24 +1877,24 @@ function HpStrip({
           value={amount}
           aria-label="Amount"
           onChange={(e) => setAmount(Math.max(1, Number(e.target.value) || 1))}
-          className="w-16 rounded border border-ink/20 bg-white px-2 py-1 text-center"
+          className="w-16 field field-sm text-center"
         />
         <button
           type="button"
           onClick={damage}
-          className="rounded border border-blood bg-blood/10 px-3 py-1 font-semibold text-blood hover:bg-blood/20"
+          className="btn btn-danger btn-sm"
         >
           Damage
         </button>
         <button
           type="button"
           onClick={heal}
-          className="rounded border border-blood px-3 py-1 font-semibold text-blood hover:bg-blood/10"
+          className="btn btn-secondary btn-sm"
         >
           Heal
         </button>
 
-        <label className="ml-2 flex items-center gap-1 text-xs text-ink/60">
+        <label className="ml-2 flex items-center gap-1 text-xs text-ink-muted">
           Temp HP
           <input
             type="number"
@@ -1888,7 +1902,7 @@ function HpStrip({
             value={play.tempHp}
             aria-label="Temp HP"
             onChange={(e) => apply(() => ({ tempHp: Math.max(0, Number(e.target.value) || 0) }))}
-            className="w-14 rounded border border-ink/20 bg-white px-1 py-0.5 text-center"
+            className="w-14 field field-sm text-center"
           />
         </label>
 
@@ -1904,7 +1918,7 @@ function HpStrip({
               }))
             }
             title="Restore pact-magic slots and short-rest resources; spend hit dice below to heal"
-            className="rounded border border-ink/30 px-2 py-1 text-xs text-ink/70 hover:bg-blood/10"
+            className="btn btn-secondary btn-sm"
           >
             Short Rest
           </button>
@@ -1912,22 +1926,22 @@ function HpStrip({
             type="button"
             onClick={() => updateSheet(character.id, () => ({ play: emptyPlayState() }))}
             title="Restore all HP, hit dice, resources and spell slots"
-            className="rounded border border-ink/30 px-2 py-1 text-xs text-ink/70 hover:bg-blood/10"
+            className="btn btn-secondary btn-sm"
           >
             Long Rest
           </button>
         </span>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3 border-t border-ink/10 pt-2 text-xs">
-        <span className="font-bold uppercase tracking-wide text-ink/50">Hit Dice</span>
+      <div className="flex flex-wrap items-center gap-3 border-t border-line pt-2 text-xs">
+        <span className="eyebrow">Hit Dice</span>
         {character.classes.map((choice, i) => {
           const faces = resolveClass(index, choice)?.hd?.faces;
           if (!faces) return null;
           const used = play.usedHitDice[i] ?? 0;
           return (
             <span key={`${choice.name}-${i}`} className="flex items-center gap-1">
-              <span className="text-ink/70">
+              <span className="text-ink-muted">
                 d{faces} {choice.level - used}/{choice.level}
               </span>
               <button
@@ -1936,7 +1950,7 @@ function HpStrip({
                 disabled={used >= choice.level}
                 aria-label={`Spend d${faces} hit die`}
                 title="Spend a hit die: heal the roll + Con modifier"
-                className="rounded border border-blood/40 px-1.5 py-0.5 font-semibold text-blood hover:bg-blood/10 disabled:cursor-default disabled:border-ink/20 disabled:text-ink/30"
+                className="rounded-md border border-line-strong px-1.5 py-0.5 font-mono font-medium text-ink transition-colors hover:border-accent hover:text-accent disabled:cursor-default disabled:border-line disabled:text-ink-faint"
               >
                 Spend
               </button>
@@ -1946,8 +1960,8 @@ function HpStrip({
       </div>
 
       {current === 0 && (
-        <div className="flex flex-wrap items-center gap-3 border-t border-ink/10 pt-2">
-          <span className="text-xs font-bold uppercase tracking-wide text-blood">Death Saves</span>
+        <div className="flex flex-wrap items-center gap-3 border-t border-line pt-2">
+          <span className="eyebrow">Death Saves</span>
           <SlotPips
             label="Successes"
             total={3}
@@ -1961,14 +1975,14 @@ function HpStrip({
             onChange={(n) => apply((p) => ({ deathSaves: { ...p.deathSaves, failures: n } }))}
           />
           {play.deathSaves.failures >= 3 ? (
-            <span className="font-bold uppercase text-blood">Dead</span>
+            <span className="eyebrow text-accent">Dead</span>
           ) : play.deathSaves.successes >= 3 ? (
-            <span className="font-bold uppercase text-ink/70">Stable</span>
+            <span className="eyebrow">Stable</span>
           ) : (
             <button
               type="button"
               onClick={rollDeathSave}
-              className="rounded border border-blood px-2 py-0.5 text-xs font-semibold text-blood hover:bg-blood/10"
+              className="btn btn-secondary btn-sm"
             >
               Roll Death Save
             </button>
@@ -2044,7 +2058,7 @@ function SlotPips({
   const spent = Math.min(used, total);
   return (
     <span className="flex items-center gap-1">
-      <span className="text-[10px] font-bold uppercase text-ink/50">{label}</span>
+      <span className="eyebrow">{label}</span>
       {Array.from({ length: total }, (_, k) => (
         <button
           key={k}
@@ -2052,8 +2066,8 @@ function SlotPips({
           aria-label={`${label} slot ${k + 1}`}
           title={k < spent ? "Restore slot" : "Spend slot"}
           onClick={() => onChange(k < spent ? k : k + 1)}
-          className={`h-3.5 w-3.5 rounded-full border border-blood/60 ${
-            k < spent ? "bg-blood/70" : "bg-transparent hover:bg-blood/20"
+          className={`h-3.5 w-3.5 rounded-full border border-line-strong ${
+            k < spent ? "bg-accent" : "bg-transparent hover:bg-ink/5"
           }`}
         />
       ))}
@@ -2068,7 +2082,7 @@ function AddButton({ open, onClick, label }: { open: boolean; onClick: () => voi
     <button
       type="button"
       onClick={onClick}
-      className="shrink-0 rounded border border-blood px-2 py-0.5 text-xs font-semibold text-blood hover:bg-blood/10 print:hidden"
+      className="btn btn-secondary btn-sm shrink-0 print:hidden"
     >
       {open ? "Done" : `+ ${label}`}
     </button>
@@ -2078,7 +2092,7 @@ function AddButton({ open, onClick, label }: { open: boolean; onClick: () => voi
 function Group({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div>
-      <h4 className="mb-1 text-xs font-bold uppercase tracking-wide text-ink/50">{title}</h4>
+      <h3 className="eyebrow mb-1.5">{title}</h3>
       {children}
     </div>
   );
@@ -2089,7 +2103,7 @@ function EntryBlocks({ blocks }: { blocks: { name: string; entries?: Entry[] }[]
     <div className="space-y-2">
       {blocks.map((b) => (
         <div key={b.name}>
-          <h5 className="font-semibold text-blood">{b.name}</h5>
+          <h4 className="font-semibold tracking-tight text-ink">{b.name}</h4>
           {b.entries && <Entries entries={b.entries} />}
         </div>
       ))}
@@ -2098,15 +2112,15 @@ function EntryBlocks({ blocks }: { blocks: { name: string; entries?: Entry[] }[]
 }
 
 function Empty({ children }: { children: ReactNode }) {
-  return <p className="py-6 text-center text-sm text-ink/50">{children}</p>;
+  return <p className="py-6 text-center text-sm text-ink-muted">{children}</p>;
 }
 
 function ProfDot({ on, expertise }: { on: boolean; expertise?: boolean }) {
   const cls = expertise
-    ? "bg-blood ring-2 ring-blood/40"
+    ? "bg-accent ring-2 ring-accent/40"
     : on
-      ? "bg-blood"
-      : "border border-ink/30 bg-transparent";
+      ? "bg-accent"
+      : "border border-line-strong bg-transparent";
   return <span className={`inline-block h-2.5 w-2.5 rounded-full ${cls}`} aria-hidden />;
 }
 

@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { useContentStore } from "../../store/contentStore";
+import { Icon } from "./Icon";
 import { FILE_KIND_LABELS, type FileKind, type ImportIssue, type ImportResult } from "../../data/importer";
 
 /** Only `.json` files are read; a 5eTools `data/` tree also holds READMEs and images. */
@@ -10,6 +11,17 @@ function isJsonFile(f: File): boolean {
 /** The path a directory pick reports (relative to the picked folder), else the plain name. */
 function fileLabel(f: File): string {
   return (f as File & { webkitRelativePath?: string }).webkitRelativePath || f.name;
+}
+
+/** The bundled sample files (`public/sample-data/`), ready for `importTexts`. */
+export async function fetchSampleFiles(): Promise<{ name: string; text: string }[]> {
+  const names = ["space-galleon.json", "srd-lite.json"];
+  return Promise.all(
+    names.map(async (name) => ({
+      name,
+      text: await (await fetch(`${import.meta.env.BASE_URL}sample-data/${name}`)).text(),
+    })),
+  );
 }
 
 interface LastImport {
@@ -54,15 +66,9 @@ export function ImportButton() {
   }
 
   async function loadSample() {
-    const names = ["space-galleon.json", "srd-lite.json"];
     setBusy("Loading sample…");
     try {
-      const files = await Promise.all(
-        names.map(async (name) => ({
-          name,
-          text: await (await fetch(`${import.meta.env.BASE_URL}sample-data/${name}`)).text(),
-        })),
-      );
+      const files = await fetchSampleFiles();
       const result = importTexts(files);
       setLast({ result, issues: result.issues });
     } finally {
@@ -94,36 +100,46 @@ export function ImportButton() {
           e.target.value = "";
         }}
       />
-      <div className="flex gap-2">
+      <div className="grid grid-cols-[1fr_auto] gap-2">
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={busy !== null}
-          className="flex-1 rounded bg-blood px-3 py-2 text-sm font-semibold text-parchment hover:bg-blood-light disabled:opacity-60"
+          className="btn btn-primary"
         >
+          <Icon name="import" />
           Import JSON…
         </button>
         <button
           type="button"
           onClick={() => void loadSample()}
           disabled={busy !== null}
-          className="rounded border border-blood px-3 py-2 text-sm font-medium text-blood hover:bg-blood/10 disabled:opacity-60"
+          className="btn btn-secondary"
           title="Load the bundled Space Galleon + SRD-lite samples"
         >
           Sample
         </button>
+        <button
+          type="button"
+          onClick={() => folderInputRef.current?.click()}
+          disabled={busy !== null}
+          className="btn btn-secondary col-span-2"
+          title="Pick a 5eTools data/ folder; every JSON file inside (recursively) is imported"
+        >
+          <Icon name="folder" className="h-4 w-4 text-ink-muted" />
+          Import folder…
+        </button>
       </div>
-      <button
-        type="button"
-        onClick={() => folderInputRef.current?.click()}
-        disabled={busy !== null}
-        className="rounded border border-blood/60 px-3 py-1.5 text-sm font-medium text-blood hover:bg-blood/10 disabled:opacity-60"
-        title="Pick a 5eTools data/ folder; every JSON file inside (recursively) is imported"
-      >
-        Import folder…
-      </button>
-      {busy && <p className="text-xs text-ink/70">{busy}</p>}
-      {!busy && last && <ImportReport result={last.result} issues={last.issues} />}
+      <div role="status" aria-live="polite">
+        {busy && (
+          <div className="mt-1 space-y-1.5" aria-busy="true">
+            <p className="text-xs text-ink-muted">{busy}</p>
+            <div className="skeleton h-2 w-full" />
+            <div className="skeleton h-2 w-2/3" />
+          </div>
+        )}
+        {!busy && last && <ImportReport result={last.result} issues={last.issues} />}
+      </div>
     </div>
   );
 }
@@ -154,23 +170,26 @@ function ImportReport({ result, issues }: { result: ImportResult; issues: Import
   if (warnings.length) headline.push(plural(warnings.length, "warning"));
 
   return (
-    <div className="text-xs text-ink/70">
-      <p>{headline.join(" · ")}</p>
+    <div className="mt-1 animate-fade-in rounded-lg border border-line bg-surface p-2.5 text-xs text-ink-muted">
+      <p className="flex items-center gap-1.5 font-medium text-ink">
+        <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${warnings.length ? "bg-warning-border" : "bg-success"}`} aria-hidden="true" />
+        {headline.join(" · ")}
+      </p>
       {kinds.length > 1 && (
-        <p className="mt-0.5 text-ink/50">
+        <p className="mt-0.5 text-ink-muted">
           Files: {kinds.map((k) => `${k.count} ${FILE_KIND_LABELS[k.kind]}`).join(", ")}
         </p>
       )}
       {typeCounts.length > 0 && (
         <details className="mt-1">
-          <summary className="cursor-pointer select-none text-ink/60 hover:text-ink">
+          <summary className="cursor-pointer select-none text-ink-muted hover:text-ink">
             By type ({typeCounts.length})
           </summary>
           <ul className="mt-1 max-h-40 overflow-y-auto pl-2">
             {typeCounts.map(([type, count]) => (
               <li key={type} className="flex justify-between gap-2">
                 <span className="truncate">{type}</span>
-                <span className="text-ink/50">{count}</span>
+                <span className="font-mono text-ink-muted">{count}</span>
               </li>
             ))}
           </ul>
@@ -178,7 +197,7 @@ function ImportReport({ result, issues }: { result: ImportResult; issues: Import
       )}
       {(warnings.length > 0 || notes.length > 0) && (
         <details className="mt-1">
-          <summary className="cursor-pointer select-none text-ink/60 hover:text-ink">
+          <summary className="cursor-pointer select-none text-ink-muted hover:text-ink">
             {warnings.length ? `${plural(warnings.length, "warning")}` : "Notes"}
             {notes.length ? ` · ${plural(notes.length, "note")}` : ""}
           </summary>
@@ -186,7 +205,7 @@ function ImportReport({ result, issues }: { result: ImportResult; issues: Import
             {[...warnings, ...notes].map((issue, i) => (
               <li
                 key={`${issue.fileName}:${i}`}
-                className={issue.level === "error" ? "text-blood" : issue.level === "warn" ? "text-ink" : "text-ink/50"}
+                className={issue.level === "error" ? "text-accent" : issue.level === "warn" ? "text-ink" : "text-ink-muted"}
                 title={issue.fileName}
               >
                 <span className="font-medium">{issue.fileName.split("/").pop()}</span>: {issue.message}
@@ -196,5 +215,31 @@ function ImportReport({ result, issues }: { result: ImportResult; issues: Import
         </details>
       )}
     </div>
+  );
+}
+
+/** One-click sample load for first-run empty states. */
+export function LoadSampleButton() {
+  const importTexts = useContentStore((s) => s.importTexts);
+  const [busy, setBusy] = useState(false);
+
+  async function load() {
+    setBusy(true);
+    try {
+      importTexts(await fetchSampleFiles());
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => void load()}
+      disabled={busy}
+      className="btn btn-primary"
+    >
+      {busy ? "Loading sample…" : "Load sample content"}
+    </button>
   );
 }

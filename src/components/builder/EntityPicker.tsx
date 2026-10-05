@@ -20,7 +20,7 @@ export function EntityPicker({
   emptyHint: string;
 }) {
   if (items.length === 0) {
-    return <p className="text-sm text-ink/60">{emptyHint}</p>;
+    return <p className="text-sm text-ink-muted">{emptyHint}</p>;
   }
 
   const chosen = items.find((e) => sameRef(e, selected));
@@ -29,8 +29,8 @@ export function EntityPicker({
     : undefined;
 
   return (
-    <div className="grid gap-3 sm:grid-cols-[14rem_1fr]">
-      <ul className="space-y-1">
+    <div className="grid gap-4 sm:grid-cols-[14rem_1fr]">
+      <ul className="stagger space-y-1">
         {items.map((e) => {
           const isSel = sameRef(e, selected);
           return (
@@ -38,29 +38,30 @@ export function EntityPicker({
               <button
                 type="button"
                 onClick={() => onSelect(isSel ? undefined : { name: e.name, source: e.source })}
-                className={`flex w-full items-center justify-between rounded border px-3 py-2 text-left text-sm ${
+                aria-pressed={isSel}
+                className={`flex min-h-10 w-full items-center justify-between rounded-lg border px-3 py-2 text-left text-sm transition-colors ${
                   isSel
-                    ? "border-blood bg-blood/10 font-semibold"
-                    : "border-blood/20 hover:bg-blood/5"
+                    ? "row-selected border-accent/40 font-medium"
+                    : "border-line bg-surface hover:border-line-strong hover:bg-ink/[0.025]"
                 }`}
               >
                 <span className="truncate">{e.name}</span>
-                <span className="ml-2 text-[10px] uppercase text-ink/40">{e.source}</span>
+                <span className="ml-2 font-mono text-2xs uppercase text-ink-muted">{e.source}</span>
               </button>
             </li>
           );
         })}
       </ul>
 
-      <div className="rounded border border-blood/15 bg-white/40 p-3 text-sm">
+      <div className="prose-rules rounded-xl border border-line bg-surface-sunk p-4">
         {chosen ? (
           entries ? (
             <Entries entries={entries} />
           ) : (
-            <p className="text-ink/60">No description provided.</p>
+            <p className="text-ink-muted">No description provided.</p>
           )
         ) : (
-          <p className="text-ink/50">Select an option to preview it.</p>
+          <p className="text-ink-muted">Select an option to preview its rules here.</p>
         )}
       </div>
     </div>

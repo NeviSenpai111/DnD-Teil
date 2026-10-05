@@ -51,16 +51,16 @@ function AbilityChoiceField({
       onChange(next);
     };
     return (
-      <fieldset className="rounded border border-blood/20 p-2">
-        <legend className="px-1 text-xs font-semibold text-blood">{def.origin}: assign increases</legend>
+      <fieldset className="rounded-xl border border-line px-3 pb-3 pt-1">
+        <legend className="eyebrow px-1.5 text-ink">{def.origin}: assign increases</legend>
         <div className="flex flex-wrap gap-2">
           {def.weights.map((w, slot) => (
             <label key={slot} className="flex items-center gap-1 text-sm">
-              <span className="font-semibold">+{w}</span>
+              <span className="font-mono font-medium">+{w}</span>
               <select
                 value={picks[slot] ?? ""}
                 onChange={(e) => setSlot(slot, e.target.value as Ability | "")}
-                className="rounded border border-ink/20 px-2 py-1 text-sm"
+                className="field field-sm"
               >
                 <option value="">to…</option>
                 {def.from.map((ab) => (
@@ -86,8 +86,8 @@ function AbilityChoiceField({
     else if (picks.length < def.count) onChange([...picks, ab]);
   };
   return (
-    <fieldset className="rounded border border-blood/20 p-2">
-      <legend className="px-1 text-xs font-semibold text-blood">
+    <fieldset className="rounded-xl border border-line px-3 pb-3 pt-1">
+      <legend className="eyebrow px-1.5 text-ink">
         {def.origin}: choose {def.count} (+{amount})
       </legend>
       <div className="flex flex-wrap gap-2">
@@ -97,8 +97,8 @@ function AbilityChoiceField({
           return (
             <label
               key={ab}
-              className={`cursor-pointer rounded border px-2 py-1 text-sm ${
-                on ? "border-blood bg-blood/10 font-semibold" : "border-ink/20"
+              className={`cursor-pointer rounded-lg border px-2.5 py-1.5 text-sm transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-accent ${
+                on ? "row-selected border-accent/40 font-medium" : "border-line-strong hover:bg-ink/5"
               } ${disabled ? "opacity-40" : ""}`}
             >
               <input

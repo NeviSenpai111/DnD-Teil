@@ -26,18 +26,18 @@ export function SpellDetail({ spell, embedded }: { spell: Spell; embedded?: bool
     <article
       className={
         embedded
-          ? "rounded border border-blood/20 bg-white/50 p-3"
-          : "mx-auto max-w-2xl rounded border border-blood/30 bg-parchment p-5 shadow"
+          ? "rounded-lg border border-line bg-surface p-4"
+          : "detail"
       }
     >
-      <header className="border-b border-blood/30 pb-2">
-        <h2 className={`font-bold text-blood ${embedded ? "text-lg" : "text-2xl"}`}>
+      <header className="detail-head">
+        <h2 className={`detail-title ${embedded ? "text-lg" : ""}`}>
           {spell.name}
         </h2>
-        <p className="text-xs uppercase tracking-wide text-ink/60">
+        <p className="eyebrow mt-2">
           {levelSchoolLine(spell)} · {spell.source}
           {spell.meta?.ritual && (
-            <span className="ml-1.5 rounded border border-ink/30 px-1 font-semibold text-ink/50">
+            <span className="ml-1.5 rounded border border-line-strong px-1 font-semibold text-ink-muted">
               Ritual
             </span>
           )}
@@ -45,23 +45,23 @@ export function SpellDetail({ spell, embedded }: { spell: Spell; embedded?: bool
       </header>
 
       {shown.length > 0 && (
-        <dl className="mt-3 space-y-1 text-sm">
+        <dl className="detail-facts">
           {shown.map(([label, value]) => (
             <div key={label}>
-              <dt className="inline font-semibold">{label}: </dt>
-              <dd className="inline text-ink/80">{value}</dd>
+              <dt>{label}: </dt>
+              <dd>{value}</dd>
             </div>
           ))}
         </dl>
       )}
 
       {spell.entries && spell.entries.length > 0 && (
-        <div className="mt-3 border-t border-blood/15 pt-3 text-sm">
+        <div className="prose-rules mt-5 border-t border-line pt-5">
           <Entries entries={spell.entries} />
         </div>
       )}
       {spell.entriesHigherLevel && spell.entriesHigherLevel.length > 0 && (
-        <div className="mt-2 text-sm">
+        <div className="prose-rules mt-3">
           <Entries entries={spell.entriesHigherLevel} />
         </div>
       )}

@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { importCharacterFile } from "../../data/ddbImport";
 import { useCharacterStore } from "../../store/characterStore";
 import { useContentStore } from "../../store/contentStore";
+import { Icon } from "../common/Icon";
 
 interface ImportReport {
   name: string;
@@ -44,7 +45,7 @@ export function ImportCharacterButton() {
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       <input
         ref={inputRef}
         type="file"
@@ -53,46 +54,49 @@ export function ImportCharacterButton() {
         className="hidden"
         onChange={(e) => void handleFiles(e.target.files)}
       />
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          disabled={busy}
-          onClick={() => inputRef.current?.click()}
-          title="Import a character from a D&D Beyond PDF export"
-          className="rounded bg-blood px-3 py-2 text-sm font-semibold text-parchment hover:bg-blood-light disabled:opacity-50"
-        >
-          {busy ? "Importing…" : "📥 Import character…"}
-        </button>
-        <span className="text-xs text-ink/60">
-          A D&amp;D Beyond PDF export (or a character JSON from here).
-        </span>
+      <button
+        type="button"
+        disabled={busy}
+        onClick={() => inputRef.current?.click()}
+        title="Import a character from a D&D Beyond PDF export"
+        className="btn btn-secondary w-full"
+      >
+        <Icon name="import" className="h-4 w-4 text-ink-muted" />
+        {busy ? "Importing…" : "Import character…"}
+      </button>
+      <p className="text-xs leading-relaxed text-ink-muted">
+        A D&amp;D Beyond PDF export (or a character JSON from here).
+      </p>
+      {busy && <div className="skeleton h-2 w-full" aria-hidden="true" />}
+
+      <div role="status" aria-live="polite" className="space-y-2">
+        {errors.map((message) => (
+          <p key={message} className="flex gap-2 rounded-lg border border-accent/25 bg-accent/5 px-2.5 py-2 text-xs text-accent">
+            <Icon name="alert" className="h-3.5 w-3.5 shrink-0 translate-y-px" />
+            {message}
+          </p>
+        ))}
+
+        {reports.map((report) => (
+          <div key={report.name} className="animate-settle-in rounded-lg border border-line bg-surface p-2.5 text-xs">
+            <span className="font-medium">Imported {report.name}.</span>{" "}
+            {report.warnings.length === 0 ? (
+              "Everything resolved."
+            ) : (
+              <>
+                <span className="text-ink-muted">
+                  {report.warnings.length} thing{report.warnings.length === 1 ? "" : "s"} to check:
+                </span>
+                <ul className="ml-4 mt-1 list-disc space-y-0.5 text-ink-muted">
+                  {report.warnings.map((warning) => (
+                    <li key={warning}>{warning}</li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </div>
+        ))}
       </div>
-
-      {errors.map((message) => (
-        <p key={message} className="text-xs text-blood">
-          {message}
-        </p>
-      ))}
-
-      {reports.map((report) => (
-        <div key={report.name} className="rounded border border-blood/20 bg-parchment/60 p-2 text-xs">
-          <span className="font-semibold">Imported {report.name}.</span>{" "}
-          {report.warnings.length === 0 ? (
-            "Everything resolved."
-          ) : (
-            <>
-              <span className="text-ink/70">
-                {report.warnings.length} thing{report.warnings.length === 1 ? "" : "s"} to check:
-              </span>
-              <ul className="ml-4 mt-1 list-disc space-y-0.5 text-ink/70">
-                {report.warnings.map((warning) => (
-                  <li key={warning}>{warning}</li>
-                ))}
-              </ul>
-            </>
-          )}
-        </div>
-      ))}
     </div>
   );
 }

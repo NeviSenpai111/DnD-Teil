@@ -17,7 +17,7 @@ export function ToolChoiceSelects() {
         const picks = draft.toolChoices[def.key] ?? [];
         return (
           <div key={def.key}>
-            <p className="text-xs font-semibold uppercase tracking-wide text-ink/50">
+            <p className="eyebrow">
               {def.origin}: choose {def.count} tool{def.count === 1 ? "" : "s"} ({picks.length}/
               {def.count})
             </p>
@@ -33,7 +33,7 @@ export function ToolChoiceSelects() {
                     else next.splice(slot, 1);
                     setToolChoice(def.key, next.filter(Boolean).slice(0, def.count));
                   }}
-                  className="rounded border border-ink/20 bg-white px-2 py-1 text-sm"
+                  className="field field-sm"
                 >
                   <option value="">— choose a tool —</option>
                   {def.from

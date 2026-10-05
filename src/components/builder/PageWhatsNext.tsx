@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { Icon } from "../common/Icon";
 import { useContentStore } from "../../store/contentStore";
 import { useCharacterStore } from "../../store/characterStore";
 import {
@@ -88,37 +89,38 @@ export function PageWhatsNext({ goTo }: { goTo: (id: string) => void }) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-ink">What's Next</h2>
-        <p className="mt-1 text-sm text-ink/70">
+        <h2 className="text-2xl font-semibold tracking-tight text-ink">What's Next</h2>
+        <p className="mt-1 text-sm text-ink-muted">
           {openCount === 0
             ? `${draft.name} is ready to play!`
             : `${openCount} step${openCount === 1 ? "" : "s"} left before ${draft.name} is ready.`}
         </p>
       </div>
 
-      <div className="grid max-w-md grid-cols-3 gap-2 text-center text-sm">
+      <div className="flex flex-wrap gap-2">
         <Chip label="Level" value={characterLevel(draft)} />
         <Chip label="Max HP" value={derived.maxHp ?? "—"} />
         <Chip label="AC" value={derived.ac} />
       </div>
 
-      <ul className="max-w-md space-y-1.5">
+      <ul className="stagger max-w-md space-y-1.5">
         {items.map((item) => (
           <li key={item.label}>
             <button
               type="button"
               onClick={() => goTo(item.page)}
-              className="flex w-full items-center gap-2 rounded border border-blood/15 bg-white/50 px-3 py-2 text-left text-sm hover:bg-blood/5"
+              className="group flex w-full items-center gap-3 rounded-lg border border-line bg-surface px-3 py-2.5 text-left text-sm transition-colors hover:border-line-strong"
             >
               <span
-                className={`grid h-5 w-5 shrink-0 place-items-center rounded-full text-xs font-bold ${
-                  item.done ? "bg-green-700 text-white" : "border border-ink/30 text-ink/40"
+                className={`grid h-5 w-5 shrink-0 place-items-center rounded-full ${
+                  item.done ? "bg-success text-white" : "border border-dashed border-line-strong"
                 }`}
                 aria-hidden
               >
-                {item.done ? "✓" : ""}
+                {item.done && <Icon name="check" className="h-3.5 w-3.5" strokeWidth={2.25} />}
               </span>
-              <span className={item.done ? "text-ink/50 line-through" : ""}>{item.label}</span>
+              <span className={`flex-1 ${item.done ? "text-ink-muted line-through decoration-ink-faint" : ""}`}>{item.label}</span>
+              <Icon name="chevron-right" className="h-4 w-4 text-ink-faint transition-transform group-hover:translate-x-0.5" />
             </button>
           </li>
         ))}
@@ -128,20 +130,21 @@ export function PageWhatsNext({ goTo }: { goTo: (id: string) => void }) {
         <button
           type="button"
           onClick={saveDraftToLibrary}
-          className="rounded bg-blood px-4 py-2 text-sm font-bold uppercase tracking-wide text-parchment hover:bg-blood-light"
+          className="btn btn-primary"
         >
           Save to Library
         </button>
         <Link
           to="/sheet/draft"
-          className="rounded border border-blood px-4 py-2 text-sm font-semibold text-blood hover:bg-blood/10"
+          className="btn btn-secondary"
         >
-          View Full Sheet ↗
+          View Full Sheet
+          <Icon name="arrow-up-right" className="h-3.5 w-3.5" />
         </Link>
         <button
           type="button"
           onClick={() => downloadCharacterJson(draft)}
-          className="rounded border border-blood px-4 py-2 text-sm font-semibold text-blood hover:bg-blood/10"
+          className="btn btn-secondary"
         >
           Export JSON
         </button>
@@ -152,9 +155,9 @@ export function PageWhatsNext({ goTo }: { goTo: (id: string) => void }) {
 
 function Chip({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded border border-blood/20 bg-white/50 p-2">
-      <div className="text-[10px] font-bold uppercase tracking-wide text-ink/60">{label}</div>
-      <div className="text-base font-bold">{value}</div>
+    <div className="flex items-baseline gap-2 rounded-lg border border-line bg-surface-sunk px-3 py-2">
+      <div className="eyebrow">{label}</div>
+      <div className="font-mono text-base font-medium">{value}</div>
     </div>
   );
 }

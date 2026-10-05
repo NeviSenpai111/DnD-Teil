@@ -48,7 +48,7 @@ export function SkillChoiceSelects({ prefixes }: { prefixes: string[] }) {
         };
         return (
           <div key={choice.key} className="space-y-1.5">
-            <p className="text-xs font-semibold uppercase tracking-wide text-ink/50">
+            <p className="eyebrow">
               {choice.origin}: choose {choice.count} ({picks.length}/{choice.count})
             </p>
             {Array.from({ length: choice.count }).map((_, slot) => {
@@ -58,7 +58,7 @@ export function SkillChoiceSelects({ prefixes }: { prefixes: string[] }) {
                   key={slot}
                   value={current}
                   onChange={(e) => setSlot(slot, e.target.value)}
-                  className="block w-full max-w-xs rounded border border-ink/20 bg-white px-2 py-1.5 text-sm"
+                  className="block w-full max-w-xs field"
                 >
                   <option value="">— Choose a Skill —</option>
                   {choice.from.map((id) => {

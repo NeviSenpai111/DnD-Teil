@@ -41,7 +41,7 @@ function renderTag(tag: string, args: string[], index: ContentIndex): ReactNode 
       case "underline":
         return <u>{content}</u>;
       case "note":
-        return <em className="text-ink/70">{content}</em>;
+        return <em className="text-ink-muted">{content}</em>;
     }
   }
 
@@ -86,7 +86,7 @@ function renderTag(tag: string, args: string[], index: ContentIndex): ReactNode 
 /** A rollable dice notation chip. Rolling is not yet wired up. */
 function RollChip({ children }: { children: ReactNode }) {
   return (
-    <span className="rounded bg-blood/10 px-1 font-medium text-blood" title="Rollable">
+    <span className="rounded bg-accent/8 px-1 font-mono text-[0.92em] font-medium text-accent" title="Rollable">
       {children}
     </span>
   );
@@ -110,8 +110,8 @@ function RefSpan({
     <span
       className={
         resolved
-          ? "cursor-help text-blood underline decoration-blood/40"
-          : "underline decoration-dotted decoration-ink/30"
+          ? "cursor-help text-accent underline decoration-accent/30 underline-offset-2"
+          : "underline decoration-dotted decoration-ink-faint"
       }
       title={title}
     >

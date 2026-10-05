@@ -15,7 +15,7 @@ describe("App", () => {
         <App />
       </MemoryRouter>,
     );
-    expect(screen.getByText("🐉 5eTools Builder")).toBeInTheDocument();
+    expect(screen.getByText("5eTools Builder")).toBeInTheDocument();
     expect(screen.getByText("Nothing to browse yet")).toBeInTheDocument();
   });
 

@@ -19,40 +19,40 @@ export function SourceToggle() {
   }, [reprinted, activeSources]);
 
   if (sources.length === 0) {
-    return <p className="text-xs text-ink/60">No sources imported yet.</p>;
+    return <p className="text-xs text-ink-muted">No sources imported yet.</p>;
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-3">
       <label
-        className="flex cursor-pointer items-center gap-2 rounded border border-blood/20 px-1 py-0.5 text-sm hover:bg-black/5"
+        className="flex cursor-pointer items-center gap-2.5 rounded-lg border border-line bg-surface px-2.5 py-2 text-sm shadow-sm transition-colors hover:border-line-strong"
         title="Entries that a newer enabled source reprints — e.g. the 2014 Fighter once the 2024 one is loaded. Hidden by default, as on 5eTools."
       >
         <input
           type="checkbox"
           checked={showReprinted}
           onChange={(e) => setShowReprinted(e.target.checked)}
-          className="accent-blood"
+          className="h-4 w-4 accent-accent"
         />
         <span className="flex-1">Show reprinted</span>
-        <span className="text-xs text-ink/50">{reprintedCount}</span>
+        <span className="font-mono text-2xs text-ink-muted">{reprintedCount}</span>
       </label>
-      <ul className="flex flex-col gap-1">
+      <ul className="-mx-2 flex flex-col">
         {sources.map((info) => {
           const enabled = activeSources[info.source] !== false;
           return (
             <li key={info.source}>
-              <label className="flex cursor-pointer items-center gap-2 rounded px-1 py-0.5 text-sm hover:bg-black/5">
+              <label className="flex min-h-9 cursor-pointer items-center gap-2.5 rounded-md px-2 text-sm transition-colors hover:bg-ink/5">
                 <input
                   type="checkbox"
                   checked={enabled}
                   onChange={() => toggleSource(info.source)}
-                  className="accent-blood"
+                  className="h-4 w-4 accent-accent"
                 />
-                <span className="flex-1 truncate" title={info.displayName}>
+                <span className={`flex-1 truncate ${enabled ? "" : "text-ink-muted line-through decoration-ink-faint"}`} title={info.displayName}>
                   {info.displayName}
                 </span>
-                <span className="text-xs text-ink/50">{info.count}</span>
+                <span className="font-mono text-2xs text-ink-muted">{info.count}</span>
               </label>
             </li>
           );

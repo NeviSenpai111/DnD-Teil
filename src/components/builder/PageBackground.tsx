@@ -7,6 +7,7 @@ import { Entries } from "../../data/entryRenderer/EntryRenderer";
 import { abilityChoiceDefs } from "../../engine/character";
 import { characteristicTables } from "../../engine/characteristics";
 import { readNamedGrants } from "../../engine/proficiencies";
+import { Icon } from "../common/Icon";
 import { Accordion, subtitleParts } from "./Accordion";
 import { AbilityChoices } from "./AbilityChoices";
 import { SkillChoiceSelects, fixedSkillIdsOf, skillName } from "./SkillChoices";
@@ -29,7 +30,7 @@ function Characteristics({ background }: { background: Background }) {
         {tables.map((table) => (
           <div key={table.field}>
             <div className="flex items-center gap-2">
-              <h4 className="text-xs font-bold uppercase tracking-wide text-ink/50">{table.label}</h4>
+              <h4 className="eyebrow">{table.label}</h4>
               <button
                 type="button"
                 onClick={() =>
@@ -38,21 +39,22 @@ function Characteristics({ background }: { background: Background }) {
                     table.options[Math.floor(Math.random() * table.options.length)],
                   )
                 }
-                className="rounded border border-blood/40 px-1.5 py-0.5 text-[10px] font-bold uppercase text-blood hover:bg-blood/10"
+                className="btn btn-secondary btn-sm"
               >
-                🎲 Roll {table.label}
+                <Icon name="dice" className="h-3.5 w-3.5" />
+                {`Roll ${table.label}`}
               </button>
             </div>
-            <ul className="mt-1 space-y-0.5">
+            <ul className="mt-2 space-y-0.5">
               {table.options.map((option, i) => (
                 <li key={i}>
                   <button
                     type="button"
                     onClick={() => setDetail(table.field, option)}
-                    className="w-full rounded px-1 py-0.5 text-left text-sm text-ink/80 hover:bg-blood/10"
+                    className="flex w-full gap-2 rounded-md px-2 py-1 text-left text-sm text-ink-muted transition-colors hover:bg-ink/5 hover:text-ink"
                     title={`Use as your ${table.label.toLowerCase()}`}
                   >
-                    <span className="mr-1 text-xs text-ink/40">{i + 1}.</span>
+                    <span className="w-4 shrink-0 pt-px text-right font-mono text-xs text-ink-faint">{i + 1}</span>
                     {option}
                   </button>
                 </li>
@@ -100,17 +102,18 @@ export function PageBackground() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-ink">Choose Origin: Background</h2>
+      <h2 className="text-2xl font-semibold tracking-tight text-ink">Choose Origin: Background</h2>
 
       <div className="flex flex-wrap items-center gap-2">
         <select
           value={draft.background ? `${draft.background.name}|${draft.background.source}` : ""}
           disabled={isCustom}
+          aria-label="Background"
           onChange={(e) => {
             const [name, source] = e.target.value.split("|");
             setBackground(name ? { name, source } : undefined);
           }}
-          className="block w-full max-w-md rounded border border-ink/20 bg-white px-2 py-2 text-sm disabled:opacity-50"
+          className="block w-full max-w-md field disabled:opacity-50"
         >
           <option value="">— Choose a Background —</option>
           {backgrounds.map((b) => (
@@ -126,29 +129,28 @@ export function PageBackground() {
               isCustom ? undefined : { name: "Custom Background", description: "" },
             )
           }
-          className={`rounded border px-3 py-1.5 text-sm ${
-            isCustom ? "border-blood bg-blood/10 font-semibold" : "border-ink/20 hover:bg-blood/5"
-          }`}
+          aria-pressed={isCustom}
+          className={`btn ${isCustom ? "btn-secondary row-selected border-accent/40" : "btn-secondary"}`}
         >
           {isCustom ? "Use a published background" : "Build a custom background"}
         </button>
       </div>
 
       {isCustom && draft.customBackground && (
-        <div className="space-y-2 rounded border border-blood/20 bg-white/50 p-3">
+        <div className="space-y-3 rounded-xl border border-line bg-surface-sunk p-4">
           <label className="block text-sm">
-            <span className="font-semibold">Name</span>
+            <span className="font-medium">Name</span>
             <input
               value={draft.customBackground.name}
               aria-label="Custom background name"
               onChange={(e) =>
                 setCustomBackground({ ...draft.customBackground!, name: e.target.value })
               }
-              className="mt-0.5 block w-full max-w-sm rounded border border-ink/20 bg-white px-2 py-1"
+              className="mt-1 block w-full max-w-sm field"
             />
           </label>
           <label className="block text-sm">
-            <span className="font-semibold">Description</span>
+            <span className="font-medium">Description</span>
             <textarea
               value={draft.customBackground.description}
               aria-label="Custom background description"
@@ -156,10 +158,10 @@ export function PageBackground() {
                 setCustomBackground({ ...draft.customBackground!, description: e.target.value })
               }
               rows={2}
-              className="mt-0.5 block w-full rounded border border-ink/20 bg-white px-2 py-1"
+              className="mt-1 block w-full field"
             />
           </label>
-          <p className="text-xs text-ink/60">
+          <p className="text-xs text-ink-muted">
             A custom background grants 2 skills of your choice, a tool and a standard language —
             pick them below.
           </p>
@@ -200,20 +202,20 @@ function BackgroundDetails({ background }: { background: Background }) {
 
       {fixedSkills.length > 0 && (
         <p className="text-sm">
-          <span className="font-bold">Skill Proficiencies:</span>{" "}
+          <span className="font-medium">Skill Proficiencies:</span>{" "}
           {fixedSkills.map(skillName).join(", ")}
         </p>
       )}
       <SkillChoiceSelects prefixes={["background:"]} />
       {toolText && (
         <p className="text-sm">
-          <span className="font-bold">Tool Proficiencies:</span> {toolText}
+          <span className="font-medium">Tool Proficiencies:</span> {toolText}
         </p>
       )}
       <ToolChoiceSelects />
       {langText && (
         <p className="text-sm">
-          <span className="font-bold">Languages:</span> {langText}
+          <span className="font-medium">Languages:</span> {langText}
         </p>
       )}
       <LanguageChoiceSelects prefixes={["background:lang"]} />
@@ -261,24 +263,24 @@ function CharacterDetailAccordions() {
 
   const field = (label: string, key: keyof CharacterDetails, placeholder = "") => (
     <label className="block text-sm">
-      <span className="font-semibold">{label}</span>
+      <span className="font-medium">{label}</span>
       <input
         value={details[key]}
         placeholder={placeholder}
         onChange={(e) => setDetail(key, e.target.value)}
-        className="mt-0.5 block w-full rounded border border-ink/20 bg-white px-2 py-1"
+        className="mt-1 block w-full field"
       />
     </label>
   );
 
   const area = (label: string, key: keyof CharacterDetails) => (
     <label className="block text-sm">
-      <span className="font-semibold">{label}</span>
+      <span className="font-medium">{label}</span>
       <textarea
         value={details[key]}
         rows={2}
         onChange={(e) => setDetail(key, e.target.value)}
-        className="mt-0.5 block w-full rounded border border-ink/20 bg-white px-2 py-1"
+        className="mt-1 block w-full field"
       />
     </label>
   );
@@ -288,11 +290,11 @@ function CharacterDetailAccordions() {
       <Accordion title="Character Details" subtitle="Alignment · Faith · Lifestyle">
         <div className="grid gap-3 sm:grid-cols-3">
           <label className="block text-sm">
-            <span className="font-semibold">Alignment</span>
+            <span className="font-medium">Alignment</span>
             <select
               value={details.alignment}
               onChange={(e) => setDetail("alignment", e.target.value)}
-              className="mt-0.5 block w-full rounded border border-ink/20 bg-white px-2 py-1"
+              className="mt-1 block w-full field"
             >
               <option value="">—</option>
               {ALIGNMENTS.map((a) => (
@@ -304,11 +306,11 @@ function CharacterDetailAccordions() {
           </label>
           {field("Faith", "faith")}
           <label className="block text-sm">
-            <span className="font-semibold">Lifestyle</span>
+            <span className="font-medium">Lifestyle</span>
             <select
               value={details.lifestyle}
               onChange={(e) => setDetail("lifestyle", e.target.value)}
-              className="mt-0.5 block w-full rounded border border-ink/20 bg-white px-2 py-1"
+              className="mt-1 block w-full field"
             >
               <option value="">—</option>
               {LIFESTYLES.map((l) => (

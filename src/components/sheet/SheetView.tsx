@@ -1,6 +1,8 @@
 import { Link, useParams } from "react-router-dom";
 import { useCharacterStore } from "../../store/characterStore";
 import { downloadCharacterJson } from "../../data/exportCharacter";
+import { EmptyState } from "../common/EmptyState";
+import { Icon } from "../common/Icon";
 import { FullSheet } from "./FullSheet";
 
 /**
@@ -18,39 +20,48 @@ export function SheetView() {
 
   if (!character) {
     return (
-      <div className="grid h-full place-items-center text-center text-ink/60">
-        <div>
-          <p className="text-lg font-semibold">Character not found</p>
-          <Link to="/characters" className="text-sm text-blood underline">
-            ← Back to characters
+      <EmptyState
+        title="Character not found"
+        icon="users"
+        actions={
+          <Link to="/characters" className="btn btn-secondary">
+            <Icon name="arrow-left" />
+            Back to characters
           </Link>
-        </div>
-      </div>
+        }
+      >
+        It may have been deleted, or the link points at another browser's library.
+      </EmptyState>
     );
   }
 
   return (
-    <div className="mx-auto h-full max-w-6xl space-y-3 overflow-y-auto">
-      <div className="flex items-center gap-2 print:hidden">
-        <Link to="/characters" className="text-sm text-blood underline">
-          ← Characters
+    <div className="h-full overflow-y-auto">
+      <div className="mx-auto max-w-6xl space-y-4 pb-8">
+      <div className="flex flex-wrap items-center gap-x-1 gap-y-2 print:hidden">
+        <Link to="/characters" className="btn btn-ghost btn-sm -ml-2.5">
+          <Icon name="arrow-left" className="h-3.5 w-3.5" />
+          Characters
         </Link>
-        <Link to="/build" className="text-sm text-blood underline">
+        <Link to="/build" className="btn btn-ghost btn-sm">
+          <Icon name="edit" className="h-3.5 w-3.5" />
           Edit in builder
         </Link>
         <div className="ml-auto flex gap-2">
           <button
             type="button"
             onClick={() => downloadCharacterJson(character)}
-            className="rounded border border-blood px-3 py-1 text-sm text-blood hover:bg-blood/10"
+            className="btn btn-secondary btn-sm"
           >
+            <Icon name="download" className="h-3.5 w-3.5 text-ink-muted" />
             Export JSON
           </button>
           <button
             type="button"
             onClick={() => window.print()}
-            className="rounded border border-blood px-3 py-1 text-sm text-blood hover:bg-blood/10"
+            className="btn btn-secondary btn-sm"
           >
+            <Icon name="print" className="h-3.5 w-3.5 text-ink-muted" />
             Print
           </button>
         </div>
@@ -58,6 +69,7 @@ export function SheetView() {
 
       <div id="printable-sheet">
         <FullSheet character={character} />
+      </div>
       </div>
     </div>
   );

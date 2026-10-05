@@ -1,10 +1,61 @@
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
 @import "tailwindcss";
 
+/* Design tokens — see DESIGN.md. One neutral family (zinc) + one accent. */
 @theme {
-  --color-parchment: #f4ecd8;
-  --color-ink: #1a1410;
-  --color-blood: #7b2d26;
-  --color-blood-light: #a23b32;
+  --font-sans: "Geist Variable", ui-sans-serif, sans-serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, monospace;
+
+  --color-canvas: #f4f4f5;
+  --color-surface: #ffffff;
+  --color-surface-sunk: #fafafa;
+  --color-ink: #18181b;
+  /* Secondary text: ≥ 7:1 on surface, ≥ 6:1 on canvas — safe at 11px. */
+  --color-ink-muted: #52525b;
+  /* Placeholders, disabled glyphs, decorative icons only — never body text. */
+  --color-ink-faint: #a1a1aa;
+  --color-line: #e4e4e7;
+  --color-line-strong: #d4d4d8;
+  --color-accent: #9b2c2c;
+  --color-accent-strong: #7f1d1d;
+  --color-on-accent: #ffffff;
+  --color-success: #2f6b3a;
+  --color-warning-surface: #fbf3dc;
+  --color-warning-border: #b7862c;
+
+  /* Smallest legible size for source tags and stat labels (replaces 9–10px). */
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1rem;
+
+  --radius: 0.5rem;
+  --radius-panel: 0.875rem;
+
+  /* Shadows tinted to the zinc ink, never grey-black or glowing. */
+  --shadow-sm: 0 1px 2px rgb(24 24 27 / 0.05);
+  --shadow-panel: 0 1px 2px rgb(24 24 27 / 0.04), 0 8px 24px -16px rgb(24 24 27 / 0.12);
+  --shadow-lg: 0 1px 2px rgb(24 24 27 / 0.04), 0 16px 40px -20px rgb(24 24 27 / 0.25);
+  --shadow-xl: 0 24px 64px -24px rgb(24 24 27 / 0.35);
+
+  /* Critically-damped spring (stiffness 100, damping 20, mass 1) sampled over 600ms. */
+  --ease-spring: linear(0, 0.056, 0.176, 0.316, 0.45, 0.569, 0.669, 0.75, 0.815, 0.865, 0.904, 0.933, 0.955, 0.972, 0.984, 0.993, 1);
+  --ease-snap: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --duration-settle: 600ms;
+
+  --animate-settle-in: settle-in var(--duration-settle) var(--ease-spring) both;
+  --animate-fade-in: fade-in 240ms var(--ease-snap) both;
+
+  @keyframes settle-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
 }
 
 :root {
@@ -19,15 +70,396 @@ body,
 
 body {
   margin: 0;
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  background: #e9e2cf;
+  background: var(--color-canvas);
   color: var(--color-ink);
+  font-feature-settings: "cv11", "ss03";
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-/* Statblock / sheet typography helpers */
+::selection {
+  background: rgb(155 44 44 / 0.16);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line-strong) transparent;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--color-accent);
+}
+
+/* One focus ring for the whole app. */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Numbers read in play are mono and tabular. */
+.font-mono,
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+@layer components {
+  /* Section title: mono caps in muted steel instead of coloured headings. */
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    line-height: var(--text-2xs--line-height);
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-ink-muted);
+  }
+
+  .panel {
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-panel);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-panel);
+  }
+
+  /* Browser detail card: one wide reading panel, left-aligned in its column. */
+  .detail {
+    max-width: 48rem;
+    padding: 1.5rem;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-panel);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-panel);
+    animation: settle-in var(--duration-settle) var(--ease-spring) both;
+  }
+  @media (min-width: 40rem) {
+    .detail {
+      padding: 1.75rem 2rem 2rem;
+    }
+  }
+  /* Title block closed by the oxblood seal rule. */
+  .detail-head {
+    padding-bottom: 1rem;
+    background: linear-gradient(to right, var(--color-accent) 0 2.5rem, var(--color-line) 2.5rem) left bottom / 100% 2px no-repeat;
+  }
+  .detail-title {
+    font-size: clamp(1.5rem, 1.1rem + 1.2vw, 2rem);
+    line-height: 1.15;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    color: var(--color-ink);
+    text-wrap: balance;
+  }
+  /* Key/value facts as a two-column ledger. */
+  .detail-facts {
+    display: grid;
+    grid-template-columns: minmax(6.5rem, max-content) 1fr;
+    gap: 0.375rem 1.25rem;
+    margin-top: 1.25rem;
+    font-size: var(--text-sm);
+  }
+  .detail-facts > div {
+    display: contents;
+  }
+  .detail-facts dt {
+    color: var(--color-ink-muted);
+  }
+  .detail-facts dd {
+    color: var(--color-ink);
+  }
+  /* Running rules text: comfortable measure. */
+  .prose-rules {
+    max-width: 68ch;
+    font-size: var(--text-sm);
+    line-height: 1.65;
+  }
+
+  /* Buttons: flat, tactile 1px press, no glow. */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    min-height: 2.25rem;
+    padding: 0 0.875rem;
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    font-size: var(--text-sm);
+    line-height: 1.25rem;
+    font-weight: 500;
+    white-space: nowrap;
+    transition:
+      background-color 140ms var(--ease-snap),
+      border-color 140ms var(--ease-snap),
+      color 140ms var(--ease-snap),
+      transform 140ms var(--ease-snap);
+  }
+  .btn:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+  .btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+  .btn-sm {
+    min-height: 2rem;
+    padding: 0 0.625rem;
+    font-size: var(--text-xs);
+    line-height: 1rem;
+  }
+  .btn-primary {
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: var(--color-accent-strong);
+  }
+  .btn-secondary,
+  .btn-danger {
+    background: var(--color-surface);
+    border-color: var(--color-line-strong);
+    color: var(--color-ink);
+    box-shadow: var(--shadow-sm);
+  }
+  .btn-danger {
+    color: var(--color-accent);
+  }
+  .btn-secondary:hover:not(:disabled),
+  .btn-danger:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--color-ink) 4%, var(--color-surface));
+  }
+  .btn-danger:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--color-accent) 45%, var(--color-line-strong));
+  }
+  .btn-ghost {
+    color: var(--color-ink-muted);
+  }
+  .btn-ghost:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--color-ink) 5%, transparent);
+    color: var(--color-ink);
+  }
+  .btn-icon {
+    min-width: 2.25rem;
+    padding: 0;
+  }
+
+  .field {
+    min-height: 2.25rem;
+    padding: 0.375rem 0.625rem;
+    border: 1px solid var(--color-line-strong);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+    color: var(--color-ink);
+    font-size: var(--text-sm);
+    box-shadow: var(--shadow-sm);
+    transition: border-color 140ms var(--ease-snap);
+  }
+  .field-sm {
+    min-height: 1.875rem;
+    padding: 0.125rem 0.375rem;
+  }
+  .field::placeholder {
+    color: var(--color-ink-faint);
+  }
+  .field:hover {
+    border-color: color-mix(in srgb, var(--color-ink) 30%, var(--color-line-strong));
+  }
+  .field:focus-visible {
+    outline-offset: 0;
+    border-color: var(--color-accent);
+  }
+
+  /* Hairline pill for source tags, readouts and badges. */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0 0.375rem;
+    border: 1px solid var(--color-line);
+    border-radius: 999px;
+    background: var(--color-surface-sunk);
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    line-height: 1.125rem;
+    letter-spacing: 0.02em;
+    color: var(--color-ink-muted);
+    white-space: nowrap;
+  }
+  .chip-accent {
+    border-color: color-mix(in srgb, var(--color-accent) 30%, transparent);
+    background: color-mix(in srgb, var(--color-accent) 7%, var(--color-surface));
+    color: var(--color-accent);
+  }
+
+  /* Selection lists: tint + leading accent bar. */
+  .row-selected {
+    background: color-mix(in srgb, var(--color-accent) 7%, transparent);
+    box-shadow: inset 2px 0 0 var(--color-accent);
+  }
+
+  /* Segmented control: zinc track, active option raised on a surface. */
+  .segmented {
+    display: inline-flex;
+    gap: 0.125rem;
+    padding: 0.1875rem;
+    border-radius: calc(var(--radius) + 0.1875rem);
+    background: color-mix(in srgb, var(--color-ink) 5%, var(--color-canvas));
+  }
+  .segmented > * {
+    border-radius: var(--radius);
+    padding: 0.3125rem 0.75rem;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--color-ink-muted);
+    transition:
+      background-color 140ms var(--ease-snap),
+      color 140ms var(--ease-snap),
+      box-shadow 140ms var(--ease-snap);
+  }
+  .segmented > *:hover {
+    color: var(--color-ink);
+  }
+  .segmented > [aria-current="page"],
+  .segmented > [aria-current="true"],
+  .segmented > [aria-selected="true"],
+  .segmented > [aria-pressed="true"],
+  .segmented > .is-active {
+    background: var(--color-surface);
+    color: var(--color-ink);
+    box-shadow:
+      0 1px 2px rgb(24 24 27 / 0.08),
+      0 0 0 1px rgb(24 24 27 / 0.04);
+  }
+
+  /* Skeleton loader: shimmer travels via transform only. */
+  .skeleton {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius);
+    background: color-mix(in srgb, var(--color-ink) 7%, var(--color-surface));
+  }
+  .skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.7), transparent);
+    animation: shimmer 1.4s var(--ease-snap) infinite;
+  }
+
+  /* Soft breathing ring for a "live" status dot. */
+  .pulse-dot {
+    position: relative;
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    background: currentColor;
+  }
+  .pulse-dot::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: currentColor;
+    animation: pulse-ring 2.2s var(--ease-snap) infinite;
+  }
+
+  /* Cascade children in; capped so long lists don't wait. */
+  .stagger > * {
+    animation: settle-in var(--duration-settle) var(--ease-spring) both;
+  }
+  .stagger > :nth-child(2) { animation-delay: 35ms; }
+  .stagger > :nth-child(3) { animation-delay: 70ms; }
+  .stagger > :nth-child(4) { animation-delay: 105ms; }
+  .stagger > :nth-child(5) { animation-delay: 140ms; }
+  .stagger > :nth-child(6) { animation-delay: 175ms; }
+  .stagger > :nth-child(7) { animation-delay: 210ms; }
+  .stagger > :nth-child(8) { animation-delay: 245ms; }
+  .stagger > :nth-child(9) { animation-delay: 280ms; }
+  .stagger > :nth-child(10) { animation-delay: 315ms; }
+  .stagger > :nth-child(11) { animation-delay: 350ms; }
+  .stagger > :nth-child(n + 12) { animation-delay: 385ms; }
+}
+
+@keyframes shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+@keyframes pulse-ring {
+  0% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(2.4);
+  }
+}
+
+/* Coarse pointers get full-size tap targets. */
+@media (pointer: coarse) {
+  .btn {
+    min-height: 2.75rem;
+  }
+  .btn-icon {
+    min-width: 2.75rem;
+  }
+  .segmented > * {
+    padding-block: 0.5625rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Tabs with a sliding oxblood underline (builder steps, sheet sections). */
+.tab {
+  position: relative;
+  flex-shrink: 0;
+  white-space: nowrap;
+  padding: 0.5rem 0.625rem 0.75rem;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-ink-muted);
+  transition: color 140ms var(--ease-snap);
+}
+.tab::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0.625rem;
+  bottom: 0;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--color-accent);
+  transform: scaleX(0);
+  transition: transform 300ms var(--ease-snap);
+}
+.tab:hover {
+  color: var(--color-ink);
+}
+.tab[aria-current="step"],
+.tab[aria-current="true"] {
+  color: var(--color-ink);
+}
+.tab[aria-current="step"]::after,
+.tab[aria-current="true"]::after {
+  transform: scaleX(1);
+}
+
+/* Statblock rule: a short oxblood seal leading into a hairline. */
 .statblock-rule {
   height: 2px;
-  background: linear-gradient(to right, transparent, var(--color-blood), transparent);
+  background: linear-gradient(to right, var(--color-accent) 0 2.5rem, var(--color-line) 2.5rem);
 }
 
 /* Printing: show only the character sheet. */
@@ -44,5 +476,8 @@ body {
     inset: 0;
     width: 100%;
     overflow: visible !important;
+  }
+  .panel {
+    box-shadow: none;
   }
 }

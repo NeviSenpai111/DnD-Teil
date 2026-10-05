@@ -44,7 +44,7 @@ export function EntryRenderer({ entry }: { entry: Entry }) {
     case "insetReadaloud": {
       const e = entry as EntriesEntry;
       return (
-        <aside className="space-y-2 rounded border-l-4 border-blood/50 bg-blood/5 p-3">
+        <aside className="space-y-2 rounded-r-lg border-l-2 border-accent bg-surface-sunk px-4 py-3">
           {e.name && <Heading level={4}>{e.name}</Heading>}
           <Entries entries={e.entries} />
         </aside>
@@ -54,7 +54,7 @@ export function EntryRenderer({ entry }: { entry: Entry }) {
     case "list": {
       const e = entry as ListEntry;
       return (
-        <ul className="list-disc space-y-1 pl-6">
+        <ul className="list-disc space-y-1 pl-5 marker:text-ink-faint">
           {e.items.map((item, i) => (
             <li key={i}>{renderInlineOrBlock(item)}</li>
           ))}
@@ -86,9 +86,9 @@ export function EntryRenderer({ entry }: { entry: Entry }) {
     case "quote": {
       const e = entry as QuoteEntry;
       return (
-        <blockquote className="border-l-4 border-ink/30 pl-3 italic">
+        <blockquote className="border-l-2 border-line-strong pl-4 italic text-ink-muted">
           <Entries entries={e.entries} />
-          {e.by && <footer className="mt-1 text-sm not-italic text-ink/60">— {e.by}</footer>}
+          {e.by && <footer className="mt-1 text-sm not-italic text-ink-muted">— {e.by}</footer>}
         </blockquote>
       );
     }
@@ -97,7 +97,7 @@ export function EntryRenderer({ entry }: { entry: Entry }) {
       const href = (entry as ImageEntry).href;
       const src = href?.url ?? href?.path;
       return src ? (
-        <img src={src} alt={(entry as ImageEntry).title ?? ""} className="max-w-full rounded" />
+        <img src={src} alt={(entry as ImageEntry).title ?? ""} className="max-w-full rounded-lg border border-line" />
       ) : null;
     }
 
@@ -112,7 +112,7 @@ export function EntryRenderer({ entry }: { entry: Entry }) {
       const e = entry as { count?: number; entries?: Entry[] };
       return (
         <div className="space-y-2">
-          <p className="text-sm italic text-ink/60">Choose {e.count ?? 1}:</p>
+          <p className="text-sm italic text-ink-muted">Choose {e.count ?? 1}:</p>
           {e.entries && <Entries entries={e.entries} />}
         </div>
       );
@@ -140,7 +140,7 @@ export function EntryRenderer({ entry }: { entry: Entry }) {
       const e = entry as { name?: string };
       return e.name ? (
         <p className="leading-relaxed">
-          <span className="font-semibold text-blood">{e.name}</span>
+          <span className="font-semibold text-ink">{e.name}</span>
         </p>
       ) : null;
     }
@@ -160,14 +160,14 @@ export function EntryRenderer({ entry }: { entry: Entry }) {
 
 function TableBlock({ entry }: { entry: TableEntry }) {
   return (
-    <figure className="overflow-x-auto">
-      {entry.caption && <figcaption className="mb-1 font-semibold">{entry.caption}</figcaption>}
+    <figure className="overflow-x-auto rounded-lg border border-line">
+      {entry.caption && <figcaption className="border-b border-line bg-surface-sunk px-3 py-2 text-sm font-semibold">{entry.caption}</figcaption>}
       <table className="w-full border-collapse text-sm">
         {entry.colLabels && (
           <thead>
-            <tr className="border-b border-blood/40 text-left">
+            <tr className="border-b border-line text-left">
               {entry.colLabels.map((label, i) => (
-                <th key={i} className="px-2 py-1">
+                <th key={i} className="eyebrow px-3 py-2 font-medium">
                   <InlineText text={label} />
                 </th>
               ))}
@@ -176,9 +176,9 @@ function TableBlock({ entry }: { entry: TableEntry }) {
         )}
         <tbody>
           {entry.rows.map((row, r) => (
-            <tr key={r} className="border-b border-ink/10">
+            <tr key={r} className="border-b border-line last:border-0 even:bg-surface-sunk">
               {row.map((cell, c) => (
-                <td key={c} className="px-2 py-1 align-top">
+                <td key={c} className="px-3 py-1.5 align-top">
                   {renderInlineOrBlock(cell)}
                 </td>
               ))}
@@ -227,9 +227,9 @@ function FeatureRefLine({ entry }: { entry: UnknownEntry }) {
 
   return (
     <p className="leading-relaxed">
-      <span className="font-semibold text-blood">{name}</span>
+      <span className="font-semibold text-ink">{name}</span>
       {level !== undefined && (
-        <span className="text-xs uppercase text-ink/40"> · level {level}</span>
+        <span className="font-mono text-2xs uppercase text-ink-muted"> · level {level}</span>
       )}
     </p>
   );
@@ -247,7 +247,7 @@ function UnknownBlock({ entry }: { entry: UnknownEntry }) {
   }
   if (Array.isArray(entry.items)) {
     return (
-      <ul className="list-disc space-y-1 pl-6">
+      <ul className="list-disc space-y-1 pl-5 marker:text-ink-faint">
         {entry.items.map((item, i) => (
           <li key={i}>{renderInlineOrBlock(item)}</li>
         ))}
@@ -256,7 +256,7 @@ function UnknownBlock({ entry }: { entry: UnknownEntry }) {
   }
   // TODO: model this entry type. Surface it rather than silently dropping it.
   return (
-    <p className="rounded bg-amber-100 px-2 py-1 text-xs text-amber-900">
+    <p className="rounded-md border border-warning-border/50 bg-warning-surface px-2.5 py-1.5 text-xs text-ink">
       Unsupported entry type: <code>{entry.type}</code>
     </p>
   );
@@ -268,7 +268,7 @@ function renderInlineOrBlock(entry: Entry): ReactNode {
 }
 
 function Heading({ level, children }: { level: 3 | 4; children: ReactNode }) {
-  const cls = level === 3 ? "text-lg font-bold text-blood" : "font-semibold text-blood";
+  const cls = level === 3 ? "pt-2 text-base font-semibold tracking-tight text-ink" : "font-semibold text-ink";
   const Tag = level === 3 ? "h3" : "h4";
   return <Tag className={cls}>{children}</Tag>;
 }

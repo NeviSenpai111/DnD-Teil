@@ -1,15 +1,28 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useActiveEntities, useReprintedEntities } from "../../store/contentStore";
 import type { ContentType, ImportedEntity } from "../../data/types";
 import { entityIdentity, isAuxType } from "../../data/types";
+import { EmptyState } from "../common/EmptyState";
+import { Icon } from "../common/Icon";
+import { LoadSampleButton } from "../common/ImportButton";
+import { useMediaQuery } from "../common/useMediaQuery";
 import { EntityDetail } from "./EntityDetail";
 
-/** Browse imported content: a grouped list on the left, a detail pane on the right. */
+/**
+ * Browse imported content: a grouped list on the left, a detail pane on the
+ * right. Below `md` the two stack: picking an entry swaps the list for its
+ * detail, with a back button to return.
+ */
 export function BrowseView() {
   const entities = useActiveEntities();
   const reprinted = useReprintedEntities();
+  const isWide = useMediaQuery("(min-width: 48rem)");
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  const [showDetail, setShowDetail] = useState(false);
   const [query, setQuery] = useState("");
+  const listRef = useRef<HTMLElement>(null);
+  const backRef = useRef<HTMLButtonElement>(null);
+  const narrowDetail = !isWide && showDetail;
 
   // Fluff / templates / glue data are indexed for cross-references but not listed.
   const browsable = useMemo(() => entities.filter((e) => !isAuxType(e.__type)), [entities]);
@@ -33,66 +46,96 @@ export function BrowseView() {
     [browsable, selectedKey],
   );
 
+  // On narrow screens the clicked list button disappears with the list, so
+  // move focus to the back button — and back to the entry when returning.
+  const skipFocus = useRef(true);
+  useEffect(() => {
+    if (skipFocus.current) {
+      skipFocus.current = false;
+      return;
+    }
+    if (isWide) return;
+    if (showDetail) backRef.current?.focus();
+    else listRef.current?.querySelector<HTMLElement>('[aria-current="true"]')?.focus();
+  }, [showDetail, isWide]);
+
   if (entities.length === 0) {
     return (
-      <div className="grid h-full place-items-center text-center text-ink/60">
-        <div>
-          <p className="text-lg font-semibold">Nothing to browse yet</p>
-          <p className="text-sm">Import a 5eTools JSON file or load the sample to begin.</p>
-        </div>
-      </div>
+      <EmptyState title="Nothing to browse yet" icon="book" actions={<LoadSampleButton />}>
+        Load the bundled sample, or import your own 5eTools JSON files from the Import content
+        panel.
+      </EmptyState>
     );
   }
 
   const totalMatches = filtered.length;
 
   return (
-    <div className="grid h-full grid-cols-[18rem_1fr] gap-4">
-      <div className="flex flex-col gap-2 overflow-hidden">
-        <div className="relative">
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search name, type or source…"
-            className="w-full rounded border border-blood/30 bg-white/70 px-2 py-1 text-sm"
-          />
-          {query && (
-            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-ink/50">
-              {totalMatches}
+    <div className="grid h-full gap-4 md:grid-cols-[18rem_1fr] lg:grid-cols-[20rem_1fr] lg:gap-6">
+      <h1 className="sr-only">Browse content</h1>
+      <div className={`panel flex min-h-0 flex-col overflow-hidden ${narrowDetail ? "hidden" : ""}`}>
+        <div className="border-b border-line p-2">
+          <div className="relative">
+            <Icon name="search" className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search name, type or source…"
+              aria-label="Search content"
+              aria-describedby="browse-match-count"
+              className={`field w-full border-transparent bg-surface-sunk pl-8 shadow-none ${query ? "pr-20" : "pr-3"}`}
+            />
+            <span
+              id="browse-match-count"
+              aria-live="polite"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 font-mono text-2xs text-ink-muted"
+            >
+              {query ? `${totalMatches} match${totalMatches === 1 ? "" : "es"}` : ""}
             </span>
-          )}
+          </div>
         </div>
-        <nav className="flex-1 overflow-y-auto rounded border border-blood/20 bg-parchment/60 p-2">
+        <nav ref={listRef} aria-label="Entries" className="flex-1 overflow-y-auto px-2 pb-2">
           {totalMatches === 0 ? (
-            <p className="px-1 py-2 text-sm text-ink/50">No matches for “{query}”.</p>
+            <p className="px-2 py-6 text-sm text-ink-muted">
+              No matches for “{query}”. Try a source code like <span className="font-mono">PHB</span> or a
+              type like <span className="font-mono">spell</span>.
+            </p>
           ) : (
             [...grouped.entries()].map(([type, items]) => (
-              <section key={type} className="mb-3">
-                <h3 className="mb-1 px-1 text-xs font-bold uppercase tracking-wide text-blood">
-                  {type} <span className="text-ink/40">({items.length})</span>
-                </h3>
+              <section key={type}>
+                <h2 className="eyebrow sticky top-0 z-10 flex items-baseline justify-between bg-surface/95 px-2 pb-1.5 pt-3 backdrop-blur-sm">
+                  {type} <span className="text-ink-faint">{items.length}</span>
+                </h2>
                 <ul>
                   {items.map((e) => {
                     const key = entityIdentity(e);
                     const meta = entityMeta(e);
                     const isReprinted = reprinted.has(e);
+                    const isSelected = key === selectedKey;
                     return (
                       <li key={key}>
                         <button
                           type="button"
-                          onClick={() => setSelectedKey(key)}
-                          className={`w-full rounded px-2 py-1 text-left text-sm hover:bg-blood/10 ${
-                            key === selectedKey ? "bg-blood/15 font-semibold" : ""
-                          } ${isReprinted ? "opacity-60" : ""}`}
+                          onClick={() => {
+                            setSelectedKey(key);
+                            setShowDetail(true);
+                          }}
+                          aria-current={isSelected ? "true" : undefined}
+                          className={`w-full rounded-md px-2.5 py-1.5 text-left text-sm transition-colors ${
+                            isSelected ? "row-selected font-medium" : "hover:bg-ink/5"
+                          } ${isReprinted ? "italic text-ink-muted" : ""}`}
                           title={entityTitle(e, isReprinted)}
                         >
                           <span className="flex items-baseline justify-between gap-2">
-                            <span className="truncate">{e.name}</span>
-                            <span className="shrink-0 text-[10px] uppercase text-ink/40">{e.source}</span>
+                            <span className="truncate">
+                              {e.name}
+                              {isReprinted && <span className="sr-only"> (reprinted)</span>}
+                            </span>
+                            <span className="shrink-0 font-mono text-2xs uppercase not-italic text-ink-muted">{e.source}</span>
                           </span>
                           {meta && (
-                            <span className="block truncate text-[10px] leading-tight text-ink/50">{meta}</span>
+                            <span className="block truncate text-2xs leading-tight text-ink-muted">{meta}</span>
                           )}
                         </button>
                       </li>
@@ -105,12 +148,34 @@ export function BrowseView() {
         </nav>
       </div>
 
-      <div className="overflow-y-auto">
+      <div
+        role="region"
+        aria-label="Entry details"
+        // Focusable so keyboard users can scroll a long entry.
+        tabIndex={0}
+        className={`min-w-0 overflow-y-auto rounded-[var(--radius-panel)] pb-6 ${!isWide && !showDetail ? "hidden" : ""}`}
+      >
+        {narrowDetail && (
+          <button
+            ref={backRef}
+            type="button"
+            onClick={() => setShowDetail(false)}
+            className="btn btn-ghost -ml-2 mb-2"
+          >
+            <Icon name="arrow-left" />
+            All entries
+          </button>
+        )}
         {selected ? (
-          <EntityDetail entity={selected} />
+          <EntityDetail key={selectedKey} entity={selected} />
         ) : (
-          <div className="grid h-full place-items-center text-ink/50">
-            Select an entry to view it.
+          <div className="grid h-full max-w-md content-start gap-2 pt-[clamp(1rem,10vh,6rem)] text-sm text-ink-muted">
+            <Icon name="book" className="h-6 w-6 text-ink-faint" />
+            <p className="text-base font-medium text-ink">Select an entry to view it.</p>
+            <p>
+              <span className="font-mono">{browsable.length.toLocaleString("en-US")}</span> entries
+              imported. Search narrows the list by name, type or source.
+            </p>
           </div>
         )}
       </div>

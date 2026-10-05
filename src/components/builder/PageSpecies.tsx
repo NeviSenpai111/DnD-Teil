@@ -53,7 +53,7 @@ export function PageSpecies() {
   if (!race || changing) {
     return (
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-ink">Choose Origin: {label}</h2>
+        <h2 className="text-2xl font-semibold tracking-tight text-ink">Choose Origin: {label}</h2>
         <EntityPicker
           items={races}
           selected={draft.race}
@@ -82,10 +82,10 @@ export function PageSpecies() {
     <div className="space-y-4">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-ink">{race.name}</h2>
+          <h2 className="text-2xl font-semibold tracking-tight text-ink">{race.name}</h2>
           {traits.length > 0 && (
             <p className="mt-1 text-sm">
-              <span className="font-bold">{label} Traits:</span>{" "}
+              <span className="font-medium">{label} Traits:</span>{" "}
               {traits.map((t) => t.name).join(", ")}
             </p>
           )}
@@ -93,7 +93,7 @@ export function PageSpecies() {
         <button
           type="button"
           onClick={() => setChanging(true)}
-          className="shrink-0 text-sm font-semibold text-blood underline hover:text-blood-light"
+          className="btn btn-secondary btn-sm shrink-0"
         >
           Change {label}
         </button>
@@ -147,7 +147,7 @@ export function PageSpecies() {
 
       {subraces.length > 0 && (
         <div className="space-y-2">
-          <h3 className="text-lg font-bold text-ink">Subrace</h3>
+          <h3 className="text-lg font-semibold tracking-tight text-ink">Subrace</h3>
           <EntityPicker
             items={subraces}
             selected={draft.subrace}

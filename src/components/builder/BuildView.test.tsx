@@ -29,7 +29,7 @@ describe("BuildView (DDB-style pages)", () => {
   it("renders the tab bar, name header and Home page", () => {
     open();
     expect(screen.getByText("1. Class")).toBeInTheDocument();
-    expect(screen.getByText("What's Next ▸")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "What's Next" })).toBeInTheDocument();
     expect(screen.getByText("Character Name")).toBeInTheDocument();
     expect(screen.getByText("Rules edition")).toBeInTheDocument();
   });
@@ -84,8 +84,8 @@ describe("BuildView (DDB-style pages)", () => {
     expect(screen.getByText(/Current Inventory/)).toBeInTheDocument();
     expect(screen.getByText(/Total Weight:/)).toBeInTheDocument();
 
-    fireEvent.click(screen.getByText("What's Next ▸"));
-    expect(screen.getByText("What's Next")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "What's Next" }));
+    expect(screen.getByRole("heading", { name: "What's Next" })).toBeInTheDocument();
     expect(screen.getByText("Save to Library")).toBeInTheDocument();
   });
 });
