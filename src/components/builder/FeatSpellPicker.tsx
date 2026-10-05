@@ -82,11 +82,11 @@ export function AdditionalSpellPicker({
           def.level === 0 ? `cantrip${def.count === 1 ? "" : "s"}` : `level-${def.level ?? 1} spell${def.count === 1 ? "" : "s"}`;
         return (
           <div key={def.key} className="space-y-1.5">
-            <p className="text-xs font-semibold uppercase tracking-wide text-ink/50">
+            <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
               {def.origin}: choose {def.count} {label} ({picks.length}/{def.count})
             </p>
             {options.length === 0 ? (
-              <p className="text-xs text-ink/50">
+              <p className="text-xs text-ink-muted">
                 No matching spells imported{def.className ? ` for the ${def.className} list` : ""}.
               </p>
             ) : (

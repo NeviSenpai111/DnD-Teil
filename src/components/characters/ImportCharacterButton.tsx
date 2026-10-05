@@ -53,46 +53,48 @@ export function ImportCharacterButton() {
         className="hidden"
         onChange={(e) => void handleFiles(e.target.files)}
       />
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <button
           type="button"
           disabled={busy}
           onClick={() => inputRef.current?.click()}
           title="Import a character from a D&D Beyond PDF export"
-          className="rounded bg-blood px-3 py-2 text-sm font-semibold text-parchment hover:bg-blood-light disabled:opacity-50"
+          className="shrink-0 whitespace-nowrap rounded bg-blood px-3 py-2 text-sm font-semibold text-parchment hover:bg-blood-light disabled:opacity-50"
         >
-          {busy ? "Importing…" : "📥 Import character…"}
+          {busy ? "Importing…" : <><span aria-hidden="true">📥</span> Import character…</>}
         </button>
-        <span className="text-xs text-ink/60">
+        <span className="text-xs text-ink-muted">
           A D&amp;D Beyond PDF export (or a character JSON from here).
         </span>
       </div>
 
-      {errors.map((message) => (
-        <p key={message} className="text-xs text-blood">
-          {message}
-        </p>
-      ))}
+      <div role="status" aria-live="polite" className="space-y-2">
+        {errors.map((message) => (
+          <p key={message} className="text-xs text-blood">
+            {message}
+          </p>
+        ))}
 
-      {reports.map((report) => (
-        <div key={report.name} className="rounded border border-blood/20 bg-parchment/60 p-2 text-xs">
-          <span className="font-semibold">Imported {report.name}.</span>{" "}
-          {report.warnings.length === 0 ? (
-            "Everything resolved."
-          ) : (
-            <>
-              <span className="text-ink/70">
-                {report.warnings.length} thing{report.warnings.length === 1 ? "" : "s"} to check:
-              </span>
-              <ul className="ml-4 mt-1 list-disc space-y-0.5 text-ink/70">
-                {report.warnings.map((warning) => (
-                  <li key={warning}>{warning}</li>
-                ))}
-              </ul>
-            </>
-          )}
-        </div>
-      ))}
+        {reports.map((report) => (
+          <div key={report.name} className="rounded border border-blood/20 bg-parchment/60 p-2 text-xs">
+            <span className="font-semibold">Imported {report.name}.</span>{" "}
+            {report.warnings.length === 0 ? (
+              "Everything resolved."
+            ) : (
+              <>
+                <span className="text-ink/70">
+                  {report.warnings.length} thing{report.warnings.length === 1 ? "" : "s"} to check:
+                </span>
+                <ul className="ml-4 mt-1 list-disc space-y-0.5 text-ink/70">
+                  {report.warnings.map((warning) => (
+                    <li key={warning}>{warning}</li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

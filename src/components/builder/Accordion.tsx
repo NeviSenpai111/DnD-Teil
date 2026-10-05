@@ -40,15 +40,15 @@ export function Accordion({
           <span className="font-semibold text-ink">
             {title}
             {badge && (
-              <span className="ml-2 rounded border border-blood/30 bg-blood/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-blood">
+              <span className="ml-2 rounded border border-blood/30 bg-blood/10 px-1.5 py-0.5 text-2xs font-semibold uppercase tracking-wide text-blood">
                 {badge}
               </span>
             )}
           </span>
-          {subtitle && <span className="block text-xs text-ink/50">{subtitle}</span>}
+          {subtitle && <span className="block text-xs text-ink-muted">{subtitle}</span>}
         </span>
         <span
-          className={`text-ink/40 transition-transform ${open ? "rotate-180" : ""}`}
+          className={`text-ink-muted transition-transform ${open ? "rotate-180" : ""}`}
           aria-hidden
         >
           ▾

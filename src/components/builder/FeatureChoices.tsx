@@ -38,7 +38,7 @@ export function OptionalFeaturePicker({
       .map((t) => `${featureTypeLabel(t)} ("${t}")`)
       .join(", ");
     return (
-      <p className="rounded border border-amber-600/40 bg-amber-100/60 p-2 text-sm">
+      <p className="rounded border border-warning-border/60 bg-warning-surface p-2 text-sm">
         No imported options of type {types || "unknown"}. These aren't in the class file —
         in 5eTools data they're book content in the separate{" "}
         <code className="font-semibold">optionalfeature.json</code> file. Import it alongside the
@@ -57,7 +57,7 @@ export function OptionalFeaturePicker({
 
   return (
     <div className="space-y-1">
-      <p className="text-xs font-semibold uppercase tracking-wide text-ink/50">
+      <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
         Chosen {picks.length} / {def.count}
       </p>
       {options.map((o) => {
@@ -78,12 +78,12 @@ export function OptionalFeaturePicker({
               <button
                 type="button"
                 onClick={() => setExpanded(open ? undefined : o.name)}
-                className={`flex-1 text-left text-sm font-semibold ${locked ? "text-ink/40" : "text-ink"}`}
+                className={`flex-1 text-left text-sm font-semibold ${locked ? "text-ink-muted" : "text-ink"}`}
               >
                 {o.name} {open ? "▴" : "▾"}
               </button>
               {locked && (
-                <span className="text-xs uppercase tracking-wide text-ink/40">
+                <span className="text-xs uppercase tracking-wide text-ink-muted">
                   Requires level {prereq}
                 </span>
               )}
@@ -114,7 +114,7 @@ export function WeaponMasteryPicker({ count }: { count: number }) {
 
   if (options.length === 0) {
     return (
-      <p className="text-sm text-ink/60">
+      <p className="text-sm text-ink-muted">
         No imported weapons carry a mastery property — import 2024-format items.
       </p>
     );
@@ -127,7 +127,7 @@ export function WeaponMasteryPicker({ count }: { count: number }) {
 
   return (
     <div className="space-y-1">
-      <p className="text-xs font-semibold uppercase tracking-wide text-ink/50">
+      <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
         Chosen {picks.length} / {count}
       </p>
       {options.map((o) => {
@@ -145,7 +145,7 @@ export function WeaponMasteryPicker({ count }: { count: number }) {
               aria-label={`Master ${o.name}`}
             />
             <span className="flex-1 font-semibold">{o.name}</span>
-            <span className="text-xs uppercase tracking-wide text-ink/50">{o.mastery}</span>
+            <span className="text-xs uppercase tracking-wide text-ink-muted">{o.mastery}</span>
           </label>
         );
       })}
@@ -167,7 +167,7 @@ export function ExpertiseSelects({ choiceKey, count }: { choiceKey: string; coun
 
   if (proficient.length === 0) {
     return (
-      <p className="text-sm text-ink/60">
+      <p className="text-sm text-ink-muted">
         Pick your skill proficiencies first — expertise doubles proficiency on skills you already
         have.
       </p>

@@ -1,10 +1,12 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { useCharacterStore } from "../../store/characterStore";
 import { useContentStore, selectActiveEntities } from "../../store/contentStore";
 import { deriveFromCharacter } from "../../store/selectors";
 import { characterLevel } from "../../model/character";
 import { speciesLabel } from "../../engine/edition";
+import { EmptyState } from "../common/EmptyState";
+import { LoadSampleButton } from "../common/ImportButton";
 import { PageHome } from "./PageHome";
 import { PageClass } from "./PageClass";
 import { PageBackground } from "./PageBackground";
@@ -33,62 +35,101 @@ export function BuildView() {
     { id: "next", label: "What's Next", el: (goTo) => <PageWhatsNext goTo={goTo} /> },
   ];
   const current = Math.max(0, pages.findIndex((p) => p.id === pageId));
-  const goTo = (id: string) => setPageId(id);
+  const prev = current > 0 ? pages[current - 1] : undefined;
+  const next = current < pages.length - 1 ? pages[current + 1] : undefined;
+  const tabLabel = (p: (typeof pages)[number]) => `${p.num != null ? `${p.num}. ` : ""}${p.label}`;
+
+  const tabsRef = useRef<HTMLElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const goTo = (id: string) => {
+    setPageId(id);
+    scrollRef.current?.scrollTo?.({ top: 0 });
+  };
+
+  // Keep the active step visible when the tab strip scrolls (narrow screens).
+  useEffect(() => {
+    tabsRef.current
+      ?.querySelector<HTMLElement>('[aria-current="step"]')
+      ?.scrollIntoView?.({ block: "nearest", inline: "nearest" });
+  }, [current]);
 
   if (!hasContent) {
     return (
-      <div className="grid h-full place-items-center text-center text-ink/60">
-        <div>
-          <p className="text-lg font-semibold">No content imported</p>
-          <p className="text-sm">Import a 5eTools file (or load the sample) to start building.</p>
-        </div>
-      </div>
+      <EmptyState title="No content imported" actions={<LoadSampleButton />}>
+        The builder needs classes, backgrounds and species to choose from. Load the bundled sample,
+        or import your own 5eTools files from the Import content panel.
+      </EmptyState>
     );
   }
 
   return (
     <div className="flex h-full flex-col overflow-hidden rounded border border-blood/20">
       {/* dark builder bar: title + page tabs + quick actions */}
-      <div className="bg-ink px-4 pt-2 text-parchment">
+      <div data-surface="dark" className="bg-ink px-3 pt-2 text-parchment sm:px-4">
         <div className="flex items-center gap-3">
-          <div>
-            <div className="text-sm font-bold leading-tight">Character Builder</div>
-            <div className="text-xs text-parchment/60">{draft.name}</div>
+          <div className="min-w-0">
+            <h1 className="text-sm font-bold leading-tight">Character Builder</h1>
+            <div className="truncate text-xs text-parchment/70">{draft.name}</div>
           </div>
           <HeaderActions />
         </div>
-        <nav className="mt-1 flex flex-wrap gap-1 text-xs font-bold uppercase tracking-wide">
+        <nav
+          ref={tabsRef}
+          aria-label="Builder steps"
+          className="-mx-3 mt-1 flex gap-1 overflow-x-auto px-3 text-xs font-bold uppercase tracking-wide sm:-mx-4 sm:px-4"
+        >
           {pages.map((p, i) => (
             <button
               key={p.id}
               type="button"
-              onClick={() => setPageId(p.id)}
-              className={`border-b-2 px-2 py-2 ${
+              onClick={() => goTo(p.id)}
+              aria-current={i === current ? "step" : undefined}
+              className={`shrink-0 whitespace-nowrap border-b-2 px-2 py-2 ${
                 i === current
                   ? "border-parchment text-parchment"
-                  : "border-transparent text-parchment/60 hover:text-parchment"
+                  : "border-transparent text-parchment/70 hover:text-parchment"
               }`}
             >
-              {p.num != null ? `${p.num}. ` : ""}
-              {p.label}
+              {tabLabel(p)}
               {p.id === "next" ? " ▸" : ""}
             </button>
           ))}
         </nav>
       </div>
 
-      {/* content with side prev/next arrows */}
+      {/* content with side prev/next arrows (md+) or a footer pager (narrow) */}
       <div className="relative flex-1 overflow-hidden bg-parchment/60">
-        {current > 0 && (
-          <PagerArrow side="left" onClick={() => setPageId(pages[current - 1].id)} />
-        )}
-        {current < pages.length - 1 && (
-          <PagerArrow side="right" onClick={() => setPageId(pages[current + 1].id)} />
-        )}
-        <div className="h-full overflow-y-auto">
-          <div className="mx-auto max-w-3xl px-12 py-6">
+        {prev && <PagerArrow side="left" target={tabLabel(prev)} onClick={() => goTo(prev.id)} />}
+        {next && <PagerArrow side="right" target={tabLabel(next)} onClick={() => goTo(next.id)} />}
+        <div ref={scrollRef} className="h-full overflow-y-auto">
+          <div className="mx-auto max-w-3xl px-4 py-5 sm:px-6 md:px-12 md:py-6">
             <CharacterNameHeader />
             {pages[current].el(goTo)}
+            <nav
+              aria-label="Step navigation"
+              className="mt-8 flex justify-between gap-2 border-t border-blood/15 pt-4 md:hidden"
+            >
+              {prev ? (
+                <button
+                  type="button"
+                  onClick={() => goTo(prev.id)}
+                  className="rounded border border-blood/40 px-3 py-2 text-sm font-semibold text-blood hover:bg-blood/10"
+                >
+                  ‹ {tabLabel(prev)}
+                </button>
+              ) : (
+                <span />
+              )}
+              {next && (
+                <button
+                  type="button"
+                  onClick={() => goTo(next.id)}
+                  className="rounded bg-blood px-3 py-2 text-sm font-semibold text-parchment hover:bg-blood-light"
+                >
+                  {tabLabel(next)} ›
+                </button>
+              )}
+            </nav>
           </div>
         </div>
       </div>
@@ -109,9 +150,9 @@ function CharacterNameHeader() {
     .toUpperCase();
 
   return (
-    <div className="mb-6 flex items-center gap-4 border-b border-blood/15 pb-4">
+    <div className="mb-6 flex items-center gap-3 border-b border-blood/15 pb-4 sm:gap-4">
       <div
-        className="grid h-16 w-16 shrink-0 place-items-center rounded border-2 border-dashed border-ink/30 bg-ink/5 text-xl font-bold text-ink/50"
+        className="grid h-12 w-12 shrink-0 place-items-center rounded border-2 border-dashed border-ink/30 bg-ink/5 text-lg font-bold text-ink-muted sm:h-16 sm:w-16 sm:text-xl"
         aria-hidden
       >
         {initials || "+"}
@@ -136,8 +177,14 @@ function HeaderActions() {
   const [savedNote, setSavedNote] = useState(false);
   const derived = deriveFromCharacter(draft, index);
 
+  useEffect(() => {
+    if (!savedNote) return;
+    const timer = setTimeout(() => setSavedNote(false), 1500);
+    return () => clearTimeout(timer);
+  }, [savedNote]);
+
   return (
-    <div className="ml-auto flex items-center gap-2 text-xs">
+    <div className="ml-auto flex shrink-0 items-center gap-2 text-xs">
       <span className="hidden gap-2 sm:flex">
         <Stat label="LVL" value={characterLevel(draft)} />
         <Stat label="HP" value={derived.maxHp ?? "—"} />
@@ -148,12 +195,14 @@ function HeaderActions() {
         onClick={() => {
           saveDraftToLibrary();
           setSavedNote(true);
-          setTimeout(() => setSavedNote(false), 1500);
         }}
         className="rounded bg-blood px-2.5 py-1 font-bold uppercase tracking-wide text-parchment hover:bg-blood-light"
       >
         {savedNote ? "Saved ✓" : "Save"}
       </button>
+      <span role="status" className="sr-only">
+        {savedNote ? `${draft.name} saved to your characters.` : ""}
+      </span>
       <Link
         to="/sheet/draft"
         className="rounded border border-parchment/40 px-2.5 py-1 font-bold uppercase tracking-wide text-parchment hover:bg-white/10"
@@ -167,19 +216,20 @@ function HeaderActions() {
 function Stat({ label, value }: { label: string; value: string | number }) {
   return (
     <span className="rounded bg-white/10 px-2 py-1">
-      <span className="text-parchment/60">{label}</span>{" "}
+      <span className="text-parchment/70">{label}</span>{" "}
       <span className="font-bold">{value}</span>
     </span>
   );
 }
 
-function PagerArrow({ side, onClick }: { side: "left" | "right"; onClick: () => void }) {
+function PagerArrow({ side, target, onClick }: { side: "left" | "right"; target: string; onClick: () => void }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      aria-label={side === "left" ? "Previous page" : "Next page"}
-      className={`absolute top-1/2 z-10 grid h-10 w-8 -translate-y-1/2 place-items-center rounded bg-blood/80 text-lg font-bold text-parchment shadow hover:bg-blood ${
+      aria-label={`${side === "left" ? "Previous" : "Next"} step: ${target}`}
+      title={target}
+      className={`absolute top-1/2 z-10 hidden h-10 w-8 -translate-y-1/2 place-items-center rounded bg-blood/80 text-lg font-bold text-parchment shadow-sm hover:bg-blood md:grid ${
         side === "left" ? "left-1" : "right-1"
       }`}
     >

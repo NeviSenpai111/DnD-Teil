@@ -112,13 +112,13 @@ export function PageWhatsNext({ goTo }: { goTo: (id: string) => void }) {
             >
               <span
                 className={`grid h-5 w-5 shrink-0 place-items-center rounded-full text-xs font-bold ${
-                  item.done ? "bg-green-700 text-white" : "border border-ink/30 text-ink/40"
+                  item.done ? "bg-success text-white" : "border border-ink/30 text-ink-muted"
                 }`}
                 aria-hidden
               >
                 {item.done ? "✓" : ""}
               </span>
-              <span className={item.done ? "text-ink/50 line-through" : ""}>{item.label}</span>
+              <span className={item.done ? "text-ink-muted line-through" : ""}>{item.label}</span>
             </button>
           </li>
         ))}
@@ -153,7 +153,7 @@ export function PageWhatsNext({ goTo }: { goTo: (id: string) => void }) {
 function Chip({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="rounded border border-blood/20 bg-white/50 p-2">
-      <div className="text-[10px] font-bold uppercase tracking-wide text-ink/60">{label}</div>
+      <div className="text-2xs font-bold uppercase tracking-wide text-ink-muted">{label}</div>
       <div className="text-base font-bold">{value}</div>
     </div>
   );

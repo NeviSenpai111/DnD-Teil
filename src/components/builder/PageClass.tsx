@@ -58,9 +58,9 @@ export function PageClass() {
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-blood/15 pb-3">
         <div>
           <h2 className="text-xl font-bold text-ink">Character Level: {characterLevel(draft)}</h2>
-          <p className="text-sm text-ink/60">Milestone Advancement</p>
+          <p className="text-sm text-ink-muted">Milestone Advancement</p>
         </div>
-        <div className="flex items-center gap-4 rounded border border-blood/20 bg-white/60 px-3 py-2 text-sm shadow-sm">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded border border-blood/20 bg-white/60 px-3 py-2 text-sm shadow-sm">
           <span>
             <span className="font-bold">Max Hit Points:</span> {derived.maxHp ?? "—"}
           </span>
@@ -119,7 +119,7 @@ function ClassSection({
 
   if (!classData) {
     return (
-      <p className="rounded border border-amber-600/40 bg-amber-100/60 p-2 text-sm">
+      <p className="rounded border border-warning-border/60 bg-warning-surface p-2 text-sm">
         <strong>{choice.name}</strong> ({choice.source}) isn't in the imported content — import its
         class file or{" "}
         <button type="button" onClick={() => removeClass(classIndex)} className="font-semibold text-blood underline">
@@ -133,7 +133,7 @@ function ClassSection({
   return (
     <section className="space-y-4">
       {/* class header: icon, name, level select, remove */}
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <div
           className="grid h-11 w-11 place-items-center rounded border border-blood/30 bg-blood/10 text-xl"
           aria-hidden
@@ -159,7 +159,8 @@ function ClassSection({
           type="button"
           onClick={() => removeClass(classIndex)}
           title="Remove class"
-          className="text-xl font-bold text-blood hover:text-blood-light"
+          aria-label={`Remove ${classData.name}`}
+          className="grid h-9 w-9 place-items-center rounded text-xl font-bold text-blood hover:bg-blood/10 hover:text-blood-light"
         >
           ✕
         </button>
@@ -173,7 +174,7 @@ function ClassSection({
             type="button"
             onClick={() => setTab(t)}
             className={`-mb-px border-b-2 pb-1.5 ${
-              tab === t ? "border-blood text-blood" : "border-transparent text-ink/50 hover:text-ink"
+              tab === t ? "border-blood text-blood" : "border-transparent text-ink-muted hover:text-ink"
             }`}
           >
             {t === "features" ? "Class Features" : "Spells"} {tab === t ? "▴" : "▾"}
@@ -220,12 +221,12 @@ function AddAnotherClass() {
       </button>
       {open && (
         <>
-          <p className="text-xs text-ink/60">
+          <p className="text-xs text-ink-muted">
             Multiclassing: saving throws and starting proficiencies still come from your first
             class; spell slots are shared across casting classes.
           </p>
           {blocked && (
-            <p className="rounded border border-amber-600/40 bg-amber-100/60 p-2 text-sm">
+            <p className="rounded border border-warning-border/60 bg-warning-surface p-2 text-sm">
               {blocked}
             </p>
           )}
@@ -383,7 +384,7 @@ function FeaturesTab({
       level: f.level,
       el: (
         <Accordion key={`f:${f.name}:${i}`} title={f.name} subtitle={`${ordinal(f.level)} level`}>
-          {f.entries ? <Entries entries={f.entries} /> : <p className="text-ink/50">No description.</p>}
+          {f.entries ? <Entries entries={f.entries} /> : <p className="text-ink-muted">No description.</p>}
         </Accordion>
       ),
     })),
@@ -499,7 +500,7 @@ function HitPointsPanel({ classData, totalLevel }: { classData: ClassData; total
   const setHpMode = useCharacterStore((s) => s.setHpMode);
   const setHpRolls = useCharacterStore((s) => s.setHpRolls);
 
-  if (!classData.hd) return <p className="text-ink/50">This class declares no hit die.</p>;
+  if (!classData.hd) return <p className="text-ink-muted">This class declares no hit die.</p>;
   const faces = classData.hd.faces;
 
   return (
@@ -591,7 +592,7 @@ function HigherLevels({ features }: { features: { name: string; level: number; e
         {features.map((f, i) => (
           <li key={`${f.name}:${i}`} className="flex justify-between gap-2 border-b border-ink/5 pb-1">
             <span>{f.name}</span>
-            <span className="text-xs uppercase text-ink/40">{ordinal(f.level)} level</span>
+            <span className="text-xs uppercase text-ink-muted">{ordinal(f.level)} level</span>
           </li>
         ))}
       </ul>

@@ -80,13 +80,13 @@ export function PageEquipment() {
                 >
                   Add starting equipment
                 </button>
-                <p className="mt-1 text-xs text-ink/60">
+                <p className="mt-1 text-xs text-ink-muted">
                   Default loadout: {kitItems.map((k) => k.name).join(", ")}. Adds the first option
                   from each choice; swap items below as needed.
                 </p>
               </div>
             ) : (
-              <p className="text-xs text-ink/60">
+              <p className="text-xs text-ink-muted">
                 The chosen background/class declares no parsable starting equipment (or none is
                 imported). Add items below.
               </p>
@@ -103,7 +103,7 @@ export function PageEquipment() {
         />
         {query && (
           <ul className="mt-1 max-h-40 max-w-sm overflow-y-auto rounded border border-blood/15 bg-white/70">
-            {matches.length === 0 && <li className="px-2 py-1 text-sm text-ink/50">No matches.</li>}
+            {matches.length === 0 && <li className="px-2 py-1 text-sm text-ink-muted">No matches.</li>}
             {matches.map((i) => (
               <li key={`${i.name}|${i.source}`}>
                 <button
@@ -112,7 +112,7 @@ export function PageEquipment() {
                   className="flex w-full justify-between px-2 py-1 text-left text-sm hover:bg-blood/10"
                 >
                   <span>{i.name}</span>
-                  <span className="text-[10px] uppercase text-ink/40">
+                  <span className="text-2xs uppercase text-ink-muted">
                     {itemTypeCode(i.type as string) ?? "item"}
                   </span>
                 </button>
@@ -123,9 +123,9 @@ export function PageEquipment() {
       </div>
 
       <section className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded border border-blood/20 bg-white/50 px-3 py-2">
-        <span className="text-xs font-bold uppercase tracking-wide text-ink/50">Currency</span>
+        <span className="text-xs font-bold uppercase tracking-wide text-ink-muted">Currency</span>
         {COINS.map((coin) => (
-          <label key={coin} className="flex items-center gap-1 text-xs uppercase text-ink/60">
+          <label key={coin} className="flex items-center gap-1 text-xs uppercase text-ink-muted">
             {coin}
             <input
               type="number"
@@ -137,14 +137,14 @@ export function PageEquipment() {
             />
           </label>
         ))}
-        <span className="ml-auto text-xs text-ink/60">≈ {purseGp} gp</span>
+        <span className="ml-auto text-xs text-ink-muted">≈ {purseGp} gp</span>
       </section>
 
       <section>
         <div className="flex items-center justify-between border-b-2 border-blood/30 pb-1.5">
           <h3 className="font-bold text-ink">Current Inventory ({draft.inventory.length})</h3>
           <span
-            className={`text-sm ${totalWeight > capacity ? "font-semibold text-blood" : "text-ink/60"}`}
+            className={`text-sm ${totalWeight > capacity ? "font-semibold text-blood" : "text-ink-muted"}`}
             title="Carrying capacity: Strength × 15 lb. (variant encumbrance thresholds: Str×5 / Str×10)"
           >
             Total Weight: {formatWeight(totalWeight)} / {capacity} lb.
@@ -153,7 +153,7 @@ export function PageEquipment() {
         </div>
 
         {rows.length === 0 ? (
-          <p className="mt-2 text-sm text-ink/50">No items yet. Search above to add some.</p>
+          <p className="mt-2 text-sm text-ink-muted">No items yet. Search above to add some.</p>
         ) : (
           <ul className="mt-2 space-y-2">
             {rows.map(({ entry, i, item }) => {
@@ -186,13 +186,13 @@ export function PageEquipment() {
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-semibold">{entry.name}</span>
-                    <span className="block text-xs text-ink/50">
+                    <span className="block text-xs text-ink-muted">
                       {categoryLine(item)}
                       {item?.weight != null && ` · ${formatWeight(item.weight)}`}
                     </span>
                   </span>
 
-                  <label className="flex items-center gap-1 text-xs text-ink/60">
+                  <label className="flex items-center gap-1 text-xs text-ink-muted">
                     Qty
                     <input
                       type="number"
@@ -207,7 +207,7 @@ export function PageEquipment() {
                     <button
                       type="button"
                       onClick={() => toggleEquip(i)}
-                      className={`rounded border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
+                      className={`rounded border px-2 py-0.5 text-2xs font-bold uppercase tracking-wide ${
                         entry.equipped
                           ? "border-blood bg-blood text-parchment"
                           : "border-blood/40 text-blood hover:bg-blood/10"
@@ -222,6 +222,7 @@ export function PageEquipment() {
                     onClick={() => removeItem(i)}
                     className="text-blood hover:text-blood-light"
                     title="Remove"
+                    aria-label={`Remove ${entry.name}`}
                   >
                     ✕
                   </button>
@@ -230,7 +231,7 @@ export function PageEquipment() {
             })}
           </ul>
         )}
-        <p className="mt-2 text-xs text-ink/50">Wearing armor or a shield updates AC on the sheet.</p>
+        <p className="mt-2 text-xs text-ink-muted">Wearing armor or a shield updates AC on the sheet.</p>
       </section>
     </div>
   );

@@ -84,7 +84,7 @@ export function AsiSlot({ index }: { index: number }) {
               ))}
             </select>
           ))}
-          <span className="self-center text-xs text-ink/50">(pick the same twice for +2)</span>
+          <span className="self-center text-xs text-ink-muted">(pick the same twice for +2)</span>
         </div>
       ) : (
         <div className="space-y-2">

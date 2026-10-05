@@ -51,7 +51,7 @@ function OptionalFeatureDetail({ feature }: { feature: OptionalFeature }) {
     <article className="mx-auto max-w-2xl rounded border border-blood/30 bg-parchment p-5 shadow">
       <header className="border-b border-blood/30 pb-2">
         <h2 className="text-2xl font-bold text-blood">{feature.name}</h2>
-        <p className="text-xs uppercase tracking-wide text-ink/60">
+        <p className="text-xs uppercase tracking-wide text-ink-muted">
           {typeLine} · {feature.source}
         </p>
       </header>
@@ -64,7 +64,7 @@ function OptionalFeatureDetail({ feature }: { feature: OptionalFeature }) {
         {feature.entries ? (
           <Entries entries={feature.entries} />
         ) : (
-          <p className="text-ink/60">No description text.</p>
+          <p className="text-ink-muted">No description text.</p>
         )}
       </div>
     </article>
@@ -77,7 +77,7 @@ function GenericCard({ entity, entries }: { entity: ImportedEntity; entries?: En
     <article className="mx-auto max-w-2xl rounded border border-blood/30 bg-parchment p-5 shadow">
       <header className="border-b border-blood/30 pb-2">
         <h2 className="text-2xl font-bold text-blood">{entity.name}</h2>
-        <p className="text-xs uppercase tracking-wide text-ink/60">
+        <p className="text-xs uppercase tracking-wide text-ink-muted">
           {entity.__type} · {entity.source}
         </p>
       </header>
@@ -85,7 +85,7 @@ function GenericCard({ entity, entries }: { entity: ImportedEntity; entries?: En
         {entries ? (
           <Entries entries={entries} />
         ) : (
-          <p className="text-ink/60">This {entity.__type} entry carries no description text.</p>
+          <p className="text-ink-muted">This {entity.__type} entry carries no description text.</p>
         )}
       </div>
     </article>

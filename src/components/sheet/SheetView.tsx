@@ -1,6 +1,7 @@
 import { Link, useParams } from "react-router-dom";
 import { useCharacterStore } from "../../store/characterStore";
 import { downloadCharacterJson } from "../../data/exportCharacter";
+import { EmptyState } from "../common/EmptyState";
 import { FullSheet } from "./FullSheet";
 
 /**
@@ -18,20 +19,22 @@ export function SheetView() {
 
   if (!character) {
     return (
-      <div className="grid h-full place-items-center text-center text-ink/60">
-        <div>
-          <p className="text-lg font-semibold">Character not found</p>
+      <EmptyState
+        title="Character not found"
+        actions={
           <Link to="/characters" className="text-sm text-blood underline">
             ← Back to characters
           </Link>
-        </div>
-      </div>
+        }
+      >
+        It may have been deleted, or the link points at another browser's library.
+      </EmptyState>
     );
   }
 
   return (
     <div className="mx-auto h-full max-w-6xl space-y-3 overflow-y-auto">
-      <div className="flex items-center gap-2 print:hidden">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 print:hidden">
         <Link to="/characters" className="text-sm text-blood underline">
           ← Characters
         </Link>

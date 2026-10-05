@@ -29,7 +29,7 @@ function Characteristics({ background }: { background: Background }) {
         {tables.map((table) => (
           <div key={table.field}>
             <div className="flex items-center gap-2">
-              <h4 className="text-xs font-bold uppercase tracking-wide text-ink/50">{table.label}</h4>
+              <h4 className="text-xs font-bold uppercase tracking-wide text-ink-muted">{table.label}</h4>
               <button
                 type="button"
                 onClick={() =>
@@ -38,7 +38,7 @@ function Characteristics({ background }: { background: Background }) {
                     table.options[Math.floor(Math.random() * table.options.length)],
                   )
                 }
-                className="rounded border border-blood/40 px-1.5 py-0.5 text-[10px] font-bold uppercase text-blood hover:bg-blood/10"
+                className="rounded border border-blood/40 px-1.5 py-0.5 text-2xs font-bold uppercase text-blood hover:bg-blood/10"
               >
                 🎲 Roll {table.label}
               </button>
@@ -52,7 +52,7 @@ function Characteristics({ background }: { background: Background }) {
                     className="w-full rounded px-1 py-0.5 text-left text-sm text-ink/80 hover:bg-blood/10"
                     title={`Use as your ${table.label.toLowerCase()}`}
                   >
-                    <span className="mr-1 text-xs text-ink/40">{i + 1}.</span>
+                    <span className="mr-1 text-xs text-ink-muted">{i + 1}.</span>
                     {option}
                   </button>
                 </li>
@@ -106,6 +106,7 @@ export function PageBackground() {
         <select
           value={draft.background ? `${draft.background.name}|${draft.background.source}` : ""}
           disabled={isCustom}
+          aria-label="Background"
           onChange={(e) => {
             const [name, source] = e.target.value.split("|");
             setBackground(name ? { name, source } : undefined);
@@ -159,7 +160,7 @@ export function PageBackground() {
               className="mt-0.5 block w-full rounded border border-ink/20 bg-white px-2 py-1"
             />
           </label>
-          <p className="text-xs text-ink/60">
+          <p className="text-xs text-ink-muted">
             A custom background grants 2 skills of your choice, a tool and a standard language —
             pick them below.
           </p>

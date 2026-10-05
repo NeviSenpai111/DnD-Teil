@@ -19,7 +19,7 @@ export function SourceToggle() {
   }, [reprinted, activeSources]);
 
   if (sources.length === 0) {
-    return <p className="text-xs text-ink/60">No sources imported yet.</p>;
+    return <p className="text-xs text-ink-muted">No sources imported yet.</p>;
   }
 
   return (
@@ -35,7 +35,7 @@ export function SourceToggle() {
           className="accent-blood"
         />
         <span className="flex-1">Show reprinted</span>
-        <span className="text-xs text-ink/50">{reprintedCount}</span>
+        <span className="text-xs text-ink-muted">{reprintedCount}</span>
       </label>
       <ul className="flex flex-col gap-1">
         {sources.map((info) => {
@@ -52,7 +52,7 @@ export function SourceToggle() {
                 <span className="flex-1 truncate" title={info.displayName}>
                   {info.displayName}
                 </span>
-                <span className="text-xs text-ink/50">{info.count}</span>
+                <span className="text-xs text-ink-muted">{info.count}</span>
               </label>
             </li>
           );

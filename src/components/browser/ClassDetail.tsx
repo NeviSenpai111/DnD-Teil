@@ -22,7 +22,7 @@ function ordinal(n: number): string {
 
 function FeatureSections({ features }: { features: LeveledFeature[] }) {
   if (features.length === 0) {
-    return <p className="text-sm text-ink/50">No features imported for this entry.</p>;
+    return <p className="text-sm text-ink-muted">No features imported for this entry.</p>;
   }
   return (
     <div className="space-y-3">
@@ -30,7 +30,7 @@ function FeatureSections({ features }: { features: LeveledFeature[] }) {
         <section key={`${f.name}:${f.level}:${i}`}>
           <h3 className="font-bold text-blood">
             {f.name}{" "}
-            <span className="text-xs font-semibold uppercase text-ink/40">
+            <span className="text-xs font-semibold uppercase text-ink-muted">
               {ordinal(f.level)} level
             </span>
           </h3>
@@ -76,7 +76,7 @@ export function ClassDetail({ cls }: { cls: ClassData }) {
     <article className="mx-auto max-w-2xl rounded border border-blood/30 bg-parchment p-5 shadow">
       <header className="border-b border-blood/30 pb-2">
         <h2 className="text-2xl font-bold text-blood">{cls.name}</h2>
-        <p className="text-xs uppercase tracking-wide text-ink/60">class · {cls.source}</p>
+        <p className="text-xs uppercase tracking-wide text-ink-muted">class · {cls.source}</p>
       </header>
 
       <dl className="mt-3 space-y-1 text-sm">
@@ -97,7 +97,7 @@ export function ClassDetail({ cls }: { cls: ClassData }) {
       )}
 
       <div className="mt-4 border-t border-blood/15 pt-3">
-        <h3 className="mb-2 text-sm font-bold uppercase tracking-wide text-ink/60">
+        <h3 className="mb-2 text-sm font-bold uppercase tracking-wide text-ink-muted">
           Class Features
         </h3>
         <FeatureSections features={features} />
@@ -125,7 +125,7 @@ export function SubclassDetail({ subclass }: { subclass: Subclass }) {
     <article className="mx-auto max-w-2xl rounded border border-blood/30 bg-parchment p-5 shadow">
       <header className="border-b border-blood/30 pb-2">
         <h2 className="text-2xl font-bold text-blood">{subclass.name}</h2>
-        <p className="text-xs uppercase tracking-wide text-ink/60">
+        <p className="text-xs uppercase tracking-wide text-ink-muted">
           {subclass.className} subclass · {subclass.source}
         </p>
       </header>

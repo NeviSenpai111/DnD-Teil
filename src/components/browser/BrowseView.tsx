@@ -1,15 +1,27 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useActiveEntities, useReprintedEntities } from "../../store/contentStore";
 import type { ContentType, ImportedEntity } from "../../data/types";
 import { entityIdentity, isAuxType } from "../../data/types";
+import { EmptyState } from "../common/EmptyState";
+import { LoadSampleButton } from "../common/ImportButton";
+import { useMediaQuery } from "../common/useMediaQuery";
 import { EntityDetail } from "./EntityDetail";
 
-/** Browse imported content: a grouped list on the left, a detail pane on the right. */
+/**
+ * Browse imported content: a grouped list on the left, a detail pane on the
+ * right. Below `md` the two stack: picking an entry swaps the list for its
+ * detail, with a back button to return.
+ */
 export function BrowseView() {
   const entities = useActiveEntities();
   const reprinted = useReprintedEntities();
+  const isWide = useMediaQuery("(min-width: 48rem)");
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  const [showDetail, setShowDetail] = useState(false);
   const [query, setQuery] = useState("");
+  const listRef = useRef<HTMLElement>(null);
+  const backRef = useRef<HTMLButtonElement>(null);
+  const narrowDetail = !isWide && showDetail;
 
   // Fluff / templates / glue data are indexed for cross-references but not listed.
   const browsable = useMemo(() => entities.filter((e) => !isAuxType(e.__type)), [entities]);
@@ -33,66 +45,94 @@ export function BrowseView() {
     [browsable, selectedKey],
   );
 
+  // On narrow screens the clicked list button disappears with the list, so
+  // move focus to the back button — and back to the entry when returning.
+  const skipFocus = useRef(true);
+  useEffect(() => {
+    if (skipFocus.current) {
+      skipFocus.current = false;
+      return;
+    }
+    if (isWide) return;
+    if (showDetail) backRef.current?.focus();
+    else listRef.current?.querySelector<HTMLElement>('[aria-current="true"]')?.focus();
+  }, [showDetail, isWide]);
+
   if (entities.length === 0) {
     return (
-      <div className="grid h-full place-items-center text-center text-ink/60">
-        <div>
-          <p className="text-lg font-semibold">Nothing to browse yet</p>
-          <p className="text-sm">Import a 5eTools JSON file or load the sample to begin.</p>
-        </div>
-      </div>
+      <EmptyState title="Nothing to browse yet" actions={<LoadSampleButton />}>
+        Load the bundled sample, or import your own 5eTools JSON files from the Import content
+        panel.
+      </EmptyState>
     );
   }
 
   const totalMatches = filtered.length;
 
   return (
-    <div className="grid h-full grid-cols-[18rem_1fr] gap-4">
-      <div className="flex flex-col gap-2 overflow-hidden">
+    <div className="grid h-full gap-4 md:grid-cols-[18rem_1fr]">
+      <h1 className="sr-only">Browse content</h1>
+      <div className={`flex min-h-0 flex-col gap-2 ${narrowDetail ? "hidden" : ""}`}>
         <div className="relative">
           <input
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search name, type or source…"
-            className="w-full rounded border border-blood/30 bg-white/70 px-2 py-1 text-sm"
+            aria-label="Search content"
+            aria-describedby="browse-match-count"
+            className="w-full rounded border border-blood/30 bg-white/70 py-1.5 pl-2 pr-16 text-sm"
           />
-          {query && (
-            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-ink/50">
-              {totalMatches}
-            </span>
-          )}
+          <span
+            id="browse-match-count"
+            aria-live="polite"
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-2xs text-ink-muted"
+          >
+            {query ? `${totalMatches} match${totalMatches === 1 ? "" : "es"}` : ""}
+          </span>
         </div>
-        <nav className="flex-1 overflow-y-auto rounded border border-blood/20 bg-parchment/60 p-2">
+        <nav
+          ref={listRef}
+          aria-label="Entries"
+          className="flex-1 overflow-y-auto rounded border border-blood/20 bg-parchment/60 p-2"
+        >
           {totalMatches === 0 ? (
-            <p className="px-1 py-2 text-sm text-ink/50">No matches for “{query}”.</p>
+            <p className="px-1 py-2 text-sm text-ink-muted">No matches for “{query}”.</p>
           ) : (
             [...grouped.entries()].map(([type, items]) => (
               <section key={type} className="mb-3">
-                <h3 className="mb-1 px-1 text-xs font-bold uppercase tracking-wide text-blood">
-                  {type} <span className="text-ink/40">({items.length})</span>
-                </h3>
+                <h2 className="mb-1 px-1 text-xs font-bold uppercase tracking-wide text-blood">
+                  {type} <span className="font-semibold text-ink-muted">({items.length})</span>
+                </h2>
                 <ul>
                   {items.map((e) => {
                     const key = entityIdentity(e);
                     const meta = entityMeta(e);
                     const isReprinted = reprinted.has(e);
+                    const isSelected = key === selectedKey;
                     return (
                       <li key={key}>
                         <button
                           type="button"
-                          onClick={() => setSelectedKey(key)}
+                          onClick={() => {
+                            setSelectedKey(key);
+                            setShowDetail(true);
+                          }}
+                          aria-current={isSelected ? "true" : undefined}
                           className={`w-full rounded px-2 py-1 text-left text-sm hover:bg-blood/10 ${
-                            key === selectedKey ? "bg-blood/15 font-semibold" : ""
-                          } ${isReprinted ? "opacity-60" : ""}`}
+                            isSelected ? "bg-blood/15 font-semibold" : ""
+                          } ${isReprinted ? "italic text-ink-muted" : ""}`}
                           title={entityTitle(e, isReprinted)}
                         >
                           <span className="flex items-baseline justify-between gap-2">
-                            <span className="truncate">{e.name}</span>
-                            <span className="shrink-0 text-[10px] uppercase text-ink/40">{e.source}</span>
+                            <span className="truncate">
+                              {e.name}
+                              {isReprinted && <span className="sr-only"> (reprinted)</span>}
+                            </span>
+                            <span className="shrink-0 text-2xs uppercase not-italic text-ink-muted">{e.source}</span>
                           </span>
                           {meta && (
-                            <span className="block truncate text-[10px] leading-tight text-ink/50">{meta}</span>
+                            <span className="block truncate text-2xs leading-tight text-ink-muted">{meta}</span>
                           )}
                         </button>
                       </li>
@@ -105,11 +145,27 @@ export function BrowseView() {
         </nav>
       </div>
 
-      <div className="overflow-y-auto">
+      <div
+        role="region"
+        aria-label="Entry details"
+        // Focusable so keyboard users can scroll a long entry.
+        tabIndex={0}
+        className={`min-w-0 overflow-y-auto ${!isWide && !showDetail ? "hidden" : ""}`}
+      >
+        {narrowDetail && (
+          <button
+            ref={backRef}
+            type="button"
+            onClick={() => setShowDetail(false)}
+            className="mb-3 rounded border border-blood/40 px-3 py-1.5 text-sm font-medium text-blood hover:bg-blood/10"
+          >
+            ← All entries
+          </button>
+        )}
         {selected ? (
           <EntityDetail entity={selected} />
         ) : (
-          <div className="grid h-full place-items-center text-ink/50">
+          <div className="grid h-full place-items-center text-ink-muted">
             Select an entry to view it.
           </div>
         )}

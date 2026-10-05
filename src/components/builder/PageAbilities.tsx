@@ -89,6 +89,7 @@ export function PageAbilities() {
       <select
         value={method}
         onChange={(e) => changeMethod(e.target.value as AbilityMethod)}
+        aria-label="Ability score method"
         className="block w-full max-w-md rounded border border-ink/20 bg-white px-2 py-2 text-sm"
       >
         {METHODS.map((m) => (
@@ -100,11 +101,11 @@ export function PageAbilities() {
 
       {method === "point-buy" && (
         <div className="text-center">
-          <div className="text-xs font-bold uppercase tracking-wide text-ink/60">
+          <div className="text-xs font-bold uppercase tracking-wide text-ink-muted">
             Points Remaining
           </div>
           <div className={`text-2xl font-bold ${remaining < 0 ? "text-blood" : ""}`}>
-            {remaining} <span className="text-base font-normal text-ink/50">/ {POINT_BUY_BUDGET}</span>
+            {remaining} <span className="text-base font-normal text-ink-muted">/ {POINT_BUY_BUDGET}</span>
           </div>
         </div>
       )}
@@ -119,7 +120,7 @@ export function PageAbilities() {
             {pool.length === 0 ? "Roll 4d6 (drop lowest) × 6" : "Reroll"}
           </button>
           {pool.length > 0 && (
-            <p className="mt-1 text-xs text-ink/60">
+            <p className="mt-1 text-xs text-ink-muted">
               Pool: {[...pool].sort((a, b) => b - a).join(", ")}
             </p>
           )}
@@ -143,6 +144,7 @@ export function PageAbilities() {
                   <select
                     value={draft.baseAbilities[ab]}
                     onChange={(e) => setBaseAbility(ab, Number(e.target.value))}
+                    aria-label={`${ABILITY_NAMES[ab]} base score`}
                     className="w-full rounded border border-ink/20 bg-white px-1 py-1.5 text-sm"
                   >
                     {Array.from({ length: 8 }, (_, i) => i + 8).map((v) => (
@@ -156,6 +158,7 @@ export function PageAbilities() {
                   <select
                     value={current ?? ""}
                     onChange={(e) => assign(ab, e.target.value === "" ? null : Number(e.target.value))}
+                    aria-label={`${ABILITY_NAMES[ab]} base score`}
                     className="w-full rounded border border-ink/20 bg-white px-1 py-1.5 text-sm"
                   >
                     <option value="">—</option>
@@ -173,11 +176,12 @@ export function PageAbilities() {
                     max={30}
                     value={draft.baseAbilities[ab]}
                     onChange={(e) => setBaseAbility(ab, Number(e.target.value) || 0)}
+                    aria-label={`${ABILITY_NAMES[ab]} base score`}
                     className="w-full rounded border border-ink/20 bg-white px-1 py-1.5 text-center text-sm"
                   />
                 )}
               </div>
-              <div className="mt-1 text-xs font-bold uppercase text-ink/50">
+              <div className="mt-1 text-xs font-bold uppercase text-ink-muted">
                 Total: <span className="text-sm text-ink">{derived.abilities[ab]}</span>
               </div>
             </div>
@@ -206,7 +210,7 @@ function ScoreCalculations() {
       <p className="text-sm text-ink/70">
         Calculations combine the base scores you set above with every bonus from your{" "}
         {draft.edition === "one" ? "background" : "species"}, feats and ability score improvements.
-        <span className="block text-xs text-ink/50">
+        <span className="block text-xs text-ink-muted">
           Set Score replaces the base score · Other Modifier adds on top · Override Score wins over
           everything.
         </span>
@@ -228,7 +232,7 @@ function ScoreCalculations() {
                 <Row label="Base Score" value={draft.baseAbilities[ab]} />
                 <Row label="Bonus" value={formatMod(bonusTotal)} />
                 {rows.map((r) => (
-                  <div key={r.source} className="flex justify-between px-3 py-1 text-xs text-ink/60">
+                  <div key={r.source} className="flex justify-between px-3 py-1 text-xs text-ink-muted">
                     <dt className="pl-3">{r.source}</dt>
                     <dd>({formatMod(r.amount)})</dd>
                   </div>
@@ -269,7 +273,7 @@ function AdjustRow({
 }) {
   return (
     <div className="flex items-center justify-between px-3 py-1">
-      <dt className="text-xs text-ink/60">{label}</dt>
+      <dt className="text-xs text-ink-muted">{label}</dt>
       <dd>
         <input
           type="number"

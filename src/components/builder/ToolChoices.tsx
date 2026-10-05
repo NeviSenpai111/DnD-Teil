@@ -17,7 +17,7 @@ export function ToolChoiceSelects() {
         const picks = draft.toolChoices[def.key] ?? [];
         return (
           <div key={def.key}>
-            <p className="text-xs font-semibold uppercase tracking-wide text-ink/50">
+            <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
               {def.origin}: choose {def.count} tool{def.count === 1 ? "" : "s"} ({picks.length}/
               {def.count})
             </p>

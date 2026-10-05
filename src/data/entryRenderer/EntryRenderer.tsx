@@ -88,7 +88,7 @@ export function EntryRenderer({ entry }: { entry: Entry }) {
       return (
         <blockquote className="border-l-4 border-ink/30 pl-3 italic">
           <Entries entries={e.entries} />
-          {e.by && <footer className="mt-1 text-sm not-italic text-ink/60">— {e.by}</footer>}
+          {e.by && <footer className="mt-1 text-sm not-italic text-ink-muted">— {e.by}</footer>}
         </blockquote>
       );
     }
@@ -112,7 +112,7 @@ export function EntryRenderer({ entry }: { entry: Entry }) {
       const e = entry as { count?: number; entries?: Entry[] };
       return (
         <div className="space-y-2">
-          <p className="text-sm italic text-ink/60">Choose {e.count ?? 1}:</p>
+          <p className="text-sm italic text-ink-muted">Choose {e.count ?? 1}:</p>
           {e.entries && <Entries entries={e.entries} />}
         </div>
       );
@@ -229,7 +229,7 @@ function FeatureRefLine({ entry }: { entry: UnknownEntry }) {
     <p className="leading-relaxed">
       <span className="font-semibold text-blood">{name}</span>
       {level !== undefined && (
-        <span className="text-xs uppercase text-ink/40"> · level {level}</span>
+        <span className="text-xs uppercase text-ink-muted"> · level {level}</span>
       )}
     </p>
   );
@@ -256,7 +256,7 @@ function UnknownBlock({ entry }: { entry: UnknownEntry }) {
   }
   // TODO: model this entry type. Surface it rather than silently dropping it.
   return (
-    <p className="rounded bg-amber-100 px-2 py-1 text-xs text-amber-900">
+    <p className="rounded border border-warning-border/60 bg-warning-surface px-2 py-1 text-xs text-ink">
       Unsupported entry type: <code>{entry.type}</code>
     </p>
   );

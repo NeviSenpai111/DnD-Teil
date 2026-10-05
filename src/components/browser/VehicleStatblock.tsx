@@ -11,7 +11,7 @@ export function VehicleStatblock({ vehicle }: { vehicle: Vehicle }) {
         <p className="text-sm italic text-ink/70">
           {[vehicle.vehicleType, vehicle.dimensions?.join(" × ")].filter(Boolean).join(", ")}
         </p>
-        <p className="text-xs uppercase tracking-wide text-ink/50">{vehicle.source}</p>
+        <p className="text-xs uppercase tracking-wide text-ink-muted">{vehicle.source}</p>
       </header>
 
       <div className="statblock-rule my-3" />
@@ -70,7 +70,7 @@ function WeaponBlock({ weapon }: { weapon: VehicleWeapon }) {
   return (
     <div className="rounded border border-blood/20 bg-white/40 p-3">
       <h4 className="font-bold text-blood">{weapon.name}</h4>
-      {meta.length > 0 && <p className="text-xs text-ink/60">{meta.join(" · ")}</p>}
+      {meta.length > 0 && <p className="text-xs text-ink-muted">{meta.join(" · ")}</p>}
       {weapon.entries && weapon.entries.length > 0 && (
         <div className="mt-1 text-sm">
           <Entries entries={weapon.entries} />

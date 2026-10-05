@@ -62,7 +62,7 @@ export function ItemDetail({ item, embedded }: { item: Item; embedded?: boolean 
         <h2 className={`font-bold text-blood ${embedded ? "text-lg" : "text-2xl"}`}>
           <span aria-hidden>{itemIcon(item)}</span> {item.name}
         </h2>
-        <p className="text-xs uppercase tracking-wide text-ink/60">
+        <p className="text-xs uppercase tracking-wide text-ink-muted">
           {categoryLine(item)}
           {it.rarity && it.rarity !== "none" && ` · ${it.rarity}`} · {item.source}
         </p>

@@ -34,10 +34,10 @@ export function SpellDetail({ spell, embedded }: { spell: Spell; embedded?: bool
         <h2 className={`font-bold text-blood ${embedded ? "text-lg" : "text-2xl"}`}>
           {spell.name}
         </h2>
-        <p className="text-xs uppercase tracking-wide text-ink/60">
+        <p className="text-xs uppercase tracking-wide text-ink-muted">
           {levelSchoolLine(spell)} · {spell.source}
           {spell.meta?.ritual && (
-            <span className="ml-1.5 rounded border border-ink/30 px-1 font-semibold text-ink/50">
+            <span className="ml-1.5 rounded border border-ink/30 px-1 font-semibold text-ink-muted">
               Ritual
             </span>
           )}

@@ -115,7 +115,7 @@ export function FullSheet({ character }: { character: Character }) {
     <article className="space-y-4">
       <header className="flex items-start justify-between gap-2 rounded border border-blood/30 bg-parchment p-4 shadow-sm">
         <div>
-          <h2 className="text-2xl font-bold text-blood">{character.name}</h2>
+          <h1 className="text-2xl font-bold text-blood">{character.name}</h1>
           <p className="text-sm text-ink/70">{subtitle}</p>
         </div>
         <div className="flex items-center gap-2">
@@ -129,6 +129,7 @@ export function FullSheet({ character }: { character: Character }) {
           <AbilityCard
             key={ab}
             label={ABILITY_NAMES[ab]}
+            abbr={ab.toUpperCase()}
             mod={derived.mods[ab]}
             score={derived.abilities[ab]}
             onRoll={() => rollCheck(`${ABILITY_NAMES[ab]} Check`, derived.mods[ab])}
@@ -160,11 +161,11 @@ export function FullSheet({ character }: { character: Character }) {
               hpOpen ? "border-blood bg-blood/10" : "border-blood/20 bg-white/50"
             }`}
           >
-            <div className="text-[10px] font-bold uppercase tracking-wide text-ink/60">HP</div>
+            <div className="text-2xs font-bold uppercase tracking-wide text-ink-muted">HP</div>
             <div className={`text-base font-bold ${currentHp === 0 ? "text-blood" : ""}`}>
               {currentHp}/{maxHp}
               {character.play.tempHp > 0 && (
-                <span className="ml-1 text-xs font-semibold text-ink/50">
+                <span className="ml-1 text-xs font-semibold text-ink-muted">
                   +{character.play.tempHp}
                 </span>
               )}
@@ -204,7 +205,7 @@ export function FullSheet({ character }: { character: Character }) {
                 type="button"
                 onClick={() => setTab(t)}
                 className={`rounded px-2 py-1 text-xs font-semibold uppercase tracking-wide ${
-                  t === tab ? "bg-blood text-parchment" : "text-ink/60 hover:bg-blood/10"
+                  t === tab ? "bg-blood text-parchment" : "text-ink-muted hover:bg-blood/10"
                 }`}
               >
                 {t}
@@ -227,20 +228,20 @@ export function FullSheet({ character }: { character: Character }) {
           className="fixed bottom-4 right-4 z-20 w-60 rounded border-2 border-blood/50 bg-parchment p-3 shadow-lg print:hidden"
         >
           <div className="flex items-start justify-between gap-2">
-            <span className="text-xs font-bold uppercase tracking-wide text-ink/60">
+            <span className="text-xs font-bold uppercase tracking-wide text-ink-muted">
               {lastRoll.label}
             </span>
             <button
               type="button"
               onClick={() => setLastRoll(undefined)}
               aria-label="Dismiss roll"
-              className="text-ink/50 hover:text-blood"
+              className="text-ink-muted hover:text-blood"
             >
               ✕
             </button>
           </div>
           <div className="text-3xl font-bold text-blood">{lastRoll.total}</div>
-          <div className="text-xs text-ink/60">{lastRoll.detail}</div>
+          <div className="text-xs text-ink-muted">{lastRoll.detail}</div>
         </aside>
       )}
     </article>
@@ -269,7 +270,7 @@ function EffectsStrip({ character }: { character: Character }) {
 
   return (
     <section className="flex flex-wrap items-center gap-2 rounded border border-blood/20 bg-white/40 p-2 text-sm print:hidden">
-      <span className="text-[10px] font-bold uppercase tracking-wide text-ink/50">Effects</span>
+      <span className="text-2xs font-bold uppercase tracking-wide text-ink-muted">Effects</span>
       {candidates.map((f) => {
         const active = character.play.activeEffects.includes(f.name);
         return (
@@ -282,7 +283,7 @@ function EffectsStrip({ character }: { character: Character }) {
             className={`rounded-full border px-2.5 py-0.5 text-xs font-semibold ${
               active
                 ? "border-blood bg-blood text-parchment"
-                : "border-ink/30 text-ink/60 hover:border-blood/40 hover:text-blood"
+                : "border-ink/30 text-ink-muted hover:border-blood/40 hover:text-blood"
             }`}
           >
             {f.name}
@@ -296,7 +297,7 @@ function EffectsStrip({ character }: { character: Character }) {
 /** Advantage / disadvantage toggle for every d20 roll on the sheet. */
 function AdvToggle({ mode, onChange }: { mode: RollMode; onChange: (mode: RollMode) => void }) {
   return (
-    <span className="flex overflow-hidden rounded border border-ink/30 text-[10px] font-bold uppercase tracking-wide print:hidden">
+    <span className="flex overflow-hidden rounded border border-ink/30 text-2xs font-bold uppercase tracking-wide print:hidden">
       {(["advantage", "disadvantage"] as const).map((m) => (
         <button
           key={m}
@@ -305,7 +306,7 @@ function AdvToggle({ mode, onChange }: { mode: RollMode; onChange: (mode: RollMo
           title={`Roll d20s with ${m}`}
           onClick={() => onChange(mode === m ? "normal" : m)}
           className={`px-2 py-1 ${
-            mode === m ? "bg-blood text-parchment" : "text-ink/60 hover:bg-blood/10"
+            mode === m ? "bg-blood text-parchment" : "text-ink-muted hover:bg-blood/10"
           }`}
         >
           {m === "advantage" ? "Adv" : "Dis"}
@@ -382,7 +383,7 @@ function ExtrasTab({ character }: { character: Character }) {
           />
           {query && (
             <ul className="mt-1 max-h-40 overflow-y-auto rounded border border-blood/15 bg-white/70">
-              {matches.length === 0 && <li className="px-2 py-1 text-sm text-ink/50">No matches.</li>}
+              {matches.length === 0 && <li className="px-2 py-1 text-sm text-ink-muted">No matches.</li>}
               {matches.map((m) => (
                 <li key={`${m.name}|${m.source}`}>
                   <button
@@ -449,18 +450,19 @@ function MiniStatblock({
   return (
     <section className="rounded border border-blood/30 bg-white/50 p-3">
       <div className="flex items-start justify-between gap-2">
-        <h4 className="font-bold text-blood">{name}</h4>
+        <h3 className="font-bold text-blood">{name}</h3>
         <button
           type="button"
           onClick={onRemove}
           title="Remove creature"
+          aria-label={`Remove ${name}`}
           className="text-blood hover:text-blood-light print:hidden"
         >
           ✕
         </button>
       </div>
       {!entity ? (
-        <p className="text-sm text-ink/50">Not in the imported content.</p>
+        <p className="text-sm text-ink-muted">Not in the imported content.</p>
       ) : (
         <>
           <p className="text-sm text-ink/70">
@@ -481,7 +483,7 @@ function MiniStatblock({
               </>
             )}
           </p>
-          <p className="text-xs uppercase tracking-wide text-ink/50">
+          <p className="text-xs uppercase tracking-wide text-ink-muted">
             {ABILITIES.map((ab) => `${ab} ${m[ab] ?? "—"}`).join(" · ")}
           </p>
           {blocks.length > 0 && (
@@ -508,18 +510,24 @@ function MiniStatblock({
 
 function AbilityCard({
   label,
+  abbr,
   mod,
   score,
   onRoll,
 }: {
   label: string;
+  /** "STR", "DEX", … — shown instead of the full name where cards are too narrow. */
+  abbr: string;
   mod: number;
   score: number;
   onRoll: () => void;
 }) {
   return (
     <div className="rounded-lg border-2 border-blood/40 bg-white/60 px-2 pb-3 pt-1 text-center">
-      <div className="text-[10px] font-bold uppercase tracking-wide text-ink/60">{label}</div>
+      <div className="text-2xs font-bold uppercase tracking-wide text-ink-muted" title={label}>
+        <span className="md:hidden">{abbr}</span>
+        <span className="max-md:hidden">{label}</span>
+      </div>
       <button
         type="button"
         onClick={onRoll}
@@ -539,7 +547,7 @@ function AbilityCard({
 function Chip({ label, value, title }: { label: string; value: string | number; title?: string }) {
   return (
     <div className="rounded border border-blood/20 bg-white/50 p-2" title={title}>
-      <div className="text-[10px] font-bold uppercase tracking-wide text-ink/60">{label}</div>
+      <div className="text-2xs font-bold uppercase tracking-wide text-ink-muted">{label}</div>
       <div className="text-base font-bold">{value}</div>
     </div>
   );
@@ -548,7 +556,7 @@ function Chip({ label, value, title }: { label: string; value: string | number; 
 function Panel({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="rounded border border-blood/30 bg-parchment p-3 shadow-sm">
-      <h3 className="mb-2 text-center text-xs font-bold uppercase tracking-wide text-blood">{title}</h3>
+      <h2 className="mb-2 text-center text-xs font-bold uppercase tracking-wide text-blood">{title}</h2>
       {children}
     </section>
   );
@@ -622,7 +630,7 @@ function Defenses({ derived }: { derived: ReturnType<typeof deriveFromCharacter>
       <ul className="space-y-1 text-xs text-ink/70">
         {shown.map(([label, values]) => (
           <li key={label}>
-            <span className="font-semibold uppercase text-ink/50">{label}</span>
+            <span className="font-semibold uppercase text-ink-muted">{label}</span>
             <div className="capitalize">{values.join(", ")}</div>
           </li>
         ))}
@@ -646,7 +654,7 @@ function Proficiencies({ derived }: { derived: ReturnType<typeof deriveFromChara
       <ul className="space-y-1 text-xs text-ink/70">
         {shown.map(([label, values]) => (
           <li key={label}>
-            <span className="font-semibold uppercase text-ink/50">{label}</span>
+            <span className="font-semibold uppercase text-ink-muted">{label}</span>
             <div>{values.join(", ")}</div>
           </li>
         ))}
@@ -671,12 +679,12 @@ function Skills({
           return (
             <li key={skill.id} className="flex items-center gap-2">
               <ProfDot on={s.proficient} expertise={s.expertise} />
-              <span className="w-8 text-[10px] uppercase text-ink/40">{skill.ability}</span>
+              <span className="w-8 text-2xs uppercase text-ink-muted">{skill.ability}</span>
               <span className="flex-1">
                 {skill.name}
                 {advSources && (
                   <span
-                    className="ml-1 align-middle text-[9px] font-bold uppercase text-blood"
+                    className="ml-1 align-middle text-2xs font-bold uppercase text-blood"
                     title={`Advantage: ${advSources.join(", ")}`}
                   >
                     adv
@@ -742,7 +750,7 @@ function ActionsTab({
     <div className="space-y-4">
       <ResourceTracker character={character} />
       <div>
-        <div className="grid grid-cols-[1fr_auto_auto] gap-x-3 border-b border-blood/20 pb-1 text-[10px] font-bold uppercase text-ink/50">
+        <div className="grid grid-cols-[1fr_auto_auto] gap-x-3 border-b border-blood/20 pb-1 text-2xs font-bold uppercase text-ink-muted">
           <span>Attack</span>
           <span className="text-center">Hit/DC</span>
           <span>Damage</span>
@@ -764,7 +772,7 @@ function ActionsTab({
                   ) : (
                     <span className="font-semibold">{l.name}</span>
                   )}
-                  <span className="block text-[10px] uppercase text-ink/40">
+                  <span className="block text-2xs uppercase text-ink-muted">
                     {l.range}
                     {l.notes ? ` · ${l.notes}` : ""}
                   </span>
@@ -805,7 +813,7 @@ function ActionsTab({
       <CustomAttacks character={character} onCheck={onCheck} onDamage={onDamage} />
 
       <div>
-        <h4 className="mb-1 text-sm font-bold text-ink">Actions in Combat</h4>
+        <h3 className="mb-1 text-sm font-bold text-ink">Actions in Combat</h3>
         <p className="border-l-2 border-blood/30 pl-2 text-sm text-ink/70">{ACTIONS_IN_COMBAT}</p>
       </div>
     </div>
@@ -846,12 +854,12 @@ function CustomAttacks({
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h4 className="text-sm font-bold text-ink">Custom Attacks</h4>
+        <h3 className="text-sm font-bold text-ink">Custom Attacks</h3>
         <AddButton open={adding} onClick={() => setAdding(!adding)} label="Add Attack" />
       </div>
       {adding && (
         <div className="mt-1 flex flex-wrap items-end gap-2 rounded border border-blood/20 bg-white/50 p-2 text-sm print:hidden">
-          <label className="text-xs text-ink/60">
+          <label className="text-xs text-ink-muted">
             Name
             <input
               value={name}
@@ -860,7 +868,7 @@ function CustomAttacks({
               className="block w-36 rounded border border-ink/20 bg-white px-2 py-1"
             />
           </label>
-          <label className="text-xs text-ink/60">
+          <label className="text-xs text-ink-muted">
             To hit
             <input
               type="number"
@@ -870,7 +878,7 @@ function CustomAttacks({
               className="block w-16 rounded border border-ink/20 bg-white px-2 py-1"
             />
           </label>
-          <label className="text-xs text-ink/60">
+          <label className="text-xs text-ink-muted">
             Damage
             <input
               value={damage}
@@ -890,7 +898,7 @@ function CustomAttacks({
         </div>
       )}
       {character.customAttacks.length === 0 ? (
-        !adding && <p className="text-xs text-ink/50">None defined.</p>
+        !adding && <p className="text-xs text-ink-muted">None defined.</p>
       ) : (
         <ul>
           {character.customAttacks.map((a, i) => (
@@ -925,6 +933,7 @@ function CustomAttacks({
                 type="button"
                 onClick={() => remove(i)}
                 title="Remove attack"
+                aria-label={`Remove ${a.name || "attack"}`}
                 className="text-blood hover:text-blood-light print:hidden"
               >
                 ✕
@@ -1045,7 +1054,7 @@ function SpellsTab({ character }: { character: Character }) {
       <div className="flex items-start justify-between gap-2">
         <div className="space-y-1">
           {casters.length === 0 && byLevel.size === 0 && (
-            <p className="text-sm text-ink/50">Not a spellcaster.</p>
+            <p className="text-sm text-ink-muted">Not a spellcaster.</p>
           )}
           {casters.map((sc) => (
             <p key={sc.classIndex} className="text-sm">
@@ -1065,7 +1074,7 @@ function SpellsTab({ character }: { character: Character }) {
       {adding && (
         <div className="rounded border border-blood/20 bg-white/50 p-2 print:hidden">
           {casters.length > 1 && (
-            <label className="mb-1 flex items-center gap-2 text-xs text-ink/60">
+            <label className="mb-1 flex items-center gap-2 text-xs text-ink-muted">
               Add for
               <select
                 value={forClass ?? casters[0]?.className}
@@ -1089,7 +1098,7 @@ function SpellsTab({ character }: { character: Character }) {
           />
           {query && (
             <ul className="mt-1 max-h-40 overflow-y-auto rounded border border-blood/15 bg-white/70">
-              {matches.length === 0 && <li className="px-2 py-1 text-sm text-ink/50">No matches.</li>}
+              {matches.length === 0 && <li className="px-2 py-1 text-sm text-ink-muted">No matches.</li>}
               {matches.map((s) => {
                 const known = knownNames.has(s.name);
                 return (
@@ -1101,7 +1110,7 @@ function SpellsTab({ character }: { character: Character }) {
                       className="flex w-full justify-between px-2 py-1 text-left text-sm hover:bg-blood/10 disabled:opacity-40"
                     >
                       <span>{s.name}</span>
-                      <span className="text-[10px] uppercase text-ink/40">
+                      <span className="text-2xs uppercase text-ink-muted">
                         {known ? "added" : s.level === 0 ? "cantrip" : `lvl ${s.level}`}
                         {!known && s.school ? ` · ${schoolName(s.school)}` : ""}
                       </span>
@@ -1121,14 +1130,14 @@ function SpellsTab({ character }: { character: Character }) {
           .sort((a, b) => a[0] - b[0])
           .map(([level, spells]) => (
             <div key={level}>
-              <h4 className="text-xs font-bold uppercase tracking-wide text-blood">
+              <h3 className="text-xs font-bold uppercase tracking-wide text-blood">
                 {levelLabel(level)}
                 {level === 0 && cantripDiceMultiplier(characterLevel(character)) > 1 && (
-                  <span className="ml-1 font-semibold normal-case text-ink/50">
+                  <span className="ml-1 font-semibold normal-case text-ink-muted">
                     · damage dice ×{cantripDiceMultiplier(characterLevel(character))}
                   </span>
                 )}
-              </h4>
+              </h3>
               <ul className="grid gap-0.5 sm:grid-cols-2">
                 {spells.map((s) => {
                   const open = expanded === s.ref.name;
@@ -1145,17 +1154,17 @@ function SpellsTab({ character }: { character: Character }) {
                             {s.ref.name}
                           </button>
                           {s.tag && (
-                            <span className="ml-1 rounded border border-blood/40 bg-blood/10 px-1 text-[9px] font-semibold uppercase text-blood">
+                            <span className="ml-1 rounded border border-blood/40 bg-blood/10 px-1 text-2xs font-semibold uppercase text-blood">
                               {s.tag}
                             </span>
                           )}
                           {s.spell?.meta?.ritual && (
-                            <span className="ml-1 rounded border border-ink/30 px-1 text-[9px] font-semibold uppercase text-ink/50">
+                            <span className="ml-1 rounded border border-ink/30 px-1 text-2xs font-semibold uppercase text-ink-muted">
                               Ritual
                             </span>
                           )}
                         </span>
-                        <span className="text-[10px] uppercase text-ink/40">
+                        <span className="text-2xs uppercase text-ink-muted">
                           {s.spell &&
                             scaledCantripDice(s.spell, characterLevel(character)) && (
                               <span
@@ -1173,12 +1182,12 @@ function SpellsTab({ character }: { character: Character }) {
                           {s.spell ? (
                             <SpellDetail spell={s.spell} embedded />
                           ) : (
-                            <p className="text-xs text-ink/50">
+                            <p className="text-xs text-ink-muted">
                               No imported spell data for this entry.
                             </p>
                           )}
                           {s.tag ? (
-                            <p className="text-[10px] text-ink/40 print:hidden">
+                            <p className="text-2xs text-ink-muted print:hidden">
                               Granted by a {s.tag.toLowerCase()} — manage it in the builder.
                             </p>
                           ) : (
@@ -1283,7 +1292,7 @@ function InventoryTab({ character }: { character: Character }) {
           />
           {query && (
             <ul className="mt-1 max-h-40 overflow-y-auto rounded border border-blood/15 bg-white/70">
-              {matches.length === 0 && <li className="px-2 py-1 text-sm text-ink/50">No matches.</li>}
+              {matches.length === 0 && <li className="px-2 py-1 text-sm text-ink-muted">No matches.</li>}
               {matches.map((i) => (
                 <li key={`${i.name}|${i.source}`}>
                   <button
@@ -1292,7 +1301,7 @@ function InventoryTab({ character }: { character: Character }) {
                     className="flex w-full justify-between px-2 py-1 text-left text-sm hover:bg-blood/10"
                   >
                     <span>{i.name}</span>
-                    <span className="text-[10px] uppercase text-ink/40">
+                    <span className="text-2xs uppercase text-ink-muted">
                       {itemTypeCode(i.type as string) ?? "item"}
                     </span>
                   </button>
@@ -1333,7 +1342,7 @@ function InventoryTab({ character }: { character: Character }) {
                     <span className="flex-1">{entry.name}</span>
                   )}
 
-                  <label className="flex items-center gap-1 text-xs text-ink/50 print:hidden">
+                  <label className="flex items-center gap-1 text-xs text-ink-muted print:hidden">
                     ×
                     <input
                       type="number"
@@ -1344,24 +1353,24 @@ function InventoryTab({ character }: { character: Character }) {
                     />
                   </label>
                   {entry.quantity > 1 && (
-                    <span className="hidden text-xs text-ink/50 print:inline">×{entry.quantity}</span>
+                    <span className="hidden text-xs text-ink-muted print:inline">×{entry.quantity}</span>
                   )}
 
                   {equippable && (
                     <button
                       type="button"
                       onClick={() => toggleEquip(i)}
-                      className={`rounded border px-1.5 text-[10px] font-semibold uppercase print:hidden ${
+                      className={`rounded border px-1.5 text-2xs font-semibold uppercase print:hidden ${
                         entry.equipped
                           ? "border-blood bg-blood/10 text-blood"
-                          : "border-ink/30 text-ink/50 hover:border-blood/40 hover:text-blood"
+                          : "border-ink/30 text-ink-muted hover:border-blood/40 hover:text-blood"
                       }`}
                     >
                       {entry.equipped ? "Equipped" : "Equip"}
                     </button>
                   )}
                   {entry.equipped && (
-                    <span className="hidden rounded border border-blood/40 bg-blood/10 px-1.5 text-[10px] font-semibold uppercase text-blood print:inline-block">
+                    <span className="hidden rounded border border-blood/40 bg-blood/10 px-1.5 text-2xs font-semibold uppercase text-blood print:inline-block">
                       Equipped
                     </span>
                   )}
@@ -1377,10 +1386,10 @@ function InventoryTab({ character }: { character: Character }) {
                             ? "Attunement limit reached (3 items)"
                             : "Attune to this item"
                       }
-                      className={`rounded border px-1.5 text-[10px] font-semibold uppercase print:hidden ${
+                      className={`rounded border px-1.5 text-2xs font-semibold uppercase print:hidden ${
                         entry.attuned
                           ? "border-blood bg-blood text-parchment"
-                          : "border-ink/30 text-ink/50 hover:border-blood/40 hover:text-blood disabled:cursor-default disabled:hover:border-ink/30 disabled:hover:text-ink/50"
+                          : "border-ink/30 text-ink-muted hover:border-blood/40 hover:text-blood disabled:cursor-default disabled:hover:border-ink/30 disabled:hover:text-ink-muted"
                       }`}
                     >
                       {entry.attuned ? "Attuned" : "Attune"}
@@ -1392,6 +1401,7 @@ function InventoryTab({ character }: { character: Character }) {
                     onClick={() => removeItem(i)}
                     className="text-blood hover:text-blood-light print:hidden"
                     title="Remove item"
+                    aria-label={`Remove ${entry.name}`}
                   >
                     ✕
                   </button>
@@ -1426,7 +1436,7 @@ function InventoryTab({ character }: { character: Character }) {
                       const targets = containers.filter((c) => !wouldCycle(entry, c.entry));
                       if (targets.length === 0) return null;
                       return (
-                        <label className="flex items-center gap-1 text-[10px] uppercase text-ink/50 print:hidden">
+                        <label className="flex items-center gap-1 text-2xs uppercase text-ink-muted print:hidden">
                           In
                           <select
                             value={entry.containedIn ?? ""}
@@ -1458,9 +1468,9 @@ function InventoryTab({ character }: { character: Character }) {
       )}
 
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-ink/10 pt-2">
-        <span className="text-[10px] font-bold uppercase tracking-wide text-ink/50">Currency</span>
+        <span className="text-2xs font-bold uppercase tracking-wide text-ink-muted">Currency</span>
         {COINS.map((coin) => (
-          <label key={coin} className="flex items-center gap-1 text-xs uppercase text-ink/60">
+          <label key={coin} className="flex items-center gap-1 text-xs uppercase text-ink-muted">
             {coin}
             <input
               type="number"
@@ -1475,11 +1485,11 @@ function InventoryTab({ character }: { character: Character }) {
             />
           </label>
         ))}
-        <span className="text-xs text-ink/50">≈ {currencyInGp(character.currency)} gp</span>
+        <span className="text-xs text-ink-muted">≈ {currencyInGp(character.currency)} gp</span>
       </div>
 
       <p
-        className={`text-xs ${totalWeight > capacity ? "font-semibold text-blood" : "text-ink/60"}`}
+        className={`text-xs ${totalWeight > capacity ? "font-semibold text-blood" : "text-ink-muted"}`}
         title="Carrying capacity: Strength × 15 lb."
       >
         Total Weight: {formatWeight(totalWeight)} / {capacity} lb.
@@ -1507,7 +1517,7 @@ function ContainerLoad({
   if (load === 0 && cap === undefined) return null;
   return (
     <span
-      className={`text-[10px] uppercase ${over ? "font-bold text-blood" : "text-ink/50"}`}
+      className={`text-2xs uppercase ${over ? "font-bold text-blood" : "text-ink-muted"}`}
       title={capacity.weightless ? "Contents weigh nothing while inside" : undefined}
     >
       holds {formatWeight(load)}
@@ -1549,7 +1559,7 @@ function CustomItemForm({ character }: { character: Character }) {
 
   return (
     <div className="mt-2 flex flex-wrap items-end gap-2 border-t border-ink/10 pt-2 text-sm">
-      <span className="text-[10px] font-bold uppercase tracking-wide text-ink/50">
+      <span className="text-2xs font-bold uppercase tracking-wide text-ink-muted">
         Custom item
       </span>
       <input
@@ -1672,7 +1682,7 @@ function BackgroundTab({ character }: { character: Character }) {
         <div className="flex flex-wrap gap-2 text-sm">
           {shownChips.map(([label, value]) => (
             <span key={label} className="rounded border border-blood/20 bg-white/50 px-2 py-1">
-              <span className="text-[10px] font-bold uppercase text-ink/50">{label}</span>{" "}
+              <span className="text-2xs font-bold uppercase text-ink-muted">{label}</span>{" "}
               <span className="font-semibold">{value}</span>
             </span>
           ))}
@@ -1684,7 +1694,7 @@ function BackgroundTab({ character }: { character: Character }) {
           <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm sm:grid-cols-3">
             {shownPhysical.map(([label, value]) => (
               <div key={label}>
-                <dt className="text-[10px] font-bold uppercase text-ink/50">{label}</dt>
+                <dt className="text-2xs font-bold uppercase text-ink-muted">{label}</dt>
                 <dd>{value}</dd>
               </div>
             ))}
@@ -1697,7 +1707,7 @@ function BackgroundTab({ character }: { character: Character }) {
           <dl className="space-y-2 text-sm">
             {shownPersonal.map(([label, value]) => (
               <div key={label}>
-                <dt className="text-[10px] font-bold uppercase text-ink/50">{label}</dt>
+                <dt className="text-2xs font-bold uppercase text-ink-muted">{label}</dt>
                 <dd className="whitespace-pre-wrap">{value}</dd>
               </div>
             ))}
@@ -1707,7 +1717,7 @@ function BackgroundTab({ character }: { character: Character }) {
 
       {background && (
         <div className="space-y-2">
-          <h4 className="font-semibold text-blood">{background.name}</h4>
+          <h3 className="font-semibold text-blood">{background.name}</h3>
           {background.entries ? <Entries entries={background.entries} /> : <Empty>No description.</Empty>}
         </div>
       )}
@@ -1880,7 +1890,7 @@ function HpStrip({
           Heal
         </button>
 
-        <label className="ml-2 flex items-center gap-1 text-xs text-ink/60">
+        <label className="ml-2 flex items-center gap-1 text-xs text-ink-muted">
           Temp HP
           <input
             type="number"
@@ -1920,7 +1930,7 @@ function HpStrip({
       </div>
 
       <div className="flex flex-wrap items-center gap-3 border-t border-ink/10 pt-2 text-xs">
-        <span className="font-bold uppercase tracking-wide text-ink/50">Hit Dice</span>
+        <span className="font-bold uppercase tracking-wide text-ink-muted">Hit Dice</span>
         {character.classes.map((choice, i) => {
           const faces = resolveClass(index, choice)?.hd?.faces;
           if (!faces) return null;
@@ -2044,7 +2054,7 @@ function SlotPips({
   const spent = Math.min(used, total);
   return (
     <span className="flex items-center gap-1">
-      <span className="text-[10px] font-bold uppercase text-ink/50">{label}</span>
+      <span className="text-2xs font-bold uppercase text-ink-muted">{label}</span>
       {Array.from({ length: total }, (_, k) => (
         <button
           key={k}
@@ -2078,7 +2088,7 @@ function AddButton({ open, onClick, label }: { open: boolean; onClick: () => voi
 function Group({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div>
-      <h4 className="mb-1 text-xs font-bold uppercase tracking-wide text-ink/50">{title}</h4>
+      <h3 className="mb-1 text-xs font-bold uppercase tracking-wide text-ink-muted">{title}</h3>
       {children}
     </div>
   );
@@ -2089,7 +2099,7 @@ function EntryBlocks({ blocks }: { blocks: { name: string; entries?: Entry[] }[]
     <div className="space-y-2">
       {blocks.map((b) => (
         <div key={b.name}>
-          <h5 className="font-semibold text-blood">{b.name}</h5>
+          <h4 className="font-semibold text-blood">{b.name}</h4>
           {b.entries && <Entries entries={b.entries} />}
         </div>
       ))}
@@ -2098,7 +2108,7 @@ function EntryBlocks({ blocks }: { blocks: { name: string; entries?: Entry[] }[]
 }
 
 function Empty({ children }: { children: ReactNode }) {
-  return <p className="py-6 text-center text-sm text-ink/50">{children}</p>;
+  return <p className="py-6 text-center text-sm text-ink-muted">{children}</p>;
 }
 
 function ProfDot({ on, expertise }: { on: boolean; expertise?: boolean }) {

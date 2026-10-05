@@ -48,7 +48,7 @@ export function SkillChoiceSelects({ prefixes }: { prefixes: string[] }) {
         };
         return (
           <div key={choice.key} className="space-y-1.5">
-            <p className="text-xs font-semibold uppercase tracking-wide text-ink/50">
+            <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
               {choice.origin}: choose {choice.count} ({picks.length}/{choice.count})
             </p>
             {Array.from({ length: choice.count }).map((_, slot) => {

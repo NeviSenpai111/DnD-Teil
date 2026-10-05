@@ -12,6 +12,17 @@ function fileLabel(f: File): string {
   return (f as File & { webkitRelativePath?: string }).webkitRelativePath || f.name;
 }
 
+/** The bundled sample files (`public/sample-data/`), ready for `importTexts`. */
+export async function fetchSampleFiles(): Promise<{ name: string; text: string }[]> {
+  const names = ["space-galleon.json", "srd-lite.json"];
+  return Promise.all(
+    names.map(async (name) => ({
+      name,
+      text: await (await fetch(`${import.meta.env.BASE_URL}sample-data/${name}`)).text(),
+    })),
+  );
+}
+
 interface LastImport {
   result: ImportResult;
   /** Issues raised while resolving `_copy` / `_versions` in the store, plus parse issues. */
@@ -54,15 +65,9 @@ export function ImportButton() {
   }
 
   async function loadSample() {
-    const names = ["space-galleon.json", "srd-lite.json"];
     setBusy("Loading sample…");
     try {
-      const files = await Promise.all(
-        names.map(async (name) => ({
-          name,
-          text: await (await fetch(`${import.meta.env.BASE_URL}sample-data/${name}`)).text(),
-        })),
-      );
+      const files = await fetchSampleFiles();
       const result = importTexts(files);
       setLast({ result, issues: result.issues });
     } finally {
@@ -122,8 +127,10 @@ export function ImportButton() {
       >
         Import folder…
       </button>
-      {busy && <p className="text-xs text-ink/70">{busy}</p>}
-      {!busy && last && <ImportReport result={last.result} issues={last.issues} />}
+      <div role="status" aria-live="polite">
+        {busy && <p className="text-xs text-ink/70">{busy}</p>}
+        {!busy && last && <ImportReport result={last.result} issues={last.issues} />}
+      </div>
     </div>
   );
 }
@@ -157,20 +164,20 @@ function ImportReport({ result, issues }: { result: ImportResult; issues: Import
     <div className="text-xs text-ink/70">
       <p>{headline.join(" · ")}</p>
       {kinds.length > 1 && (
-        <p className="mt-0.5 text-ink/50">
+        <p className="mt-0.5 text-ink-muted">
           Files: {kinds.map((k) => `${k.count} ${FILE_KIND_LABELS[k.kind]}`).join(", ")}
         </p>
       )}
       {typeCounts.length > 0 && (
         <details className="mt-1">
-          <summary className="cursor-pointer select-none text-ink/60 hover:text-ink">
+          <summary className="cursor-pointer select-none text-ink-muted hover:text-ink">
             By type ({typeCounts.length})
           </summary>
           <ul className="mt-1 max-h-40 overflow-y-auto pl-2">
             {typeCounts.map(([type, count]) => (
               <li key={type} className="flex justify-between gap-2">
                 <span className="truncate">{type}</span>
-                <span className="text-ink/50">{count}</span>
+                <span className="text-ink-muted">{count}</span>
               </li>
             ))}
           </ul>
@@ -178,7 +185,7 @@ function ImportReport({ result, issues }: { result: ImportResult; issues: Import
       )}
       {(warnings.length > 0 || notes.length > 0) && (
         <details className="mt-1">
-          <summary className="cursor-pointer select-none text-ink/60 hover:text-ink">
+          <summary className="cursor-pointer select-none text-ink-muted hover:text-ink">
             {warnings.length ? `${plural(warnings.length, "warning")}` : "Notes"}
             {notes.length ? ` · ${plural(notes.length, "note")}` : ""}
           </summary>
@@ -186,7 +193,7 @@ function ImportReport({ result, issues }: { result: ImportResult; issues: Import
             {[...warnings, ...notes].map((issue, i) => (
               <li
                 key={`${issue.fileName}:${i}`}
-                className={issue.level === "error" ? "text-blood" : issue.level === "warn" ? "text-ink" : "text-ink/50"}
+                className={issue.level === "error" ? "text-blood" : issue.level === "warn" ? "text-ink" : "text-ink-muted"}
                 title={issue.fileName}
               >
                 <span className="font-medium">{issue.fileName.split("/").pop()}</span>: {issue.message}
@@ -196,5 +203,31 @@ function ImportReport({ result, issues }: { result: ImportResult; issues: Import
         </details>
       )}
     </div>
+  );
+}
+
+/** One-click sample load for first-run empty states. */
+export function LoadSampleButton() {
+  const importTexts = useContentStore((s) => s.importTexts);
+  const [busy, setBusy] = useState(false);
+
+  async function load() {
+    setBusy(true);
+    try {
+      importTexts(await fetchSampleFiles());
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => void load()}
+      disabled={busy}
+      className="rounded bg-blood px-4 py-2 text-sm font-semibold text-parchment hover:bg-blood-light disabled:opacity-60"
+    >
+      {busy ? "Loading sample…" : "Load sample content"}
+    </button>
   );
 }

@@ -22,7 +22,7 @@ export function SpellsPanel({ classIndex = 0 }: { classIndex?: number }) {
 
   if (!sc) {
     return (
-      <p className="text-sm text-ink/60">
+      <p className="text-sm text-ink-muted">
         {draft.classes[classIndex]
           ? `${draft.classes[classIndex].name} has no spellcasting at this level.`
           : "Choose a spellcasting class to select spells."}
@@ -53,7 +53,7 @@ export function SpellsPanel({ classIndex = 0 }: { classIndex?: number }) {
   return (
     <div className="space-y-4">
       {!listKnown && spells.length > 0 && (
-        <p className="rounded border border-amber-600/40 bg-amber-100/60 p-2 text-sm text-ink/80">
+        <p className="rounded border border-warning-border/60 bg-warning-surface p-2 text-sm text-ink/80">
           ⚠️ No spell-list data found for <strong>{className}</strong>, so every imported spell
           is shown. Import <code>spells/sources.json</code> (it sits next to the spell files in
           a 5eTools dump) and each class will only see its own spells.
@@ -122,7 +122,7 @@ function SpellGroup({
     <fieldset className="rounded border border-blood/20 p-2">
       <legend className="px-1 text-xs font-semibold text-blood">{title}</legend>
       {spells.length === 0 ? (
-        <p className="text-sm text-ink/50">No spells available for this class/level.</p>
+        <p className="text-sm text-ink-muted">No spells available for this class/level.</p>
       ) : (
         <ul className="grid gap-1 sm:grid-cols-2">
           {spells.map((s) => {
@@ -143,7 +143,7 @@ function SpellGroup({
                     onChange={() => onToggle({ name: s.name, source: s.source })}
                   />
                   <span className="flex-1 truncate">{s.name}</span>
-                  <span className="text-[10px] uppercase text-ink/40">
+                  <span className="text-2xs uppercase text-ink-muted">
                     {s.level === 0 ? "cantrip" : `lvl ${s.level}`}
                   </span>
                 </label>
@@ -159,7 +159,7 @@ function SpellGroup({
 function Box({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="rounded border border-blood/20 bg-white/50 p-2">
-      <div className="text-[10px] font-bold uppercase text-ink/60">{label}</div>
+      <div className="text-2xs font-bold uppercase text-ink-muted">{label}</div>
       <div className="text-base font-bold">{value}</div>
     </div>
   );

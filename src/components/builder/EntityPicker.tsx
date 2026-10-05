@@ -20,7 +20,7 @@ export function EntityPicker({
   emptyHint: string;
 }) {
   if (items.length === 0) {
-    return <p className="text-sm text-ink/60">{emptyHint}</p>;
+    return <p className="text-sm text-ink-muted">{emptyHint}</p>;
   }
 
   const chosen = items.find((e) => sameRef(e, selected));
@@ -45,7 +45,7 @@ export function EntityPicker({
                 }`}
               >
                 <span className="truncate">{e.name}</span>
-                <span className="ml-2 text-[10px] uppercase text-ink/40">{e.source}</span>
+                <span className="ml-2 text-2xs uppercase text-ink-muted">{e.source}</span>
               </button>
             </li>
           );
@@ -57,10 +57,10 @@ export function EntityPicker({
           entries ? (
             <Entries entries={entries} />
           ) : (
-            <p className="text-ink/60">No description provided.</p>
+            <p className="text-ink-muted">No description provided.</p>
           )
         ) : (
-          <p className="text-ink/50">Select an option to preview it.</p>
+          <p className="text-ink-muted">Select an option to preview it.</p>
         )}
       </div>
     </div>
