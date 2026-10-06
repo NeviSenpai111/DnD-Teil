@@ -3,6 +3,7 @@ import { Link, NavLink, Navigate, Route, Routes, useLocation } from "react-route
 import { Icon } from "./components/common/Icon";
 import { ImportButton } from "./components/common/ImportButton";
 import { SourceToggle } from "./components/common/SourceToggle";
+import { AppearanceOptions, ThemeMenu } from "./components/common/ThemeMenu";
 import { useMediaQuery } from "./components/common/useMediaQuery";
 import { BrowseView } from "./components/browser/BrowseView";
 import { BuildView } from "./components/builder/BuildView";
@@ -44,7 +45,7 @@ export default function App() {
     <div className="grid h-full grid-rows-[auto_1fr]">
       <header
         inert={drawerOpen}
-        className="flex h-14 items-center gap-2 border-b border-line bg-surface px-2 sm:gap-4 sm:px-4"
+        className="chrome glass flex h-14 items-center gap-2 border-b border-line px-2 sm:gap-4 sm:px-4"
       >
         <button
           ref={menuButtonRef}
@@ -70,7 +71,10 @@ export default function App() {
             </NavLink>
           ))}
         </nav>
-        <EditionSelect className="ml-auto hidden sm:flex" />
+        <div className="ml-auto hidden items-center gap-2 sm:flex">
+          <EditionSelect />
+          <ThemeMenu />
+        </div>
       </header>
 
       <div className="grid overflow-hidden lg:grid-cols-[17rem_1fr]">
@@ -78,7 +82,7 @@ export default function App() {
           <div
             aria-hidden="true"
             onClick={() => setDrawerPath(null)}
-            className="fixed inset-0 z-30 animate-fade-in bg-ink/30"
+            className="fixed inset-0 z-30 animate-fade-in bg-scrim"
           />
         )}
         <aside
@@ -86,7 +90,7 @@ export default function App() {
           aria-label="Content"
           // Visibility only transitions on close (to let the slide finish); on
           // open it must flip at once so the close button can take focus.
-          className={`fixed inset-y-0 left-0 z-40 flex w-80 max-w-[calc(100vw-3rem)] flex-col overflow-y-auto border-r border-line bg-surface-sunk shadow-xl motion-safe:duration-(--duration-settle) motion-safe:ease-spring lg:static lg:z-auto lg:visible lg:w-auto lg:max-w-none lg:translate-x-0 lg:shadow-none ${
+          className={`fixed inset-y-0 left-0 z-40 flex w-80 max-w-[calc(100vw-3rem)] flex-col overflow-y-auto border-r border-line rail shadow-xl motion-safe:duration-(--duration-settle) motion-safe:ease-spring lg:static lg:z-auto lg:visible lg:w-auto lg:max-w-none lg:translate-x-0 lg:shadow-none ${
             drawerOpen
               ? "translate-x-0 motion-safe:transition-[translate]"
               : "invisible -translate-x-full motion-safe:transition-[translate,visibility]"
@@ -119,6 +123,12 @@ export default function App() {
           <section className="border-t border-line p-4 sm:hidden">
             <h2 className="eyebrow mb-3">Rules</h2>
             <EditionSelect />
+          </section>
+          <section className="border-t border-line p-4 sm:hidden">
+            <h2 className="eyebrow mb-2">Appearance</h2>
+            <div className="-mx-2">
+              <AppearanceOptions />
+            </div>
           </section>
           <section className="border-t border-line p-4">
             <h2 className="eyebrow mb-3">Sources</h2>

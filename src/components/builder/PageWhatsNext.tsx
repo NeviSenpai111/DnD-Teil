@@ -113,7 +113,7 @@ export function PageWhatsNext({ goTo }: { goTo: (id: string) => void }) {
             >
               <span
                 className={`grid h-5 w-5 shrink-0 place-items-center rounded-full ${
-                  item.done ? "bg-success text-white" : "border border-dashed border-line-strong"
+                  item.done ? "bg-success text-surface" : "border border-dashed border-line-strong"
                 }`}
                 aria-hidden
               >

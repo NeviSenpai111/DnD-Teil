@@ -114,7 +114,7 @@ export function FullSheet({ character }: { character: Character }) {
 
   return (
     <article className="space-y-4">
-      <header className="panel flex flex-wrap items-end justify-between gap-x-4 gap-y-3 p-5 sm:px-6">
+      <header className="panel relative z-10 flex flex-wrap items-end justify-between gap-x-4 gap-y-3 p-5 sm:px-6">
         <div className="detail-head min-w-0 flex-1 pb-3">
           <h1 className="detail-title">{character.name}</h1>
           <p className="mt-1 text-sm text-ink-muted">{subtitle}</p>
@@ -227,7 +227,7 @@ export function FullSheet({ character }: { character: Character }) {
         <aside
           role="status"
           key={`${lastRoll.label}:${lastRoll.total}:${lastRoll.detail}`}
-          className="fixed bottom-4 right-4 z-20 w-64 animate-settle-in rounded-xl border border-line bg-surface p-4 shadow-xl print:hidden"
+          className="glass fixed bottom-4 right-4 z-20 w-64 animate-settle-in rounded-xl border border-line p-4 shadow-xl print:hidden"
         >
           <div className="flex items-start justify-between gap-2">
             <span className="eyebrow">
@@ -1772,7 +1772,7 @@ function LevelUp({ character }: { character: Character }) {
         Level Up
       </button>
       {open && (
-        <div className="absolute right-0 z-10 mt-1.5 w-max animate-fade-in rounded-lg border border-line bg-surface p-1 shadow-[var(--shadow-lg)]">
+        <div className="glass absolute right-0 z-10 mt-1.5 w-max animate-fade-in rounded-lg border border-line p-1 shadow-lg">
           {classes.map((c, i) => (
             <button
               key={`${c.name}-${i}`}

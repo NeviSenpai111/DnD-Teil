@@ -2,7 +2,8 @@
 @import "@fontsource-variable/geist-mono";
 @import "tailwindcss";
 
-/* Design tokens — see DESIGN.md. One neutral family (zinc) + one accent. */
+/* Design tokens — see DESIGN.md. These are the Codex scheme; the other colour
+   schemes remap the same roles further down (`[data-theme="…"]`). */
 @theme {
   --font-sans: "Geist Variable", ui-sans-serif, sans-serif;
   --font-mono: "Geist Mono Variable", ui-monospace, monospace;
@@ -22,7 +23,9 @@
   --color-on-accent: #ffffff;
   --color-success: #2f6b3a;
   --color-warning-surface: #fbf3dc;
-  --color-warning-border: #b7862c;
+  --color-warning-border: #a87a26;
+  /* Backdrop behind the mobile drawer. */
+  --color-scrim: rgb(24 24 27 / 0.3);
 
   /* Smallest legible size for source tags and stat labels (replaces 9–10px). */
   --text-2xs: 0.6875rem;
@@ -31,11 +34,16 @@
   --radius: 0.5rem;
   --radius-panel: 0.875rem;
 
-  /* Shadows tinted to the zinc ink, never grey-black or glowing. */
-  --shadow-sm: 0 1px 2px rgb(24 24 27 / 0.05);
-  --shadow-panel: 0 1px 2px rgb(24 24 27 / 0.04), 0 8px 24px -16px rgb(24 24 27 / 0.12);
-  --shadow-lg: 0 1px 2px rgb(24 24 27 / 0.04), 0 16px 40px -20px rgb(24 24 27 / 0.25);
-  --shadow-xl: 0 24px 64px -24px rgb(24 24 27 / 0.35);
+  /* Shadows tinted to each scheme's darkest ink (`--shadow-ink`), never glowing.
+     Dark schemes raise `--shadow-depth` so elevation still reads. */
+  --shadow-sm: 0 1px 2px rgb(var(--shadow-ink) / calc(0.05 * var(--shadow-depth)));
+  --shadow-panel:
+    0 1px 2px rgb(var(--shadow-ink) / calc(0.04 * var(--shadow-depth))),
+    0 8px 24px -16px rgb(var(--shadow-ink) / calc(0.12 * var(--shadow-depth)));
+  --shadow-lg:
+    0 1px 2px rgb(var(--shadow-ink) / calc(0.04 * var(--shadow-depth))),
+    0 16px 40px -20px rgb(var(--shadow-ink) / calc(0.25 * var(--shadow-depth)));
+  --shadow-xl: 0 24px 64px -24px rgb(var(--shadow-ink) / calc(0.35 * var(--shadow-depth)));
 
   /* Critically-damped spring (stiffness 100, damping 20, mass 1) sampled over 600ms. */
   --ease-spring: linear(0, 0.056, 0.176, 0.316, 0.45, 0.569, 0.669, 0.75, 0.815, 0.865, 0.904, 0.933, 0.955, 0.972, 0.984, 0.993, 1);
@@ -60,6 +68,16 @@
 
 :root {
   color-scheme: light;
+  --shadow-ink: 24 24 27;
+  --shadow-depth: 1;
+  /* Skeleton shimmer highlight. */
+  --shimmer: rgb(255 255 255 / 0.7);
+  /* Frosted glass: surface opacity, blur radius, 1px top sheen, and the second
+     backdrop hue (decorative only — never text, borders or controls). */
+  --glass-alpha: 72%;
+  --glass-blur: 18px;
+  --glass-sheen: rgb(255 255 255 / 0.7);
+  --aura: #b4955a;
 }
 
 html,
@@ -78,7 +96,7 @@ body {
 }
 
 ::selection {
-  background: rgb(155 44 44 / 0.16);
+  background: color-mix(in srgb, var(--color-accent) 20%, transparent);
 }
 
 * {
@@ -269,6 +287,39 @@ input[type="radio"] {
     border-color: var(--color-accent);
   }
 
+  /* On/off switch on a native checkbox (`role="switch"`). */
+  .switch {
+    appearance: none;
+    position: relative;
+    flex-shrink: 0;
+    width: 2.25rem;
+    height: 1.25rem;
+    border-radius: 999px;
+    background: var(--color-line-strong);
+    cursor: pointer;
+    transition: background-color 140ms var(--ease-snap);
+  }
+  .switch::before {
+    content: "";
+    position: absolute;
+    top: 0.125rem;
+    left: 0.125rem;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 999px;
+    background: var(--color-ink-muted);
+    transition:
+      transform 300ms var(--ease-spring),
+      background-color 140ms var(--ease-snap);
+  }
+  .switch:checked {
+    background: var(--color-accent);
+  }
+  .switch:checked::before {
+    background: var(--color-on-accent);
+    transform: translateX(1rem);
+  }
+
   /* Hairline pill for source tags, readouts and badges. */
   .chip {
     display: inline-flex;
@@ -327,8 +378,8 @@ input[type="radio"] {
     background: var(--color-surface);
     color: var(--color-ink);
     box-shadow:
-      0 1px 2px rgb(24 24 27 / 0.08),
-      0 0 0 1px rgb(24 24 27 / 0.04);
+      0 1px 2px rgb(var(--shadow-ink) / calc(0.08 * var(--shadow-depth))),
+      0 0 0 1px rgb(var(--shadow-ink) / calc(0.04 * var(--shadow-depth)));
   }
 
   /* Skeleton loader: shimmer travels via transform only. */
@@ -343,7 +394,7 @@ input[type="radio"] {
     position: absolute;
     inset: 0;
     transform: translateX(-100%);
-    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.7), transparent);
+    background: linear-gradient(90deg, transparent, var(--shimmer), transparent);
     animation: shimmer 1.4s var(--ease-snap) infinite;
   }
 
@@ -380,6 +431,252 @@ input[type="radio"] {
   .stagger > :nth-child(10) { animation-delay: 315ms; }
   .stagger > :nth-child(11) { animation-delay: 350ms; }
   .stagger > :nth-child(n + 12) { animation-delay: 385ms; }
+
+  /* Floating and edge surfaces (header bar, roll toast, menus). Solid by
+     default, frosted when glass is on. */
+  .glass {
+    background-color: var(--color-surface);
+  }
+  /* The content rail: a sunk well beside the main column. */
+  .rail {
+    background-color: var(--color-surface-sunk);
+  }
+
+  /* Native popover menu, dropped under the header's right edge. */
+  .popover-menu {
+    position: fixed;
+    inset: 3.875rem 0.75rem auto auto;
+    margin: 0;
+    width: min(20rem, calc(100vw - 1.5rem));
+    max-height: calc(100dvh - 5rem);
+    overflow-y: auto;
+    padding: 0.375rem;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-panel);
+    color: var(--color-ink);
+    box-shadow: var(--shadow-xl);
+  }
+  .popover-menu:popover-open {
+    animation: settle-in var(--duration-settle) var(--ease-spring) both;
+  }
+
+  /* Frosted glass (DESIGN.md §4): on unless the viewer switches it off
+     (`data-glass="off"`), screen only, and only where backdrop-filter works.
+     The 1px sheen along the top edge is a background layer so it never
+     fights a surface's own shadow. */
+  @media screen {
+    @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+      :root:not([data-glass="off"]) :is(.panel, .detail, .glass) {
+        background-color: color-mix(in srgb, var(--color-surface) var(--glass-alpha), transparent);
+      }
+      :root:not([data-glass="off"]) .rail {
+        background-color: color-mix(in srgb, var(--color-surface-sunk) var(--glass-alpha), transparent);
+      }
+      :root:not([data-glass="off"]) :is(.panel, .detail, .glass, .rail) {
+        background-image: linear-gradient(var(--glass-sheen), var(--glass-sheen));
+        background-size: 100% 1px;
+        background-repeat: no-repeat;
+        -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.6);
+        backdrop-filter: blur(var(--glass-blur)) saturate(1.6);
+      }
+    }
+  }
+}
+
+/* ── Colour schemes (DESIGN.md §2) ─────────────────────────────────────────
+   Every scheme fills the same roles; the picker lives in ThemeMenu.tsx and
+   writes `data-theme` on <html>. The selectors are plain attributes so any
+   subtree can preview a scheme (the picker's swatches do). Screen only:
+   print always falls back to the Codex defaults above. */
+@media screen {
+  /* Mirrors the @theme defaults so a Codex subtree resets inside another scheme. */
+  [data-theme="codex"] {
+    color-scheme: light;
+    --color-canvas: #f4f4f5;
+    --color-surface: #ffffff;
+    --color-surface-sunk: #fafafa;
+    --color-ink: #18181b;
+    --color-ink-muted: #52525b;
+    --color-ink-faint: #a1a1aa;
+    --color-line: #e4e4e7;
+    --color-line-strong: #d4d4d8;
+    --color-accent: #9b2c2c;
+    --color-accent-strong: #7f1d1d;
+    --color-on-accent: #ffffff;
+    --color-success: #2f6b3a;
+    --color-warning-surface: #fbf3dc;
+    --color-warning-border: #a87a26;
+    --color-scrim: rgb(24 24 27 / 0.3);
+    --shadow-ink: 24 24 27;
+    --aura: #b4955a;
+  }
+
+  /* The app's original parchment and blood, before the Codex redesign. */
+  [data-theme="legacy"] {
+    color-scheme: light;
+    --color-canvas: #e9e2cf;
+    --color-surface: #f4ecd8;
+    --color-surface-sunk: #efe7d2;
+    --color-ink: #1a1410;
+    --color-ink-muted: #5c5247;
+    --color-ink-faint: #a39783;
+    --color-line: #ddd1b6;
+    --color-line-strong: #c9b994;
+    --color-accent: #7b2d26;
+    --color-accent-strong: #a23b32;
+    --color-on-accent: #f4ecd8;
+    --color-success: #2f6b3a;
+    --color-warning-surface: #f7ebc8;
+    --color-warning-border: #9c7020;
+    --color-scrim: rgb(26 20 16 / 0.35);
+    --shadow-ink: 58 38 22;
+    --aura: #b7862c;
+  }
+  /* Legacy keeps its blood-red header: `.chrome` remaps the roles for the bar. */
+  [data-theme="legacy"] .chrome {
+    --color-surface: #7b2d26;
+    --color-canvas: #5e211b;
+    --color-ink: #f4ecd8;
+    --color-ink-muted: #ead9bd;
+    --color-line: #8f3a32;
+    --color-accent: #f4ecd8;
+    --color-on-accent: #7b2d26;
+    /* Nearly opaque, or the frosted bar washes the blood out to brick. */
+    --glass-alpha: 92%;
+    --glass-sheen: rgb(255 255 255 / 0.12);
+  }
+  [data-theme="legacy"] .chrome .segmented > [aria-current="page"] {
+    background: #f4ecd8;
+    color: #7b2d26;
+  }
+  [data-theme="legacy"] .chrome .field {
+    --color-surface: #f4ecd8;
+    --color-ink: #1a1410;
+    --color-line-strong: #c9b994;
+    --color-accent: #7b2d26;
+  }
+
+  /* Solarized Light, Ethan Schoonover. Nudged only to meet the contrast floors:
+     blue #268bd2 → #1d72ad, muted base01 #586e75 → #52676e, yellow edge → #9c7600. */
+  [data-theme="solarized"] {
+    color-scheme: light;
+    --color-canvas: #eee8d5;
+    --color-surface: #fdf6e3;
+    --color-surface-sunk: #f7f0dc;
+    --color-ink: #073642;
+    --color-ink-muted: #52676e;
+    --color-ink-faint: #93a1a1;
+    --color-line: #e6dfc8;
+    --color-line-strong: #d3cbb2;
+    --color-accent: #1d72ad;
+    --color-accent-strong: #175a8a;
+    --color-on-accent: #fdf6e3;
+    --color-success: #6f8000;
+    --color-warning-surface: #f8ecc9;
+    --color-warning-border: #9c7600;
+    --color-scrim: rgb(0 43 54 / 0.35);
+    --shadow-ink: 0 43 54;
+    --aura: #2aa198;
+  }
+
+  /* Nord, Arctic Ice Studio: Polar Night surfaces, Frost accent, Aurora backdrop. */
+  [data-theme="nord"] {
+    color-scheme: dark;
+    --color-canvas: #2e3440;
+    --color-surface: #3b4252;
+    --color-surface-sunk: #353b49;
+    --color-ink: #eceff4;
+    --color-ink-muted: #b4bccb;
+    --color-ink-faint: #7b8598;
+    --color-line: #434c5e;
+    --color-line-strong: #4c566a;
+    --color-accent: #88c0d0;
+    --color-accent-strong: #a3d0dd;
+    --color-on-accent: #2e3440;
+    --color-success: #a3be8c;
+    --color-warning-surface: #4d4f55;
+    --color-warning-border: #ebcb8b;
+    --color-scrim: rgb(26 30 37 / 0.55);
+    --shadow-ink: 20 23 30;
+    --aura: #a3be8c;
+  }
+
+  /* Gruvbox Dark, Pavel Pertsev: retro warm greys with the yellow accent. */
+  [data-theme="gruvbox"] {
+    color-scheme: dark;
+    --color-canvas: #1d2021;
+    --color-surface: #282828;
+    --color-surface-sunk: #232425;
+    --color-ink: #ebdbb2;
+    --color-ink-muted: #a89984;
+    --color-ink-faint: #7c6f64;
+    --color-line: #3c3836;
+    --color-line-strong: #504945;
+    --color-accent: #d79921;
+    --color-accent-strong: #fabd2f;
+    --color-on-accent: #1d2021;
+    --color-success: #b8bb26;
+    --color-warning-surface: #3a2c1f;
+    --color-warning-border: #fe8019;
+    --color-scrim: rgb(13 14 14 / 0.6);
+    --shadow-ink: 10 11 11;
+    --aura: #689d6a;
+  }
+
+  /* Catppuccin Mocha: crust/base/mantle surfaces, Maroon accent, Teal backdrop. */
+  [data-theme="catppuccin"] {
+    color-scheme: dark;
+    --color-canvas: #11111b;
+    --color-surface: #1e1e2e;
+    --color-surface-sunk: #181825;
+    --color-ink: #cdd6f4;
+    --color-ink-muted: #a6adc8;
+    --color-ink-faint: #6c7086;
+    --color-line: #313244;
+    --color-line-strong: #45475a;
+    --color-accent: #eba0ac;
+    --color-accent-strong: #f2cdcd;
+    --color-on-accent: #11111b;
+    --color-success: #a6e3a1;
+    --color-warning-surface: #2f2b2e;
+    --color-warning-border: #f9e2af;
+    --color-scrim: rgb(8 8 13 / 0.6);
+    --shadow-ink: 5 5 10;
+    --aura: #94e2d5;
+  }
+
+  /* Dark schemes: deeper shadows, a faint sheen, a highlight-less shimmer. */
+  [data-theme="nord"],
+  [data-theme="gruvbox"],
+  [data-theme="catppuccin"] {
+    --shadow-depth: 3;
+    --shimmer: rgb(255 255 255 / 0.07);
+    --glass-alpha: 70%;
+    --glass-sheen: rgb(255 255 255 / 0.07);
+    --aura-strength: 22%;
+  }
+
+  /* The backdrop the glass frosts: an accent wash and an aura wash, fixed. */
+  :root:not([data-glass="off"]) body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(52rem 38rem at 6% -8%, color-mix(in srgb, var(--color-accent) var(--aura-strength, 14%), transparent), transparent 72%),
+      radial-gradient(60rem 42rem at 100% 108%, color-mix(in srgb, var(--aura) var(--aura-strength, 14%), transparent), transparent 72%);
+  }
+}
+
+/* Viewers who ask for less transparency get solid surfaces and no backdrop. */
+@media (prefers-reduced-transparency: reduce) {
+  :root:root {
+    --glass-alpha: 100%;
+  }
+  body::before {
+    display: none;
+  }
 }
 
 @keyframes shimmer {
