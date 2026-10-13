@@ -22,6 +22,12 @@ export interface Spell {
   classes?: { fromClassList?: SpellClassRef[] };
   spellLists?: string[];
   meta?: { ritual?: boolean };
+  /** "M" / "R": the spell makes a melee/ranged spell attack. */
+  spellAttack?: string[];
+  /** Abilities targets save with, e.g. ["dexterity"]. */
+  savingThrow?: string[];
+  /** Damage types dealt, e.g. ["fire"]. */
+  damageInflict?: string[];
   entries?: Entry[];
   entriesHigherLevel?: Entry[];
 }

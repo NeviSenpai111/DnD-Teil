@@ -102,14 +102,3 @@ export function formatValue(cp: number): string {
   if (cp % 10 === 0) return `${cp / 10} sp`;
   return `${cp} cp`;
 }
-
-/** Property codes may be "V", "V|XPHB" or wrapped objects; extract the label. */
-export function propertyLabels(properties: unknown[] | undefined): string[] {
-  return (properties ?? [])
-    .map((p) => {
-      const raw = typeof p === "string" ? p : (p as { uid?: string })?.uid;
-      const code = raw?.split("|")[0];
-      return code ? (PROPERTY_LABELS[code] ?? code) : undefined;
-    })
-    .filter((s): s is string => !!s);
-}

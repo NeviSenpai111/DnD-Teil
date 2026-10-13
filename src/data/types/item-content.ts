@@ -18,8 +18,11 @@ export interface Item {
   weaponCategory?: string;
   dmg1?: string;
   dmgType?: string;
+  /** Alternate (versatile) damage. */
+  dmg2?: string;
   range?: string;
-  properties?: unknown[];
+  /** Property uids ("V|XPHB") or `{ uid, note }` objects — 5eTools' `property` field. */
+  property?: ItemPropertyRef[];
   value?: number;
   /** Weight in pounds. */
   weight?: number;
@@ -34,10 +37,17 @@ export interface Item {
   recharge?: string;
   /** Container info; `weightless` contents don't count toward carry weight. */
   containerCapacity?: { weight?: number[]; weightless?: boolean };
+  rarity?: string;
+  wondrous?: boolean;
+  /** Magic weapon/armor base, e.g. "greatsword|phb". */
+  baseItem?: string;
+  page?: number;
   /** Ability effects, e.g. `{ static: { int: 19 } }` set-score items. */
   ability?: unknown;
   entries?: Entry[];
 }
+
+export type ItemPropertyRef = string | { uid: string; note?: string };
 
 /** The leading letter of an item `type`, e.g. "M|XPHB" -> "M". */
 export function itemTypeCode(type?: string): string | undefined {

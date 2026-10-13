@@ -46,6 +46,12 @@ describe("FullSheet interactivity", () => {
     useCharacterStore.getState().setClass({ name: "Channeler", source: "SRDLite" });
   });
 
+  /** Weapons list on the Actions tab only once equipped, as on D&D Beyond. */
+  function equipLast() {
+    const store = useCharacterStore.getState();
+    store.toggleEquip(store.draft.inventory.length - 1);
+  }
+
   function open() {
     return render(
       <MemoryRouter initialEntries={["/sheet/draft"]}>
@@ -70,9 +76,11 @@ describe("FullSheet interactivity", () => {
     // Close the add menu, then expand the new row into its stat card.
     fireEvent.click(screen.getByText("Done"));
     fireEvent.click(screen.getByText("Longsword"));
-    expect(screen.getByText("Damage:")).toBeInTheDocument();
-    expect(screen.getByText("1d8 slashing")).toBeInTheDocument();
-    expect(screen.getByText("15 gp")).toBeInTheDocument();
+    const card = within(screen.getByRole("article", { name: "Longsword" }));
+    expect(card.getByText("Martial Weapon, Melee Weapon")).toBeInTheDocument();
+    expect(card.getByText("Slashing")).toBeInTheDocument();
+    expect(card.getByText("Mastery: Sap")).toBeInTheDocument();
+    expect(card.getByText("15 gp")).toBeInTheDocument();
 
     fireEvent.click(screen.getByTitle("Remove item"));
     expect(useCharacterStore.getState().draft.inventory).toHaveLength(0);
@@ -80,7 +88,7 @@ describe("FullSheet interactivity", () => {
 
   it("adds a spell from the Spells menu tagged with the caster class, expands it, removes it", () => {
     open();
-    fireEvent.click(screen.getByText("Spells"));
+    fireEvent.click(screen.getByRole("button", { name: "Spells" }));
     expect(screen.getByText(/Save DC/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByText("+ Add Spell"));
@@ -104,7 +112,7 @@ describe("FullSheet interactivity", () => {
 
   it("filters the add-spell search to the caster's spell list and level", () => {
     open();
-    fireEvent.click(screen.getByText("Spells"));
+    fireEvent.click(screen.getByRole("button", { name: "Spells" }));
     fireEvent.click(screen.getByText("+ Add Spell"));
 
     const search = screen.getByPlaceholderText("Search spells to add…");
@@ -122,7 +130,7 @@ describe("FullSheet interactivity", () => {
   it("offers no spell adding to a non-caster", () => {
     useCharacterStore.getState().setClass({ name: "Warden", source: "SRDLite" });
     open();
-    fireEvent.click(screen.getByText("Spells"));
+    fireEvent.click(screen.getByRole("button", { name: "Spells" }));
     expect(screen.getByText("Not a spellcaster.")).toBeInTheDocument();
     expect(screen.queryByText("+ Add Spell")).not.toBeInTheDocument();
   });
@@ -142,7 +150,7 @@ describe("FullSheet interactivity", () => {
     fireEvent.change(screen.getByLabelText("Amount"), { target: { value: "2" } });
     fireEvent.click(screen.getByRole("button", { name: "Damage" }));
     expect(useCharacterStore.getState().draft.play.damageTaken).toBe(2);
-    expect(screen.getByText("3/5")).toBeInTheDocument();
+    expect(screen.getByText("3 / 5")).toBeInTheDocument();
 
     // Temp HP absorbs before real damage.
     fireEvent.change(screen.getByLabelText("Temp HP"), { target: { value: "1" } });
@@ -154,12 +162,12 @@ describe("FullSheet interactivity", () => {
 
     fireEvent.click(screen.getByText("Long Rest"));
     expect(useCharacterStore.getState().draft.play.damageTaken).toBe(0);
-    expect(screen.getByText("5/5")).toBeInTheDocument();
+    expect(screen.getByText("5 / 5")).toBeInTheDocument();
   });
 
   it("spends and restores spell slots via the pips", () => {
     open();
-    fireEvent.click(screen.getByText("Spells"));
+    fireEvent.click(screen.getByRole("button", { name: "Spells" }));
     // Channeler 1 (full caster) has two level-1 slots.
     fireEvent.click(screen.getByLabelText("L1 slot 2"));
     expect(useCharacterStore.getState().draft.play.usedSlots[0]).toBe(2);
@@ -182,7 +190,7 @@ describe("FullSheet interactivity", () => {
     expect(screen.getByText("poison")).toBeInTheDocument();
 
     // Charm: dex 8 (−1) makes base AC 9; the equipped +1 charm raises it to 10.
-    expect(screen.getByText("AC").parentElement?.textContent).toContain("10");
+    expect(screen.getByRole("group", { name: "Armor Class" }).textContent).toContain("10");
     // Circlet: INT floors at 19 (score badge on the Int ability card).
     expect(screen.getByText("19")).toBeInTheDocument();
   });
@@ -223,6 +231,7 @@ describe("FullSheet interactivity", () => {
       useCharacterStore
         .getState()
         .addItem({ ref: { name: "Longsword", source: "SRDLite" }, name: "Longsword" });
+      equipLast();
       vi.spyOn(Math, "random").mockReturnValue(0.999);
       open();
 
@@ -250,7 +259,7 @@ describe("FullSheet interactivity", () => {
         damageTaken: 0,
         usedHitDice: [1],
       });
-      expect(screen.getByText("5/5")).toBeInTheDocument();
+      expect(screen.getByText("5 / 5")).toBeInTheDocument();
     });
 
     it("tracks death saves at 0 HP: rolls, damage-as-failure, healing clears", () => {
@@ -303,7 +312,7 @@ describe("FullSheet interactivity", () => {
     open();
 
     // Unarmored Defense: 10 + dex (−1) + con (+3) = 12 beats base 9.
-    expect(screen.getByText("AC").parentElement?.textContent).toContain("12");
+    expect(screen.getByRole("group", { name: "Armor Class" }).textContent).toContain("12");
   });
 
   it("applies an attunement item's bonus only while attuned, capped at 3 items", () => {
@@ -315,11 +324,11 @@ describe("FullSheet interactivity", () => {
     open();
 
     // Equipped but not attuned: the +1 AC does not apply (dex 8 -> AC 9).
-    expect(screen.getByText("AC").parentElement?.textContent).toContain("9");
+    expect(screen.getByRole("group", { name: "Armor Class" }).textContent).toContain("9");
 
     fireEvent.click(screen.getByText("Inventory"));
     fireEvent.click(screen.getAllByText("Attune")[0]);
-    expect(screen.getByText("AC").parentElement?.textContent).toContain("10");
+    expect(screen.getByRole("group", { name: "Armor Class" }).textContent).toContain("10");
 
     // Attune two more; the fourth is blocked by the 3-item limit.
     fireEvent.click(screen.getAllByText("Attune")[0]);
@@ -344,7 +353,7 @@ describe("FullSheet interactivity", () => {
     store.toggleSpell({ name: "Mending Ward", source: "SRDLite" }, "Channeler"); // ritual
     store.setClassLevel(0, 5); // cantrip dice scale at level 5
     open();
-    fireEvent.click(screen.getByText("Spells"));
+    fireEvent.click(screen.getByRole("button", { name: "Spells" }));
 
     expect(screen.getByText("Mage Light")).toBeInTheDocument();
     expect(screen.getByText("Species")).toBeInTheDocument();
@@ -356,6 +365,7 @@ describe("FullSheet interactivity", () => {
     const store = useCharacterStore.getState();
     store.setClass({ name: "Warden", source: "SRDLite" });
     store.addItem({ ref: { name: "Longsword", source: "SRDLite" }, name: "Longsword" });
+    equipLast();
     store.setWeaponMasteries(["Longsword"]);
     open();
     expect(screen.getByText(/Mastery: Sap/)).toBeInTheDocument();
@@ -404,11 +414,57 @@ describe("FullSheet interactivity", () => {
     // Sack 5 lb + rod 2 lb carried normally.
     expect(screen.getByText(/Total Weight: 7 lb \//)).toBeInTheDocument();
 
-    const sackId = useCharacterStore.getState().draft.inventory[0].id!;
-    fireEvent.change(screen.getByLabelText("Container for Rod of Embers"), {
-      target: { value: sackId },
-    });
+    // Open the rod and move it into the sack.
+    fireEvent.click(screen.getByRole("button", { name: "Rod of Embers" }));
+    const moveRod = screen.getByRole("group", { name: "Move Rod of Embers to" });
+    expect(within(moveRod).getByRole("button", { name: "Equipment" })).toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(within(moveRod).getByRole("button", { name: "Sack of Deep Holding" }));
+    expect(useCharacterStore.getState().draft.inventory[1].containedIn).toBe(
+      useCharacterStore.getState().draft.inventory[0].id,
+    );
     expect(screen.getByText(/Total Weight: 5 lb \//)).toBeInTheDocument();
+    // The rod is now listed under the sack's own section.
+    const sack = screen.getByRole("region", { name: "Sack of Deep Holding" });
+    expect(within(sack).getByRole("button", { name: "Rod of Embers" })).toBeInTheDocument();
+  });
+
+  it("moves an item into a container by dragging it onto the container's section", () => {
+    const store = useCharacterStore.getState();
+    store.addItem({ ref: { name: "Sack of Deep Holding", source: "SRDLite" }, name: "Sack of Deep Holding" });
+    store.addItem({ ref: { name: "Rod of Embers", source: "SRDLite" }, name: "Rod of Embers" });
+    open();
+    fireEvent.click(screen.getByText("Inventory"));
+
+    const [, rodHandle] = screen.getAllByTitle("Drag onto a container");
+    const sack = screen.getByRole("region", { name: "Sack of Deep Holding" });
+    fireEvent.dragStart(rodHandle);
+    fireEvent.dragOver(sack);
+    fireEvent.drop(sack);
+    const [sackEntry, rod] = useCharacterStore.getState().draft.inventory;
+    expect(rod.containedIn).toBe(sackEntry.id);
+
+    // Back out onto the Equipment section.
+    fireEvent.dragStart(screen.getAllByTitle("Drag onto a container")[1]);
+    fireEvent.drop(screen.getByRole("region", { name: "Equipment" }));
+    expect(useCharacterStore.getState().draft.inventory[1].containedIn).toBeUndefined();
+  });
+
+  it("keeps a removed container's contents in the inventory", () => {
+    const store = useCharacterStore.getState();
+    store.addItem({ ref: { name: "Sack of Deep Holding", source: "SRDLite" }, name: "Sack of Deep Holding" });
+    store.addItem({ ref: { name: "Rod of Embers", source: "SRDLite" }, name: "Rod of Embers" });
+    const [sackEntry] = useCharacterStore.getState().draft.inventory;
+    store.updateSheet(useCharacterStore.getState().draft.id, (c) => ({
+      inventory: c.inventory.map((it, i) => (i === 1 ? { ...it, containedIn: sackEntry.id } : it)),
+    }));
+    open();
+    fireEvent.click(screen.getByText("Inventory"));
+
+    fireEvent.click(screen.getByLabelText("Remove Sack of Deep Holding"));
+    expect(useCharacterStore.getState().draft.inventory).toEqual([
+      expect.objectContaining({ name: "Rod of Embers", containedIn: undefined }),
+    ]);
+    expect(within(screen.getByRole("region", { name: "Equipment" })).getByText("Rod of Embers")).toBeInTheDocument();
   });
 
   it("attaches an imported creature on the Extras tab", () => {
@@ -432,13 +488,13 @@ describe("FullSheet interactivity", () => {
     open();
 
     // Off: base 10 + dex −1 = 9.
-    expect(screen.getByText("AC").parentElement?.textContent).toContain("9");
+    expect(screen.getByRole("group", { name: "Armor Class" }).textContent).toContain("9");
     fireEvent.click(screen.getByRole("button", { name: "Warding Aegis", pressed: false }));
     expect(useCharacterStore.getState().draft.play.activeEffects).toEqual(["Warding Aegis"]);
     // On: 13 + dex −1 = 12.
-    expect(screen.getByText("AC").parentElement?.textContent).toContain("12");
+    expect(screen.getByRole("group", { name: "Armor Class" }).textContent).toContain("12");
     fireEvent.click(screen.getByRole("button", { name: "Warding Aegis", pressed: true }));
-    expect(screen.getByText("AC").parentElement?.textContent).toContain("9");
+    expect(screen.getByRole("group", { name: "Armor Class" }).textContent).toContain("9");
   });
 
   it("marks item-granted advantage on the skill and rolls with it", () => {
@@ -462,7 +518,7 @@ describe("FullSheet interactivity", () => {
     store.toggleCantrip({ name: "Spark Touch", source: "SRDLite" }, "Channeler");
     store.setClassLevel(0, 5);
     open();
-    fireEvent.click(screen.getByText("Spells"));
+    fireEvent.click(screen.getByRole("button", { name: "Spells" }));
     expect(screen.getByText("2d8")).toBeInTheDocument();
   });
 
@@ -478,24 +534,91 @@ describe("FullSheet interactivity", () => {
       .getState()
       .draft.inventory.slice(0, 2)
       .map((e) => e.id!);
-    // Rod -> sack B -> sack A: everything inside A is weightless.
-    fireEvent.change(screen.getByLabelText("Container for Rod of Embers"), {
-      target: { value: sackBId },
-    });
-    fireEvent.change(screen.getAllByLabelText("Container for Sack of Deep Holding")[1], {
-      target: { value: sackAId },
-    });
+    // Rod -> sack B -> sack A: everything inside A is weightless. Same-name
+    // containers are told apart by number.
+    fireEvent.click(screen.getByRole("button", { name: "Rod of Embers" }));
+    fireEvent.click(
+      within(screen.getByRole("group", { name: "Move Rod of Embers to" })).getByRole("button", {
+        name: "Sack of Deep Holding (2)",
+      }),
+    );
+    fireEvent.click(screen.getAllByRole("button", { name: "Sack of Deep Holding" })[1]);
+    const moveSackB = screen.getByRole("group", { name: "Move Sack of Deep Holding to" });
+    // Sack B can't go into itself.
+    expect(within(moveSackB).queryByRole("button", { name: "Sack of Deep Holding (2)" })).not.toBeInTheDocument();
+    fireEvent.click(within(moveSackB).getByRole("button", { name: "Sack of Deep Holding" }));
+    const inventory = useCharacterStore.getState().draft.inventory;
+    expect(inventory[2].containedIn).toBe(sackBId);
+    expect(inventory[1].containedIn).toBe(sackAId);
     expect(screen.getByText(/Total Weight: 5 lb \//)).toBeInTheDocument();
     // Sack A holds sack B (5) + its rod (2) against its 250 lb capacity.
     expect(screen.getByText(/holds 7 lb \/ 250 lb/)).toBeInTheDocument();
   });
 
+  it("lists only equipped weapons, with one-click equipping for the rest", () => {
+    useCharacterStore.getState().addItem({ ref: { name: "Longsword", source: "SRDLite" }, name: "Longsword" });
+    open();
+    expect(screen.queryByLabelText("Roll attack: Longsword")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTitle("Equip to list its attack"));
+    expect(screen.getByLabelText("Roll attack: Longsword")).toBeInTheDocument();
+    expect(useCharacterStore.getState().draft.inventory[0].equipped).toBe(true);
+  });
+
+  it("lists attack and save spells in the Actions table and filters by action type", () => {
+    const store = useCharacterStore.getState();
+    store.toggleSpell({ name: "Spark Touch", source: "SRDLite" }, "Channeler");
+    store.toggleSpell({ name: "Frost Bite", source: "SRDLite" }, "Channeler");
+    store.toggleSpell({ name: "Flame Dart", source: "SRDLite" }, "Channeler");
+    store.toggleSpell({ name: "Mending Ward", source: "SRDLite" }, "Channeler");
+    open();
+
+    // Spark Touch makes a melee spell attack; Frost Bite asks for a Con save.
+    expect(screen.getByLabelText("Roll attack: Spark Touch")).toBeInTheDocument();
+    expect(screen.getByText(/^CON \d+$/)).toBeInTheDocument();
+    expect(screen.getByLabelText("Roll damage: Frost Bite")).toHaveTextContent("1d6 cold");
+    // Like D&D Beyond, a leveled save spell stays on the Spells tab only.
+    expect(screen.queryByLabelText("Roll damage: Flame Dart")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Bonus Action" }));
+    expect(screen.getByText("Two-Weapon Fighting")).toBeInTheDocument();
+    expect(screen.getByText("Mending Ward")).toBeInTheDocument();
+    expect(screen.queryByText("Actions in Combat")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Reaction" }));
+    expect(screen.getByText("Opportunity Attack")).toBeInTheDocument();
+  });
+
+  it("keeps Heroic Inspiration and conditions through a long rest", () => {
+    open();
+    fireEvent.click(screen.getByRole("button", { name: "Heroic Inspiration" }));
+    fireEvent.change(screen.getByLabelText("Add condition"), { target: { value: "Poisoned" } });
+    expect(useCharacterStore.getState().draft.play).toMatchObject({ inspiration: true, conditions: ["Poisoned"] });
+
+    fireEvent.click(screen.getByLabelText("Hit Points"));
+    fireEvent.click(screen.getByText("Long Rest"));
+    expect(useCharacterStore.getState().draft.play).toMatchObject({ inspiration: true, conditions: ["Poisoned"] });
+
+    fireEvent.click(screen.getByLabelText("Remove condition Poisoned"));
+    expect(useCharacterStore.getState().draft.play.conditions).toEqual([]);
+  });
+
+  it("filters Features & Traits by kind", () => {
+    useCharacterStore.getState().setRace({ name: "Swiftling", source: "SRDLite" });
+    open();
+    fireEvent.click(screen.getByText("Features & Traits"));
+    expect(screen.getByRole("heading", { name: "Species Traits" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Class Features" }));
+    expect(screen.queryByRole("heading", { name: "Species Traits" })).not.toBeInTheDocument();
+  });
+
   it("expands a weapon on the Actions tab into its item card", () => {
     useCharacterStore.getState().addItem({ ref: { name: "Longsword", source: "SRDLite" }, name: "Longsword" });
+    equipLast();
     open();
     // Actions is the default tab; the weapon name expands to the item detail.
     fireEvent.click(screen.getByText("Longsword"));
-    expect(screen.getByText("1d8 slashing")).toBeInTheDocument();
-    expect(screen.getByText("15 gp")).toBeInTheDocument();
+    const card = within(screen.getByRole("article", { name: "Longsword" }));
+    expect(card.getByText("Slashing")).toBeInTheDocument();
+    expect(card.getByText("15 gp")).toBeInTheDocument();
   });
 });

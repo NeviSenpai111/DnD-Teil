@@ -63,8 +63,8 @@ export function CharactersView() {
                   <Icon name="users" className="h-5 w-5" />
                 </span>
                 <p className="max-w-[46ch] text-sm text-ink-muted">
-                  No saved characters yet. Build one, then press “Save current draft” — or import a
-                  D&amp;D Beyond PDF.
+                  No saved characters yet. Build one, then press “Save current draft” — or import one
+                  from D&amp;D Beyond.
                 </p>
                 <Link to="/build" className="btn btn-secondary btn-sm">
                   Open the builder

@@ -184,7 +184,7 @@ Following the reference's own §19 ordering, adapted to what's already here:
 | Total weight | ✅ | |
 | Starting gold (rolled) + in-builder shop | 🟡 | gold mode exists; no roll/shop |
 | **Attunement + 3-slot limit** | ✅ | sheet Attune toggle; item modifiers gated on attunement |
-| **Containers (nested)** | ✅ | nested cycle-safe packing; ancestor weightless rule; load vs capacity shown (not hard-blocked) |
+| **Containers (nested)** | ✅ | D&D Beyond-style section per container (drag-and-drop or "Move to"); nested cycle-safe packing; ancestor weightless rule; load vs capacity shown (not hard-blocked) |
 | **Encumbrance thresholds/variant** | ✅ | thresholds applied to derived speed; state shown on the Speed chip |
 | **Currency CP/SP/EP/GP/PP + conversion** | ✅ | five-coin purse + gp total (builder & sheet); legacy gold migrates |
 | **Custom items with modifiers** | 🟡 | name/weight/damage (joins the attack list); no modifiers |
@@ -219,9 +219,9 @@ Following the reference's own §19 ordering, adapted to what's already here:
 | **Integrated dice roller (adv/dis)** | ✅ | skills/saves/abilities/attacks/damage + hit dice/death saves; Adv-Dis toggle |
 | **Death saves** | ✅ | at 0 HP: rollable, damage-as-failure, healing clears |
 | **Hit-dice pool tracking** | ✅ | per-class spend (roll + Con heals); long rest restores all (RAW: half) |
-| **Conditions + 2024 exhaustion** | ❌ | |
+| **Conditions + 2024 exhaustion** | 🟡 | active conditions tracked on the sheet (Defenses & Conditions box, kept through rests); no mechanical effects or exhaustion levels yet |
 | **Custom resource counters** | 🟡 | class-table resources auto-tracked; ad-hoc custom counters TODO |
-| **Inspiration toggle** | ❌ | |
+| **Inspiration toggle** | ✅ | Heroic Inspiration box on the sheet; kept through rests |
 | **Extras** (companions/summons/wild shape) | ✅ | attach imported creatures; mini statblock with traits/actions |
 
 ### Engine (§14) — highest leverage
@@ -238,7 +238,7 @@ Following the reference's own §19 ordering, adapted to what's already here:
 | Feature | Status | Notes |
 |---|---|---|
 | JSON import (5eTools) | ✅ | incl. `_copy`/`_mod` resolution |
-| **D&D Beyond character import** | ✅ | reads a DDB PDF export's form fields; see [Importing a D&D Beyond character](README.md#importing-a-dd-beyond-character) |
+| **D&D Beyond character import** | ✅ | from a public sheet link or DDB's character JSON (source-aware, DDB's ability/HP rules), or a DDB PDF export's form fields; see [Importing a D&D Beyond character](README.md#importing-a-dd-beyond-character) |
 | JSON export / re-import | ✅ | round-trips a character through the same Import button |
 | Character duplicate | ✅ | |
 | Local persistence + **offline** | ✅ | Dexie; the key advantage over DDB |

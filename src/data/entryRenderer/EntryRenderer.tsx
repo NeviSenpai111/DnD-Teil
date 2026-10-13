@@ -53,8 +53,10 @@ export function EntryRenderer({ entry }: { entry: Entry }) {
 
     case "list": {
       const e = entry as ListEntry;
+      // "list-hang-notitle" / "list-no-bullets" are 5eTools' unbulleted label lists.
+      const bullets = !/no-?bullets|hang-notitle/.test(e.style ?? "");
       return (
-        <ul className="list-disc space-y-1 pl-5 marker:text-ink-faint">
+        <ul className={bullets ? "list-disc space-y-1 pl-5 marker:text-ink-faint" : "space-y-1"}>
           {e.items.map((item, i) => (
             <li key={i}>{renderInlineOrBlock(item)}</li>
           ))}
@@ -66,16 +68,20 @@ export function EntryRenderer({ entry }: { entry: Entry }) {
     case "itemSpell":
     case "itemSub": {
       const e = entry as ItemEntry;
+      // The lead-in runs into the first paragraph: "Ability: Dexterity".
+      const [first, ...rest] = typeof e.entry === "string" ? [e.entry, ...(e.entries ?? [])] : (e.entries ?? []);
+      const lead = typeof first === "string" ? first : undefined;
+      const blocks = lead === undefined ? (e.entries ?? []) : rest;
       return (
         <div className="space-y-1">
-          {(e.name || typeof e.entry === "string") && (
+          {(e.name || lead !== undefined) && (
             <p className="leading-relaxed">
               {e.name && <span className="font-semibold">{e.name} </span>}
-              {typeof e.entry === "string" && <InlineText text={e.entry} />}
+              {lead !== undefined && <InlineText text={lead} />}
             </p>
           )}
           {e.entry && typeof e.entry !== "string" && <EntryRenderer entry={e.entry} />}
-          {e.entries && <Entries entries={e.entries} />}
+          {blocks.length > 0 && <Entries entries={blocks} />}
         </div>
       );
     }

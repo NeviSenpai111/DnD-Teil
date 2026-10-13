@@ -29,7 +29,7 @@ import { spellAvailableToClass } from "../data/types/spell-content";
 import type { Item } from "../data/types/item-content";
 import { itemTypeCode } from "../data/types/item-content";
 import { parseStartingEquipment } from "../engine/startingEquipment";
-import { characterLevel, primaryClass, type Character, type EntityRef } from "../model/character";
+import { characterLevel, primaryClass, type Character, type CustomItemDef, type EntityRef } from "../model/character";
 import type { ArmorPiece } from "../engine/armor";
 import {
   abilityChoiceDefs,
@@ -133,18 +133,24 @@ export function resolveItem(index: ContentIndex, ref?: EntityRef): Item | undefi
  * damage, so it shows in the attack list).
  */
 export function itemForEntry(
-  entry: { ref?: EntityRef; custom?: { weight?: number; dmg1?: string; dmgType?: string }; name: string },
+  entry: { ref?: EntityRef; custom?: CustomItemDef; name: string },
   index: ContentIndex,
 ): Item | undefined {
   if (entry.ref) return resolveItem(index, entry.ref);
   if (!entry.custom) return undefined;
+  const custom = entry.custom;
   return {
     name: entry.name,
     source: "Custom",
-    weight: entry.custom.weight,
-    dmg1: entry.custom.dmg1,
-    dmgType: entry.custom.dmgType,
-    weapon: !!entry.custom.dmg1,
+    weight: custom.weight,
+    dmg1: custom.dmg1,
+    dmgType: custom.dmgType,
+    weapon: !!custom.dmg1,
+    // Weapon details let a custom weapon attack like an imported one.
+    ...(custom.dmg1 && (custom.ranged || custom.weaponCategory) ? { type: custom.ranged ? "R" : "M" } : {}),
+    ...(custom.weaponCategory ? { weaponCategory: custom.weaponCategory } : {}),
+    ...(custom.finesse ? { property: ["F"] } : {}),
+    ...(custom.range ? { range: custom.range } : {}),
   };
 }
 
@@ -388,6 +394,7 @@ export function buildDeriveInput(character: Character, index: ContentIndex): Der
     extraLanguages: Object.values(character.languageChoices).flat(),
     extraTools: Object.values(character.toolChoices).flat(),
     carriedWeight: inventoryWeight(character, index),
+    variantEncumbrance: character.variantEncumbrance !== false,
   };
 }
 
