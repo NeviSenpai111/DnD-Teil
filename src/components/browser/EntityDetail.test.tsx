@@ -24,13 +24,12 @@ describe("EntityDetail dedicated views", () => {
     return found;
   }
 
-  it("renders an item with category, AC and cost instead of the fallback", () => {
+  it("renders an item like 5eTools: type line, cost and weight, AC, source", () => {
     render(<EntityDetail entity={entity("item", "Leather Armor")} />);
-    expect(screen.getByText("Armor · Light Armor · SRDLite")).toBeInTheDocument();
-    expect(screen.getByText("Armor Class:")).toBeInTheDocument();
-    expect(screen.getByText("11 + Dex")).toBeInTheDocument();
-    expect(screen.getByText("Cost:")).toBeInTheDocument();
-    expect(screen.getByText("10 gp")).toBeInTheDocument();
+    expect(screen.getByText("Light Armor")).toBeInTheDocument();
+    expect(screen.getByText("AC 11 + Dex")).toBeInTheDocument();
+    expect(screen.getByText(/^10 gp/)).toBeInTheDocument();
+    expect(screen.getByText("Source:").parentElement).toHaveTextContent("Source: SRD-Lite Test Content");
     expect(screen.queryByText(/no description/i)).not.toBeInTheDocument();
   });
 

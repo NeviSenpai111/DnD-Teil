@@ -475,6 +475,11 @@ export interface DeriveInput {
   extraTools?: string[];
   /** Carried weight; when set, variant-encumbrance speed penalties apply. */
   carriedWeight?: number;
+  /**
+   * Whether the variant rule's −10/−20 ft steps apply (default true). Without
+   * it only going over carrying capacity slows the character.
+   */
+  variantEncumbrance?: boolean;
 }
 
 export interface DerivedStat {
@@ -499,6 +504,8 @@ export interface DerivedCharacter {
   initiative: number;
   passivePerception: number;
   speed: number;
+  /** Walking speed before any encumbrance penalty. */
+  baseSpeed: number;
   size?: string;
   proficientSkillIds: string[];
   /** Tool / language / armor / weapon proficiencies for display. */
@@ -605,7 +612,8 @@ export function deriveCharacter(input: DeriveInput): DerivedCharacter {
     : undefined;
 
   // Variant encumbrance: −10 ft past Str×5, −20 past Str×10, and a crawl at
-  // the Str×15 hard cap. Applied only when the carried weight is known.
+  // the Str×15 hard cap. Applied only when the carried weight is known; with
+  // the variant off, only the hard cap slows the character.
   const baseSpeed = applyToValue(
     normalizeSpeed(input.race?.speed ?? input.subrace?.speed),
     mods_,
@@ -614,12 +622,13 @@ export function deriveCharacter(input: DeriveInput): DerivedCharacter {
   );
   const encumbered =
     input.carriedWeight !== undefined ? encumbrance(input.carriedWeight, abilities.str) : "ok";
+  const variant = input.variantEncumbrance !== false;
   const speed =
     encumbered === "over-capacity"
       ? 5
-      : encumbered === "heavily-encumbered"
+      : variant && encumbered === "heavily-encumbered"
         ? Math.max(0, baseSpeed - 20)
-        : encumbered === "encumbered"
+        : variant && encumbered === "encumbered"
           ? Math.max(0, baseSpeed - 10)
           : baseSpeed;
 
@@ -655,6 +664,7 @@ export function deriveCharacter(input: DeriveInput): DerivedCharacter {
     initiative: initiativeMod(abilities.dex) + resolveTarget(mods_, "initiative", modCtx).bonus,
     passivePerception: passiveScore(skills.perception.mod),
     speed,
+    baseSpeed,
     encumbrance: encumbered,
     advantages: advantageTargets(mods_, modCtx),
     size: input.race?.size?.[0] ? (SIZE_NAMES[input.race.size[0]] ?? input.race.size[0]) : undefined,

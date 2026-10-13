@@ -13,6 +13,7 @@ const PATHS = {
   "arrow-up": "M12 19V5m-6 6l6-6 6 6",
   "arrow-up-right": "M7 17L17 7M8 7h9v9",
   plus: "M12 5v14M5 12h14",
+  grip: "M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01",
   search: "M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4",
   import: "M12 4v11m-4.5-4.5L12 15l4.5-4.5M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3",
   folder: "M3.5 7.5a2 2 0 0 1 2-2h4l2 2.5h7a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z",

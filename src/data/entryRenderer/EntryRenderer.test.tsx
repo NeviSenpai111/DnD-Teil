@@ -24,6 +24,19 @@ describe("EntryRenderer", () => {
     expect(screen.getByText("Second clause.")).toBeInTheDocument();
   });
 
+  it("runs an item's first paragraph into its lead-in and drops bullets for hanging lists", () => {
+    const entries: Entry[] = [
+      {
+        type: "list",
+        style: "list-hang-notitle",
+        items: [{ type: "item", name: "Ability:", entries: ["Dexterity"] }],
+      },
+    ];
+    render(<Entries entries={entries} />);
+    expect(screen.getByText("Dexterity").closest("p")).toHaveTextContent("Ability: Dexterity");
+    expect(screen.getByRole("list")).not.toHaveClass("list-disc");
+  });
+
   it("renders feature refs as named pointers, not 'unsupported' notes", () => {
     const entries: Entry[] = [
       {

@@ -173,4 +173,10 @@ describe("deriveCharacter with modifiers", () => {
     expect(at(101)).toMatchObject({ speed: 10, encumbrance: "heavily-encumbered" });
     expect(at(151)).toMatchObject({ speed: 5, encumbrance: "over-capacity" });
   });
+
+  it("keeps full speed under the standard rule until over capacity", () => {
+    const at = (carriedWeight: number) => deriveCharacter({ ...base, carriedWeight, variantEncumbrance: false });
+    expect(at(101)).toMatchObject({ speed: 30, baseSpeed: 30, encumbrance: "heavily-encumbered" });
+    expect(at(151)).toMatchObject({ speed: 5, encumbrance: "over-capacity" });
+  });
 });

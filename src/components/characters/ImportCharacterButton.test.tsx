@@ -34,6 +34,31 @@ describe("ImportCharacterButton", () => {
     expect(useCharacterStore.getState().saved[0].id).not.toBe(exported.id);
   });
 
+  it("imports a public D&D Beyond character from its sheet link", async () => {
+    const ddb = {
+      id: 31337,
+      name: "Wren Ashvale",
+      stats: [1, 2, 3, 4, 5, 6].map((id) => ({ id, value: 10 })),
+      classes: [],
+      modifiers: {},
+    };
+    const fetchMock = vi.fn(
+      async () => new Response(JSON.stringify({ success: true, data: ddb }), { headers: { "content-type": "application/json" } }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    try {
+      render(<ImportCharacterButton />);
+      await userEvent.type(screen.getByLabelText(/D&D Beyond link/), "https://www.dndbeyond.com/characters/31337");
+      await userEvent.click(screen.getByRole("button", { name: "Import" }));
+
+      await waitFor(() => expect(screen.getByText(/Imported Wren Ashvale/)).toBeInTheDocument());
+      expect(fetchMock).toHaveBeenCalledWith("/ddb-character/31337");
+      expect(useCharacterStore.getState().saved.map((c) => c.name)).toEqual(["Wren Ashvale"]);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it("says so when the file isn't a PDF at all", async () => {
     render(<ImportCharacterButton />);
     await userEvent.upload(fileInput(), pdf("this is not really a pdf"));

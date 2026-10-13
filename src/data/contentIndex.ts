@@ -180,8 +180,8 @@ export class ContentIndex {
   private readonly byNameSource = new Map<string, ImportedEntity[]>();
   /** type|name -> first entity with that name (source-agnostic fallback) */
   private readonly byNameKey = new Map<string, ImportedEntity>();
-  /** type|looseName -> first entity matching ignoring case and punctuation */
-  private readonly byLooseKey = new Map<string, ImportedEntity>();
+  /** type|looseName -> every entity matching ignoring case and punctuation (import order) */
+  private readonly byLooseKey = new Map<string, ImportedEntity[]>();
   /** subclass|shortName|className|classSource|source -> subclass */
   private readonly bySubclassShortName = new Map<string, ImportedEntity>();
   /** type -> every entity of that type, in import order */
@@ -203,7 +203,9 @@ export class ContentIndex {
       const nameKey = `${e.__type}|${e.name}`.toLowerCase();
       if (!this.byNameKey.has(nameKey)) this.byNameKey.set(nameKey, e);
       const looseKey = `${e.__type}|${looseName(e.name)}`;
-      if (!this.byLooseKey.has(looseKey)) this.byLooseKey.set(looseKey, e);
+      const looseList = this.byLooseKey.get(looseKey);
+      if (looseList) looseList.push(e);
+      else this.byLooseKey.set(looseKey, [e]);
 
       if (e.__type === "subclass" && typeof e.shortName === "string") {
         this.bySubclassShortName.set(
@@ -234,10 +236,23 @@ export class ContentIndex {
     for (const type of Array.isArray(types) ? types : [types]) {
       const hit =
         this.byNameKey.get(`${type}|${name.trim()}`.toLowerCase()) ??
-        this.byLooseKey.get(`${type}|${wanted}`);
+        this.byLooseKey.get(`${type}|${wanted}`)?.[0];
       if (hit) return hit;
     }
     return undefined;
+  }
+
+  /**
+   * Every entity of the given types whose name matches loosely, in import
+   * order — for callers that know the preferred source (a D&D Beyond JSON names
+   * its book) and need to pick the right reprint rather than the first one.
+   */
+  findAllByName(types: ContentType | ContentType[], name: string): ImportedEntity[] {
+    const wanted = looseName(name);
+    if (!wanted) return [];
+    return (Array.isArray(types) ? types : [types]).flatMap(
+      (type) => this.byLooseKey.get(`${type}|${wanted}`) ?? [],
+    );
   }
 
   /**
@@ -317,6 +332,18 @@ export class ContentIndex {
       if (byName) return byName;
     }
     return undefined;
+  }
+
+  /**
+   * A source's full title ("Player's Handbook (2024)") from the imported
+   * `books.json` / `adventures.json` or `_meta.sources`, else the code itself.
+   */
+  sourceTitle(source: string): string {
+    const id = source.toLowerCase();
+    const book = [...this.list("book"), ...this.list("adventure")].find(
+      (b) => typeof b.id === "string" && b.id.toLowerCase() === id,
+    );
+    return book?.name ?? this.metaSources[source]?.full ?? source;
   }
 
   /**

@@ -23,10 +23,7 @@ export interface AttackLine {
 
 /** The leading letter of each of a weapon's property tags (e.g. "F" for finesse). */
 function propertyCodes(item: Item): string[] {
-  return (item.properties ?? []).map((p) => {
-    const raw = typeof p === "string" ? p : ((p as { name?: string }).name ?? "");
-    return raw.split("|")[0].toUpperCase();
-  });
+  return (item.property ?? []).map((p) => (typeof p === "string" ? p : p.uid).split("|")[0].toUpperCase());
 }
 
 export function isWeapon(item: Item): boolean {

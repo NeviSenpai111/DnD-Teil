@@ -18,8 +18,11 @@ npm run validate-data   # import a real 5eTools data/ tree and report (see below
 Open the app, click **Sample** in the sidebar to load the bundled samples
 (`public/sample-data/`), then:
 - **Browse** the Space Galleon vehicle as a statblock; use the **search box** to
-  filter the list by name, content type, or source. Items get a stat card
-  (category, damage/AC, properties, weight, cost), spells get a casting card
+  filter the list by name, content type, or source. Items get a 5eTools-style
+  card (type/rarity/attunement lines, cost and weight opposite damage or AC,
+  properties and weapon mastery, then the item text followed by the rules for
+  its type, each property and its mastery — taken from the imported
+  `items-base.json` — and the source book with page), spells get a casting card
   (level/school, casting time, range, components, duration), classes show hit
   die, proficiencies and all their features by level, and subclasses list their
   features — other types render their description entries.
@@ -75,13 +78,23 @@ Open the app, click **Sample** in the sidebar to load the bundled samples
     warning).
   - **What's Next**: a completion checklist (open skill/spell/ASI picks) with
     Save / Full Sheet / Export actions.
-- The **full-page sheet** (`/sheet/:id`) is a D&D-Beyond-style layout: ability
-  cards + stat chips on top, saving throws / senses / proficiencies and the skill
-  list down the side, and a tabbed panel — **Actions** (weapon attacks +
-  Unarmed Strike, to-hit and damage derived from your abilities), **Spells**
-  (grouped by level with DC/attack), **Inventory**, **Features & Traits** (class,
-  species, feats), **Background** (description + your character details),
-  **Notes**, **Extras**. The sheet is **playable, not just printable**:
+- The **full-page sheet** (`/sheet/:id`) follows D&D Beyond's layout: the six
+  ability cards, Proficiency Bonus, Walking Speed, **Heroic Inspiration** and a
+  **Hit Points** box (Heal/Damage by amount, current/max, temp) across the top;
+  saving throws (with species notes like Fey Ancestry's advantage) / senses /
+  proficiencies and the skill list down the side; Initiative, Armor Class and
+  **Defenses & Conditions** (add/remove active conditions) above a tabbed
+  panel — **Actions** (filter pills All / Attack / Action / Bonus Action /
+  Reaction / Other / Limited Use; an Attack · Range · Hit/DC · Damage table of
+  equipped weapons, damaging cantrips and attack-roll spells with their origin
+  — "Cantrip · Magic Initiate (Wizard)" — custom attacks and Unarmed Strike;
+  unequipped weapons are one click from the table; then the bonus-action,
+  reaction and other spells and ritual spells), **Spells** (modifier / spell
+  attack / save DC, then a Time · Range · Hit/DC · Effect · Notes table per
+  level with that level's slot pips, including the subclass's always-prepared
+  spells), **Inventory**, **Features & Traits** (filter by class features,
+  species traits, feats), **Background**, **Notes**, **Extras**. The sheet is
+  **playable, not just printable**:
   - **+ Add Spell** / **+ Add Item** menus search the imported content and add
     directly. The spell search **adheres to the caster's spell list** (same
     sources.json mapping, flood guard and castable-level cap as the builder);
@@ -91,13 +104,16 @@ Open the app, click **Sample** in the sidebar to load the bundled samples
     inventory rows have quantity / equip / remove controls, an **Attune**
     toggle on items that require attunement (3-item limit enforced; an
     attunement item's modifiers apply only while attuned), **charge pips**
-    on items with charges (restored by a long rest), and a **container**
-    dropdown when a container is carried — containers **nest** (cycle-safe),
-    each shows its **load vs. capacity**, and anything inside a weightless
+    on items with charges (restored by a long rest). Like D&D Beyond, the
+    tab lists what the character carries under **Equipment** and gives every
+    container its own section with its **load vs. capacity**; drag an item's
+    grip onto a section, or open the item and pick **Move to**, to pack it.
+    Containers **nest** (cycle-safe), and anything inside a weightless
     (bag-of-holding-style) container doesn't count toward carry weight.
     Carried weight past the variant-encumbrance thresholds **reduces speed**
     automatically (−10 / −20 / crawl at the Str×15 cap, flagged on the Speed
-    chip). The tab ends with the editable **purse** and weight-vs-capacity
+    box) — a per-character **Variant encumbrance** toggle on the Inventory tab
+    turns the steps off (D&D Beyond imports follow the character's setting). The tab ends with the editable **purse** and weight-vs-capacity
     line, plus a **custom item** mini-form (name/weight/damage — damaging
     items join the attack list). Spell rows tag **Feat**/**Species** grants
     and **Ritual** spells; cantrips show their **damage dice scaled to your
@@ -118,9 +134,10 @@ Open the app, click **Sample** in the sidebar to load the bundled samples
     sets a base AC formula ("base Armor Class becomes 13 + Dexterity…") —
     appear as toggle pills; switch one on when cast and the AC derivation
     picks the best formula.
-  - The **HP chip is a tracker**: click it for a damage/heal strip with an
-    amount input, temp HP (absorbs damage first), **Short/Long Rest** buttons,
-    and a **hit-dice pool** per class ("Spend" rolls the die + Con and heals).
+  - The **HP box is a tracker**: Heal/Damage by an amount (temp HP absorbs
+    damage first); click current/max for a strip with temp HP, **Short/Long
+    Rest** buttons (a long rest keeps inspiration and conditions), and a
+    **hit-dice pool** per class ("Spend" rolls the die + Con and heals).
     At **0 HP** the strip shows **death saves**: roll them (nat 1 = two
     failures, nat 20 = back up at 1 HP), or damage taken while down adds a
     failure; healing clears them. Damage is stored as "taken", so leveling up
@@ -128,7 +145,7 @@ Open the app, click **Sample** in the sidebar to load the bundled samples
   - **Spell slots render as pips** on the Spells tab (shared multiclass table
     shown once, pact slots separately) and **class resources** (rage/ki-style
     columns from the class table) render as pips on the Actions tab — click to
-    spend or restore. A long rest clears everything; a short rest restores
+    spend or restore (the Limited Use filter). A long rest clears everything; a short rest restores
     pact slots and short-rest resources (Ki/Focus, Channel Divinity,
     Superiority Dice, Second Wind).
 
@@ -136,9 +153,10 @@ Open the app, click **Sample** in the sidebar to load the bundled samples
   flow into the builder as usual. Interactive controls are hidden when
   printing.
 - **Characters** to save/load/duplicate/delete, **View** the full-page sheet, and
-  export to JSON; **Print** outputs just the sheet. **Import character…** brings
-  in a finished character from a D&D Beyond PDF export (or a character JSON) —
-  see [Importing a D&D Beyond character](#importing-a-dd-beyond-character).
+  export to JSON; **Print** outputs just the sheet. Import a finished character
+  from a **D&D Beyond link**, or with **Import file…** from DDB's character JSON,
+  a DDB PDF export or a character JSON from here — see
+  [Importing a D&D Beyond character](#importing-a-dd-beyond-character).
 
 ## Architecture
 
@@ -155,6 +173,10 @@ src/
     exportCharacter.ts  JSON export/download
     pdfForm.ts      minimal PDF AcroForm reader (no dependency)
     ddbImport.ts    D&D Beyond PDF sheet -> Character
+    ddbJson.ts      D&D Beyond character JSON: format, source ids, DDB's
+                    ability-total and max-HP rules
+    ddbJsonImport.ts  D&D Beyond JSON (file or link) -> Character
+    characterImport.ts  picks the importer for a dropped file
   engine/           pure, unit-tested rules (modifiers, hp, armor,
                     spellcasting slots, character derivation, edition gating,
                     the typed modifier engine, optional-feature progressions)
@@ -214,6 +236,50 @@ Mapping a DDB sheet onto this app's model means turning *results* back into
 
 Anything that can't be resolved is listed after the import instead of being
 guessed at.
+
+### From a D&D Beyond link or character JSON
+
+**Characters → D&D Beyond link** takes a sheet link
+(`dndbeyond.com/characters/<id>`) and imports the character directly. The
+character's privacy must be **Public**. D&D Beyond's API only answers its own
+origin, so the request goes through a relay in the Vite **dev and preview
+servers** (`/ddb-character/<id>` in `vite.config.ts` — only that endpoint, no
+cookies forwarded). On a static deployment without the relay, open
+`https://character-service.dndbeyond.com/character/v5/character/<id>`, save it as
+a `.json` file and use **Import file…** instead; the same importer reads it.
+
+The JSON is the character the sheet itself is built from, so it maps far more
+faithfully than the PDF (`data/ddbJson.ts` for the format, `data/ddbJsonImport.ts`
+for the mapping):
+
+- **Every entity names its book.** DDB source ids map to 5eTools sources, so a
+  2024 "Sage" resolves to the XPHB background and a "Dagger" from the 2024 basic
+  rules to the XPHB item, not whichever reprint was imported first. DDB's
+  spellings are translated too ("Crossbow, Light", "Studded Leather",
+  "Magic Initiate (Wizard)" → its `_versions` entry).
+- **Ability scores** keep their real base values; DDB's *Other Modifier* and
+  *Override Score* map onto the same fields here; ASIs, feat and species
+  choices (including a 2024 background's +2/+1) are rebuilt as choices. The
+  totals are computed with DDB's own rule — ported from its sheet code,
+  including dropping a legacy species' ASI when a 2024 background supplies it
+  (which also sets the character's edition). Any ability the imported content
+  can't reproduce (a Tome of Clear Thought's +2) is pinned with Override Score
+  and reported with DDB's breakdown.
+- **Proficiencies** come from DDB's typed modifiers and are dealt into the
+  build's choice slots; **feat and species spells** land in the feat's own pick
+  slots (Magic Initiate's list included); prepared class spells come over
+  without the always-prepared ones the subclass already grants.
+- **Inventory** keeps quantities, equipped/attuned state and **containers**;
+  homebrew or third-party items become custom items that still attack correctly
+  (category, melee/ranged, range).
+- **At the table**: damage taken, temp HP, death saves, spent slots and hit dice,
+  Heroic Inspiration, conditions, currency, details and notes, custom actions,
+  companions, and DDB's encumbrance setting.
+
+`npm test` covers the mapping with an original fixture. To check it against a
+real character, save its JSON outside the repo and run
+`DDB_CHARACTER_JSON=/path/to/character.json npx vitest run src/data/ddbRealCharacter.test.ts`
+(it uses the same 5eTools `data/` directory as `validate-data`).
 
 ## Real 5eTools data
 
@@ -382,8 +448,8 @@ files skipped).
 - Prerequisite validation covers ability minimums and level; race,
   spellcasting and proficiency prerequisites are displayed but not checked.
   The multiclass gate checks only the incoming class (RAW also requires the
-  current class's minimums). Containers pack a single level deep with no
-  capacity cap; only the weightless rule affects carry weight.
+  current class's minimums). Container capacity is shown but not enforced;
+  only the weightless rule affects carry weight.
 - Feature references (`refClassFeature` / `refSubclassFeature` /
   `refOptionalfeature` / `refFeat`) render as named pointer lines rather than
   expanding inline — the referenced features are already listed as their own

@@ -28,6 +28,14 @@ export interface CustomItemDef {
   weight?: number;
   dmg1?: string;
   dmgType?: string;
+  /** Weapon details (from a D&D Beyond import): "simple" / "martial". */
+  weaponCategory?: string;
+  /** Ranged weapon: attacks with Dex. */
+  ranged?: boolean;
+  /** Finesse weapon: attacks with the better of Str/Dex. */
+  finesse?: boolean;
+  /** Normal/long range in feet, e.g. "30/120". */
+  range?: string;
 }
 
 export interface InventoryItem {
@@ -151,6 +159,10 @@ export interface PlayState {
   usedItemCharges: Record<string, number>;
   /** Toggled-on effects (Mage-Armor-style spell AC formulas), by name. */
   activeEffects: string[];
+  /** Heroic Inspiration (kept through rests). */
+  inspiration: boolean;
+  /** Active conditions by name ("Poisoned", "Prone", …); kept through rests. */
+  conditions: string[];
 }
 
 export function emptyPlayState(): PlayState {
@@ -164,6 +176,8 @@ export function emptyPlayState(): PlayState {
     usedResources: {},
     usedItemCharges: {},
     activeEffects: [],
+    inspiration: false,
+    conditions: [],
   };
 }
 
@@ -237,6 +251,11 @@ export interface Character {
   extras: EntityRef[];
   /** HP damage, temp HP and spent spell slots tracked on the sheet. */
   play: PlayState;
+  /**
+   * Variant encumbrance (speed drops past Str×5 / Str×10). Unset means on, the
+   * app's original behaviour; D&D Beyond imports follow the character's setting.
+   */
+  variantEncumbrance?: boolean;
   details: CharacterDetails;
   createdAt: number;
   updatedAt: number;

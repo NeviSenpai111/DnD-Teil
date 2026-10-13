@@ -12,7 +12,7 @@ describe("weaponAbility", () => {
     expect(weaponAbility({ name: "Shortbow", source: "X", type: "R" } as Item, mods)).toBe("dex");
   });
   it("uses the better ability for a finesse weapon", () => {
-    const dagger = { name: "Dagger", source: "X", type: "M", properties: ["F"] } as Item;
+    const dagger = { name: "Dagger", source: "X", type: "M", property: ["F|XPHB"] } as Item;
     expect(weaponAbility(dagger, mods)).toBe("str"); // str 3 > dex 1
     expect(weaponAbility(dagger, { ...mods, dex: 5 })).toBe("dex");
   });

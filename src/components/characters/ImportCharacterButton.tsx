@@ -1,5 +1,7 @@
-import { useRef, useState } from "react";
-import { importCharacterFile } from "../../data/ddbImport";
+import { useRef, useState, type FormEvent } from "react";
+import { importCharacterFile } from "../../data/characterImport";
+import { characterFromDdbJson, fetchDdbCharacter } from "../../data/ddbJsonImport";
+import type { CharacterImport } from "../../data/ddbImport";
 import { useCharacterStore } from "../../store/characterStore";
 import { useContentStore } from "../../store/contentStore";
 import { Icon } from "../common/Icon";
@@ -10,9 +12,10 @@ interface ImportReport {
 }
 
 /**
- * Imports finished characters from a D&D Beyond PDF export (or a character JSON
- * this app exported). Anything the sheet mentions that isn't in the imported
- * content can't be resolved, so each file reports what needs a second look.
+ * Imports finished characters: a public D&D Beyond character by link, or a
+ * file — DDB's PDF export, DDB's character JSON, or a character JSON this app
+ * exported. Anything the source mentions that isn't in the imported content
+ * can't be resolved, so each import reports what needs a second look.
  */
 export function ImportCharacterButton() {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -20,32 +23,71 @@ export function ImportCharacterButton() {
   const edition = useContentStore((s) => s.edition);
   const addCharacter = useCharacterStore((s) => s.addCharacter);
   const [busy, setBusy] = useState(false);
+  const [link, setLink] = useState("");
   const [reports, setReports] = useState<ImportReport[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
 
-  async function handleFiles(fileList: FileList | null) {
-    if (!fileList || fileList.length === 0) return;
+  /** Run imports one after another, collecting a report or an error for each. */
+  async function run(jobs: { label: string; load: () => Promise<CharacterImport> }[]): Promise<boolean> {
     setBusy(true);
     const done: ImportReport[] = [];
     const failed: string[] = [];
-    for (const file of [...fileList]) {
+    for (const job of jobs) {
       try {
-        const { character, warnings } = await importCharacterFile(file, index, edition);
+        const { character, warnings } = await job.load();
         addCharacter(character);
         done.push({ name: character.name, warnings });
       } catch (error) {
-        failed.push(error instanceof Error ? error.message : `Couldn't read ${file.name}.`);
+        failed.push(error instanceof Error ? error.message : `Couldn't read ${job.label}.`);
       }
     }
     setReports(done);
     setErrors(failed);
     setBusy(false);
+    return failed.length === 0;
+  }
+
+  async function handleFiles(fileList: FileList | null) {
+    if (!fileList || fileList.length === 0) return;
+    await run([...fileList].map((file) => ({ label: file.name, load: () => importCharacterFile(file, index, edition) })));
     // Let the same file be picked again after a fix.
     if (inputRef.current) inputRef.current.value = "";
   }
 
+  async function handleLink(event: FormEvent) {
+    event.preventDefault();
+    if (!link.trim()) return;
+    const ok = await run([
+      { label: link, load: async () => characterFromDdbJson(await fetchDdbCharacter(link), index) },
+    ]);
+    if (ok) setLink("");
+  }
+
   return (
     <div className="space-y-3">
+      <form onSubmit={(e) => void handleLink(e)} className="space-y-1.5">
+        <label htmlFor="ddb-link" className="text-xs font-medium text-ink-muted">
+          D&amp;D Beyond link
+        </label>
+        <div className="flex gap-2">
+          <input
+            id="ddb-link"
+            type="text"
+            inputMode="url"
+            autoComplete="off"
+            spellCheck={false}
+            value={link}
+            onChange={(e) => setLink(e.target.value)}
+            placeholder="dndbeyond.com/characters/…"
+            className="field min-w-0 flex-1 font-mono text-xs"
+          />
+          <button type="submit" disabled={busy || !link.trim()} className="btn btn-secondary shrink-0">
+            Import
+          </button>
+        </div>
+        <p className="text-xs leading-relaxed text-ink-muted">The character's privacy must be set to Public.</p>
+      </form>
+
       <input
         ref={inputRef}
         type="file"
@@ -58,14 +100,14 @@ export function ImportCharacterButton() {
         type="button"
         disabled={busy}
         onClick={() => inputRef.current?.click()}
-        title="Import a character from a D&D Beyond PDF export"
+        title="Import a character from a file"
         className="btn btn-secondary w-full"
       >
         <Icon name="import" className="h-4 w-4 text-ink-muted" />
-        {busy ? "Importing…" : "Import character…"}
+        {busy ? "Importing…" : "Import file…"}
       </button>
       <p className="text-xs leading-relaxed text-ink-muted">
-        A D&amp;D Beyond PDF export (or a character JSON from here).
+        A D&amp;D Beyond PDF export or character JSON, or a character JSON from here.
       </p>
       {busy && <div className="skeleton h-2 w-full" aria-hidden="true" />}
 
