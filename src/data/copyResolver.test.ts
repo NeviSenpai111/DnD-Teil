@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import type { ImportedEntity } from "./types/content";
 import type { ImportIssue } from "./importer";
 import {
@@ -275,6 +275,54 @@ describe("resolveCopies", () => {
     expect(out).toHaveLength(2);
     expect(out.every((e) => e._copy === undefined)).toBe(true);
     expect(issues.some((i) => i.message.includes("circular"))).toBe(true);
+  });
+
+  describe("hostile homebrew", () => {
+    // Parsed from text so "__proto__" is an own key, exactly as in an imported file.
+    const fromFile = (json: string) => JSON.parse(json) as R;
+    afterEach(() => {
+      delete (Object.prototype as R).polluted;
+    });
+
+    it("never writes to Object.prototype through a _mod path", () => {
+      const out = resolveCopies([
+        monster({
+          name: "Base",
+          hp: { average: 10 },
+          spellcasting: [{ name: "Spellcasting", spells: { "1": { spells: [] } } }],
+        }),
+        monster({
+          name: "Hostile",
+          _copy: {
+            name: "Base",
+            source: "MM",
+            _mod: fromFile(`{
+              "__proto__.polluted": { "mode": "appendArr", "items": "x" },
+              "hp.__proto__": { "mode": "scalarAddProp", "prop": "polluted", "scalar": 1 },
+              "_": [
+                { "mode": "setProp", "prop": "__proto__.polluted", "value": "x" },
+                { "mode": "setProp", "prop": "constructor.prototype.polluted", "value": "x" },
+                { "mode": "addSpells", "spells": { "__proto__": { "polluted": ["x"] } } },
+                { "mode": "removeSpells", "spells": { "__proto__": ["x"] } }
+              ]
+            }`),
+          },
+        }),
+      ]);
+      expect(({} as R).polluted).toBeUndefined();
+      expect(out[1].hp).toEqual({ average: 10 });
+    });
+
+    it("treats addSenses types as text, not as a regular expression", () => {
+      const [, out] = resolveCopies([
+        monster({ name: "Base", senses: ["darkvision 60 ft."] }),
+        monster({
+          name: "Odd",
+          _copy: { name: "Base", source: "MM", _mod: { _: { mode: "addSenses", senses: { type: "tremor(sense", range: 30 } } } },
+        }),
+      ]);
+      expect(out.senses).toEqual(["darkvision 60 ft.", "tremor(sense 30 ft."]);
+    });
   });
 });
 
