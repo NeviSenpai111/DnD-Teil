@@ -9,7 +9,15 @@ import { readPdfFormFields } from "./pdfForm";
 import { characterFromDdbFields, isDndBeyondSheet, type CharacterImport } from "./ddbImport";
 import { asDdbCharacter } from "./ddbJson";
 import { characterFromDdbJson } from "./ddbJsonImport";
-import { createCharacter, normalizeCharacter, type Character } from "../model/character";
+import { sanitizeCharacter } from "./characterSchema";
+import { createCharacter, type Character } from "../model/character";
+
+/** One report line for the fields a character file had in the wrong format. */
+function droppedWarning(dropped: string[]): string {
+  const shown = dropped.slice(0, 6).join(", ");
+  const more = dropped.length > 6 ? ` and ${dropped.length - 6} more` : "";
+  return `Left out what wasn't in the expected format: ${shown}${more}.`;
+}
 
 export async function importCharacterFile(
   file: File,
@@ -26,13 +34,13 @@ export async function importCharacterFile(
     const ddb = asDdbCharacter(parsed);
     if (ddb) return characterFromDdbJson(ddb, index);
 
-    const exported = parsed as Partial<Character> | null;
-    if (!exported || typeof exported !== "object" || typeof exported.name !== "string") {
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed) || typeof (parsed as Character).name !== "string") {
       throw new Error(`${file.name} isn't a character export or a D&D Beyond character.`);
     }
+    const { character, dropped } = sanitizeCharacter(parsed as Record<string, unknown>);
+    const warnings = dropped.length ? [droppedWarning(dropped)] : [];
     // A re-import is a new character, not an overwrite of the original.
-    const character = normalizeCharacter({ ...createCharacter(), ...exported, id: createCharacter().id });
-    return { character, warnings: [] };
+    return { character: { ...character, id: createCharacter().id }, warnings };
   }
 
   const fields = await readPdfFormFields(new Uint8Array(await file.arrayBuffer()));
