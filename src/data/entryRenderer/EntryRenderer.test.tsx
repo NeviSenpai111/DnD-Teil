@@ -84,4 +84,13 @@ describe("EntryRenderer", () => {
     expect(screen.getByText("01–05")).toBeInTheDocument();
     expect(screen.queryByText(/Unsupported entry type/)).not.toBeInTheDocument();
   });
+
+  it("loads homebrew images lazily and without telling their host where they're shown", () => {
+    const entries = [{ type: "image", href: { type: "external", url: "https://example.com/owl.webp" }, title: "Owl" }] as Entry[];
+    render(<Entries entries={entries} />);
+    const img = screen.getByRole("img", { name: "Owl" });
+    expect(img).toHaveAttribute("src", "https://example.com/owl.webp");
+    expect(img).toHaveAttribute("referrerpolicy", "no-referrer");
+    expect(img).toHaveAttribute("loading", "lazy");
+  });
 });

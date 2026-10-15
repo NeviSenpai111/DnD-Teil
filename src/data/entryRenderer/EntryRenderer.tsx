@@ -102,8 +102,15 @@ export function EntryRenderer({ entry }: { entry: Entry }) {
     case "image": {
       const href = (entry as ImageEntry).href;
       const src = href?.url ?? href?.path;
+      // Homebrew can point anywhere: fetch only when shown, and send the host no Referer.
       return src ? (
-        <img src={src} alt={(entry as ImageEntry).title ?? ""} className="max-w-full rounded-lg border border-line" />
+        <img
+          src={src}
+          alt={(entry as ImageEntry).title ?? ""}
+          loading="lazy"
+          referrerPolicy="no-referrer"
+          className="max-w-full rounded-lg border border-line"
+        />
       ) : null;
     }
 

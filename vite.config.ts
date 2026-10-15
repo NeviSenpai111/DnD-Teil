@@ -1,7 +1,45 @@
 /// <reference types="vitest/config" />
-import { defineConfig, type ProxyOptions } from "vite";
+import { createHash } from "node:crypto";
+import { defineConfig, type Plugin, type ProxyOptions } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
+
+/**
+ * Content-Security-Policy for the built app, as a <meta> tag so it works on any
+ * static host. Imported homebrew is rendered as text, so this is a second
+ * line: if something ever did inject markup, no script but the app's own runs.
+ * Homebrew images may live on any https host. Build-only, because the dev
+ * server's hot reload relies on inline scripts.
+ */
+function contentSecurityPolicy(): Plugin {
+  return {
+    name: "content-security-policy",
+    apply: "build",
+    transformIndexHtml: {
+      order: "post",
+      handler(html) {
+        // Allow the inline scripts index.html ships with (the theme pre-paint), by hash.
+        const inline = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(
+          ([, code]) => `'sha256-${createHash("sha256").update(code).digest("base64")}'`,
+        );
+        const policy = [
+          "default-src 'self'",
+          `script-src 'self' ${inline.join(" ")}`.trim(),
+          "style-src 'self'",
+          "img-src 'self' data: blob: https:",
+          "font-src 'self'",
+          "connect-src 'self'",
+          "object-src 'none'",
+          "base-uri 'self'",
+          "form-action 'self'",
+        ].join("; ");
+        return [
+          { tag: "meta", attrs: { "http-equiv": "Content-Security-Policy", content: policy }, injectTo: "head-prepend" },
+        ];
+      },
+    },
+  };
+}
 
 /**
  * D&D Beyond's character API only answers its own origin (CORS), so the dev
@@ -21,7 +59,7 @@ const ddbCharacterRelay: Record<string, ProxyOptions> = {
 };
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), contentSecurityPolicy()],
   server: { proxy: ddbCharacterRelay },
   preview: { proxy: ddbCharacterRelay },
   test: {

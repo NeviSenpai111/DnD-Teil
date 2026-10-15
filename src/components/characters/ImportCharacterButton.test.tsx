@@ -34,6 +34,19 @@ describe("ImportCharacterButton", () => {
     expect(useCharacterStore.getState().saved[0].id).not.toBe(exported.id);
   });
 
+  it("leaves out fields in the wrong format and says which", async () => {
+    const file = new File([JSON.stringify({ name: "Mangled", classes: "oops" })], "mangled.json", {
+      type: "application/json",
+    });
+
+    render(<ImportCharacterButton />);
+    await userEvent.upload(fileInput(), file);
+
+    await waitFor(() => expect(screen.getByText(/Imported Mangled/)).toBeInTheDocument());
+    expect(screen.getByText(/Left out what wasn't in the expected format: classes\./)).toBeInTheDocument();
+    expect(useCharacterStore.getState().saved[0].classes).toEqual([]);
+  });
+
   it("imports a public D&D Beyond character from its sheet link", async () => {
     const ddb = {
       id: 31337,

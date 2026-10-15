@@ -65,8 +65,20 @@ function asArray<T>(value: T | T[] | undefined | null): T[] {
   return Array.isArray(value) ? value : [value];
 }
 
+/**
+ * Keys that lead off the data into the prototype chain. Paths and keys come
+ * from imported files, so following one would let a file rewrite
+ * `Object.prototype` for the whole app.
+ */
+const UNSAFE_KEYS = new Set(["__proto__", "constructor", "prototype"]);
+
+function isUnsafeKey(key: string): boolean {
+  return UNSAFE_KEYS.has(key);
+}
+
 function getPath(obj: unknown, path: string[] | null): unknown {
   if (!path) return obj;
+  if (path.some(isUnsafeKey)) return undefined;
   let cur: unknown = obj;
   for (const p of path) {
     if (!cur || typeof cur !== "object") return undefined;
@@ -76,7 +88,7 @@ function getPath(obj: unknown, path: string[] | null): unknown {
 }
 
 function setPath(obj: AnyRecord, path: string[], value: unknown): void {
-  if (!path.length) return;
+  if (!path.length || path.some(isUnsafeKey)) return;
   let cur: AnyRecord = obj;
   for (let i = 0; i < path.length - 1; i++) {
     const p = path[i];
@@ -87,7 +99,7 @@ function setPath(obj: AnyRecord, path: string[], value: unknown): void {
 }
 
 function deletePath(obj: AnyRecord, path: string[]): void {
-  if (!path.length) return;
+  if (!path.length || path.some(isUnsafeKey)) return;
   const parent = path.length === 1 ? obj : getPath(obj, path.slice(0, -1));
   if (isRecord(parent)) delete parent[path[path.length - 1]];
 }
@@ -429,6 +441,7 @@ function modAddSpells(ctx: ModContext, op: AnyRecord) {
     if (!isRecord(trait.spells)) trait.spells = {};
     const spells = trait.spells as AnyRecord;
     for (const [level, nu] of Object.entries(op.spells)) {
+      if (isUnsafeKey(level)) continue;
       if (!isRecord(spells[level])) {
         spells[level] = clone(nu);
         continue;
@@ -479,7 +492,7 @@ function modReplaceSpells(ctx: ModContext, op: AnyRecord) {
   if (isRecord(op.spells) && isRecord(trait.spells)) {
     const levels = trait.spells as AnyRecord;
     for (const [level, metas] of Object.entries(op.spells)) {
-      const cur = levels[level];
+      const cur = isUnsafeKey(level) ? undefined : levels[level];
       if (!isRecord(cur)) continue;
       for (const meta of asArray(metas as AnyRecord[])) if (isRecord(meta)) handleReplace(cur, meta, "spells");
     }
@@ -504,7 +517,7 @@ function modRemoveSpells(ctx: ModContext, op: AnyRecord) {
   if (isRecord(op.spells) && isRecord(trait.spells)) {
     const levels = trait.spells as AnyRecord;
     for (const [level, names] of Object.entries(op.spells)) {
-      const cur = levels[level];
+      const cur = isUnsafeKey(level) ? undefined : levels[level];
       if (isRecord(cur)) cur.spells = without(cur.spells, names);
     }
   }
@@ -547,7 +560,7 @@ function modAddSenses(ctx: ModContext, op: AnyRecord) {
   for (const sense of asArray(op.senses as AnyRecord[])) {
     if (!isRecord(sense) || typeof sense.type !== "string") continue;
     const range = Number(sense.range);
-    const re = new RegExp(`${sense.type} (\\d+)`, "i");
+    const re = new RegExp(`${sense.type.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")} (\\d+)`, "i");
     let found = false;
     for (let i = 0; i < senses.length; i++) {
       const m = typeof senses[i] === "string" ? re.exec(senses[i] as string) : null;
