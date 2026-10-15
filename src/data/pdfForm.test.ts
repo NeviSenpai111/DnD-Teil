@@ -92,36 +92,55 @@ describe("readPdfFormFields", () => {
   });
 
   it("inflates Flate-compressed object streams", async () => {
-    const body = "<< /T (Compressed) /V (works) >>";
-    const header = "12 0 ";
-    const payload = header + body;
-    const compressor = new CompressionStream("deflate");
-    const writer = compressor.writable.getWriter();
-    void writer.write(encode(payload));
-    void writer.close();
-    const parts: Uint8Array[] = [];
-    const reader = compressor.readable.getReader();
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      parts.push(value);
-    }
-    const deflated = new Uint8Array(parts.reduce((n, part) => n + part.length, 0));
-    parts.reduce((at, part) => (deflated.set(part, at), at + part.length), 0);
-    let binary = "";
-    for (const byte of deflated) binary += String.fromCharCode(byte);
-    const pdf =
-      "%PDF-1.7\n1 0 obj\n" +
-      `<< /Type /ObjStm /Filter /FlateDecode /N 1 /First ${header.length} /Length ${deflated.length} >>\n` +
-      `stream\n${binary}\nendstream\nendobj\n%%EOF`;
-
-    // Latin-1 round-trip: the deflate payload is bytes, not text.
-    const bytes = new Uint8Array(pdf.length);
-    for (let i = 0; i < pdf.length; i++) bytes[i] = pdf.charCodeAt(i) & 0xff;
-    const fields = await readPdfFormFields(bytes);
+    const pdf = await flatePdf([await flateObjStm(1, 12, "<< /T (Compressed) /V (works) >>")]);
+    const fields = await readPdfFormFields(pdf);
     expect(fields["Compressed"]).toBe("works");
   });
+
+  it("refuses a PDF whose compressed streams expand past the limit", async () => {
+    const big = (n: number) => `<< /T (Big${n}) /V (${"x".repeat(600)}) >>`;
+    const one = await flatePdf([await flateObjStm(1, 12, big(1))]);
+    const two = await flatePdf([await flateObjStm(1, 12, big(1)), await flateObjStm(2, 13, big(2))]);
+    // One stream over the limit, or several that only add up to more than it.
+    await expect(readPdfFormFields(one, 500)).rejects.toThrow(/too large/i);
+    await expect(readPdfFormFields(two, 1000)).rejects.toThrow(/too large/i);
+    expect(Object.keys(await readPdfFormFields(two))).toEqual(["Big1", "Big2"]);
+  });
 });
+
+/** Deflate text into a Latin-1 string: the payload is bytes, not text. */
+async function deflate(text: string): Promise<string> {
+  const compressor = new CompressionStream("deflate");
+  const writer = compressor.writable.getWriter();
+  void writer.write(encode(text));
+  void writer.close();
+  let binary = "";
+  const reader = compressor.readable.getReader();
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    for (const byte of value) binary += String.fromCharCode(byte);
+  }
+  return binary;
+}
+
+/** Object `num`: a Flate-compressed object stream holding `body` as object `inner`. */
+async function flateObjStm(num: number, inner: number, body: string): Promise<string> {
+  const header = `${inner} 0 `;
+  const deflated = await deflate(header + body);
+  return (
+    `${num} 0 obj\n<< /Type /ObjStm /Filter /FlateDecode /N 1 /First ${header.length} /Length ${deflated.length} >>\n` +
+    `stream\n${deflated}\nendstream\nendobj\n`
+  );
+}
+
+/** A PDF of the given objects, as Latin-1 bytes. */
+async function flatePdf(objects: string[]): Promise<Uint8Array> {
+  const pdf = `%PDF-1.7\n${objects.join("")}%%EOF`;
+  const bytes = new Uint8Array(pdf.length);
+  for (let i = 0; i < pdf.length; i++) bytes[i] = pdf.charCodeAt(i) & 0xff;
+  return bytes;
+}
 
 describe("fieldReader", () => {
   it("ignores the sheet's stray spaces and casing", async () => {

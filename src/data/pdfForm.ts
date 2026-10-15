@@ -192,12 +192,26 @@ function parseObjects(text: string): Map<number, string> {
 }
 
 /**
+ * The most a PDF's compressed streams may expand to, all together. A character
+ * sheet needs a few MB; a crafted file can expand ~1000× and exhaust the tab.
+ */
+const MAX_INFLATED_BYTES = 64 * 1024 * 1024;
+
+class TooLargeError extends Error {
+  constructor() {
+    super("This PDF is too large to be a character sheet, so it wasn't read.");
+  }
+}
+
+/**
  * Flate-decode via the platform's DecompressionStream. PDF's FlateDecode is
  * zlib-wrapped, but some producers emit raw deflate, so try both. Driven through
  * the reader/writer pair rather than Blob/Response, which aren't uniformly
  * available outside the browser.
+ *
+ * @throws TooLargeError once the output passes `limit` bytes.
  */
-async function inflate(data: Uint8Array<ArrayBuffer>): Promise<Uint8Array | null> {
+async function inflate(data: Uint8Array<ArrayBuffer>, limit: number): Promise<Uint8Array | null> {
   if (typeof DecompressionStream === "undefined") return null;
   for (const format of ["deflate", "deflate-raw"] as const) {
     try {
@@ -214,8 +228,12 @@ async function inflate(data: Uint8Array<ArrayBuffer>): Promise<Uint8Array | null
       for (;;) {
         const { done, value } = await reader.read();
         if (done) break;
-        chunks.push(value);
         size += value.length;
+        if (size > limit) {
+          void reader.cancel().catch(() => {});
+          throw new TooLargeError();
+        }
+        chunks.push(value);
       }
       const out = new Uint8Array(size);
       let at = 0;
@@ -224,7 +242,8 @@ async function inflate(data: Uint8Array<ArrayBuffer>): Promise<Uint8Array | null
         at += chunk.length;
       }
       return out;
-    } catch {
+    } catch (error) {
+      if (error instanceof TooLargeError) throw error;
       // Wrong wrapper (or genuinely corrupt) — fall through to the next format.
     }
   }
@@ -236,17 +255,18 @@ async function inflate(data: Uint8Array<ArrayBuffer>): Promise<Uint8Array | null
  * export re-saved by a viewer — pack most dictionaries into compressed streams.
  * Each container starts with `N` pairs of "object number, relative offset".
  */
-async function expandObjectStreams(objects: Map<number, string>): Promise<void> {
+async function expandObjectStreams(objects: Map<number, string>, maxInflatedBytes: number): Promise<void> {
+  let budget = maxInflatedBytes;
   for (const body of [...objects.values()]) {
     const { dict, data } = splitStream(body);
     if (data === null || !/\/Type\s*\/ObjStm\b/.test(dict)) continue;
     const count = Number(/\/N\s+(\d+)/.exec(dict)?.[1]);
     const first = Number(/\/First\s+(\d+)/.exec(dict)?.[1]);
     if (!Number.isFinite(count) || !Number.isFinite(first)) continue;
-    const raw = /\/Filter\s*\/FlateDecode\b/.test(dict)
-      ? await inflate(toBytes(data))
-      : toBytes(data);
+    const flate = /\/Filter\s*\/FlateDecode\b/.test(dict);
+    const raw = flate ? await inflate(toBytes(data), budget) : toBytes(data);
     if (!raw) continue;
+    if (flate) budget -= raw.length;
     const payload = toLatin1(raw);
     const header = payload.slice(0, first).trim().split(/\s+/).map(Number);
     for (let i = 0; i < count; i++) {
@@ -264,9 +284,13 @@ async function expandObjectStreams(objects: Map<number, string>): Promise<void> 
  * Extract every AcroForm field value from a PDF. Fields that exist but are blank
  * come back as `""`, so callers can tell "no such field" from "left empty".
  *
- * @throws if the bytes aren't a PDF, or the file is encrypted.
+ * @throws if the bytes aren't a PDF, the file is encrypted, or its compressed
+ * streams expand past `maxInflatedBytes`.
  */
-export async function readPdfFormFields(bytes: Uint8Array): Promise<PdfFormFields> {
+export async function readPdfFormFields(
+  bytes: Uint8Array,
+  maxInflatedBytes = MAX_INFLATED_BYTES,
+): Promise<PdfFormFields> {
   const text = toLatin1(bytes);
   if (!text.startsWith("%PDF-")) throw new Error("That file is not a PDF.");
   if (/\/Encrypt\s+\d+\s+\d+\s+R/.test(text)) {
@@ -274,7 +298,7 @@ export async function readPdfFormFields(bytes: Uint8Array): Promise<PdfFormField
   }
 
   const objects = parseObjects(text);
-  await expandObjectStreams(objects);
+  await expandObjectStreams(objects, maxInflatedBytes);
 
   const fields: PdfFormFields = {};
   for (const body of objects.values()) {
