@@ -1,461 +1,302 @@
-# 🐉 5eTools Importer + Character Builder
+# 🐉 5eTools Builder
 
-A local-first web app that **imports 5eTools-format JSON** and provides a content
-browser (clean statblocks) plus a **D&D-Beyond-style character builder**. All
-content comes from imported JSON — nothing official is bundled.
+A D&D 5e character builder and playable character sheet that runs in your
+browser. It reads the 5eTools data you give it, so it works with any book or
+homebrew you have in 5eTools format.
 
-## Run
+- **Browse** classes, spells, items, species and creatures as clean cards and statblocks.
+- **Build** characters step by step, D&D Beyond style, for 2014 or 2024 rules, multiclassing included.
+- **Play** from a full character sheet: click to roll, track HP, spell slots, rests and inventory.
+- **Import** finished characters from D&D Beyond (link, JSON or PDF).
+- **Keep it private**: everything is stored in your browser. There is no account and no server.
+
+> **No official content is included.** The app is an importer: you bring your
+> own 5eTools `data/` folder or homebrew files. A small, made-up sample is
+> bundled so you can try it out straight away.
+
+## Contents
+
+- [Install](#install)
+- [Your first character](#your-first-character)
+- [Getting content in](#getting-content-in)
+- [Building a character](#building-a-character)
+- [Playing from the sheet](#playing-from-the-sheet)
+- [Importing from D&D Beyond](#importing-from-dd-beyond)
+- [Where your data lives (and backups)](#where-your-data-lives-and-backups)
+- [Troubleshooting](#troubleshooting)
+- [Known limitations](#known-limitations)
+- [For developers](#for-developers)
+- [Under the hood: how D&D Beyond builds a sheet](#under-the-hood-how-dd-beyond-builds-a-sheet)
+
+## Install
+
+### What you need
+
+- **Node.js** 22.12 or newer (the current LTS release is fine), from
+  [nodejs.org](https://nodejs.org/). It comes with `npm`. Check your version
+  with `node --version`.
+- **Git**, to download and update the code. Or use **Code → Download ZIP** on
+  GitHub instead.
+- **A browser**: any current Chrome, Edge, Firefox or Safari.
+- **5eTools data** *(optional)*: your own copy of a 5eTools `data/` folder, for
+  real classes, spells and items. Without it you can still try the sample.
+
+### Steps
+
+Open a terminal (on Windows: PowerShell) and run:
 
 ```bash
+# 1. Download the code
+git clone https://github.com/NeviSenpai111/DnD-Teil.git
+cd DnD-Teil
+
+# 2. Install what the app needs (once, and again after each update)
 npm install
-npm run dev        # start the app (Vite)
-npm test           # run the unit/acceptance tests (Vitest)
-npm run build      # typecheck + production build
-npm run typecheck  # types only
-npm run validate-data   # import a real 5eTools data/ tree and report (see below)
+
+# 3. Start the app
+npm run dev
 ```
 
-Open the app, click **Sample** in the sidebar to load the bundled samples
-(`public/sample-data/`), then:
-- **Browse** the Space Galleon vehicle as a statblock; use the **search box** to
-  filter the list by name, content type, or source. Items get a 5eTools-style
-  card (type/rarity/attunement lines, cost and weight opposite damage or AC,
-  properties and weapon mastery, then the item text followed by the rules for
-  its type, each property and its mastery — taken from the imported
-  `items-base.json` — and the source book with page), spells get a casting card
-  (level/school, casting time, range, components, duration), classes show hit
-  die, proficiencies and all their features by level, and subclasses list their
-  features — other types render their description entries.
-- **Build** a character in a D&D-Beyond-style builder: numbered page tabs
-  (**Home · 1. Class · 2. Background · 3. Species · 4. Abilities · 5. Equipment
-  · What's Next**) with prev/next arrows, a shared character-name header, and
-  Level/HP/AC chips + Save + Sheet in the dark builder bar.
-  - **Class**: "Character Level" header with Max HP / Hit Dice and **Manage
-    HP**; collapsible feature accordions ("N Choices · 1st level") covering hit
-    points, proficiencies (with the class's skill dropdowns), the subclass
-    pick, every gained feature, interactive **Ability Score Improvement**
-    slots (ASI or feat — with the feat's skill and spell picks inline),
-    **choice-driven features** — a class/subclass `optionalfeatureProgression`
-    (fighting styles, invocations, metamagic, …) becomes a picker limited to
-    the count for your level with level-prerequisite gating, and **Expertise**
-    features offer skill picks from your current proficiencies (doubling the
-    bonus) — and **Available at Higher Levels**; plus a per-class **Spells**
-    sub-tab with slots, limits and pick lists. **Weapon Mastery** (2024): a
-    "Weapon Mastery" class-table column becomes a picker over
-    mastery-property weapons, and the property shows on the sheet's attack
-    lines. **"+ Add Another Class"** multiclasses: each class gets its own
-    section, level, subclass, features, ASI slots and spell picks; HP uses
-    the multiclass rule (only the first class's first level is maxed),
-    casting classes share multiclass spell slots, and the incoming class's
-    **multiclass ability prerequisites** (incl. either/or forms) are
-    enforced. Feats with unmet **prerequisites** (ability/level) are disabled
-    in the ASI slots with the reason.
-  - **Background**: dropdown pick with description, Skill/Tool/Language
-    proficiency lines and skill dropdowns, **tool pickers** for
-    choose/any-category grants (SRD artisan/gaming/instrument tables),
-    granted-feat accordions (with their ability choices), 2024 **Ability
-    Scores** choices, **Suggested Characteristics** tables (2014-style
-    personality/ideal/bond/flaw rows — click to pick or roll one into your
-    details), a **custom background builder** (name + description granting 2
-    any-skill picks, a tool and a standard language through the same
-    pickers), and editable **Character Details**
-    (alignment/faith/lifestyle), **Physical & Personal Characteristics** and
-    **Notes** — all shown on the sheet.
-  - **Species**: the chosen species with trait accordions, "Change Species",
-    skill/ability choices and subraces — plus **language pickers** for
-    "choose/any N language" grants (offering the SRD standard/exotic tables)
-    and **species-granted spells** (`additionalSpells`): innate grants are
-    listed and choice grants (High-Elf-cantrip style) get spell dropdowns.
-  - **Abilities**: method dropdown (point buy / array / roll / manual), a
-    centered **Points Remaining** counter, per-ability selects with live
-    totals, and **Score Calculations** cards itemising every bonus source —
-    with editable **Set Score** (replaces the base), **Other Modifier** (flat
-    extra) and **Override Score** (wins over everything) rows per ability.
-  - **Equipment**: a Starting Equipment accordion, item search, and a
-    **Current Inventory** list with type lines, quantities, wear/wield
-    toggles, a **five-coin purse** (CP/SP/EP/GP/PP with a live gp total) and
-    **Total Weight vs. carrying capacity** (Str × 15, with an over-capacity
-    warning).
-  - **What's Next**: a completion checklist (open skill/spell/ASI picks) with
-    Save / Full Sheet / Export actions.
-- The **full-page sheet** (`/sheet/:id`) follows D&D Beyond's layout: the six
-  ability cards, Proficiency Bonus, Walking Speed, **Heroic Inspiration** and a
-  **Hit Points** box (Heal/Damage by amount, current/max, temp) across the top;
-  saving throws (with species notes like Fey Ancestry's advantage) / senses /
-  proficiencies and the skill list down the side; Initiative, Armor Class and
-  **Defenses & Conditions** (add/remove active conditions) above a tabbed
-  panel — **Actions** (filter pills All / Attack / Action / Bonus Action /
-  Reaction / Other / Limited Use; an Attack · Range · Hit/DC · Damage table of
-  equipped weapons, damaging cantrips and attack-roll spells with their origin
-  — "Cantrip · Magic Initiate (Wizard)" — custom attacks and Unarmed Strike;
-  unequipped weapons are one click from the table; then the bonus-action,
-  reaction and other spells and ritual spells), **Spells** (modifier / spell
-  attack / save DC, then a Time · Range · Hit/DC · Effect · Notes table per
-  level with that level's slot pips, including the subclass's always-prepared
-  spells), **Inventory**, **Features & Traits** (filter by class features,
-  species traits, feats), **Background**, **Notes**, **Extras**. The sheet is
-  **playable, not just printable**:
-  - **+ Add Spell** / **+ Add Item** menus search the imported content and add
-    directly. The spell search **adheres to the caster's spell list** (same
-    sources.json mapping, flood guard and castable-level cap as the builder);
-    in a multiclass build an "Add for" dropdown picks the caster class and the
-    pick is tagged to it. Non-casters get no spell menu.
-  - Clicking a weapon, item or spell expands its full detail card inline;
-    inventory rows have quantity / equip / remove controls, an **Attune**
-    toggle on items that require attunement (3-item limit enforced; an
-    attunement item's modifiers apply only while attuned), **charge pips**
-    on items with charges (restored by a long rest). Like D&D Beyond, the
-    tab lists what the character carries under **Equipment** and gives every
-    container its own section with its **load vs. capacity**; drag an item's
-    grip onto a section, or open the item and pick **Move to**, to pack it.
-    Containers **nest** (cycle-safe), and anything inside a weightless
-    (bag-of-holding-style) container doesn't count toward carry weight.
-    Carried weight past the variant-encumbrance thresholds **reduces speed**
-    automatically (−10 / −20 / crawl at the Str×15 cap, flagged on the Speed
-    box) — a per-character **Variant encumbrance** toggle on the Inventory tab
-    turns the steps off (D&D Beyond imports follow the character's setting). The tab ends with the editable **purse** and weight-vs-capacity
-    line, plus a **custom item** mini-form (name/weight/damage — damaging
-    items join the attack list). Spell rows tag **Feat**/**Species** grants
-    and **Ritual** spells; cantrips show their **damage dice scaled to your
-    level** (e.g. 2d8 at level 5). The Actions tab also holds **custom
-    attacks** (name/to-hit/damage, rollable like weapons), and the **Extras**
-    tab attaches imported creatures (companions/familiars) as mini
-    statblocks with their traits and actions.
-  - **▲ Level Up** in the header raises a class level (per-class menu when
-    multiclassed) — new choices are then made in the builder.
-  - **Everything rolls**: click any skill, save, ability modifier, attack
-    to-hit or damage expression to roll it — results appear in a dice toast,
-    and an **Adv/Dis** toggle in the header applies to every d20. (Damage
-    without dice, like an unarmed strike's flat 1, isn't rollable.) Skills
-    with **item-granted advantage** (parsed from equipped items' "advantage
-    on … checks" text) show an *adv* marker and roll with advantage
-    automatically.
-  - **Effects toggles**: Mage-Armor-style spells — any known spell whose text
-    sets a base AC formula ("base Armor Class becomes 13 + Dexterity…") —
-    appear as toggle pills; switch one on when cast and the AC derivation
-    picks the best formula.
-  - The **HP box is a tracker**: Heal/Damage by an amount (temp HP absorbs
-    damage first); click current/max for a strip with temp HP, **Short/Long
-    Rest** buttons (a long rest keeps inspiration and conditions), and a
-    **hit-dice pool** per class ("Spend" rolls the die + Con and heals).
-    At **0 HP** the strip shows **death saves**: roll them (nat 1 = two
-    failures, nat 20 = back up at 1 HP), or damage taken while down adds a
-    failure; healing clears them. Damage is stored as "taken", so leveling up
-    keeps the wound.
-  - **Spell slots render as pips** on the Spells tab (shared multiclass table
-    shown once, pact slots separately) and **class resources** (rage/ki-style
-    columns from the class table) render as pips on the Actions tab — click to
-    spend or restore (the Limited Use filter). A long rest clears everything; a short rest restores
-    pact slots and short-rest resources (Ki/Focus, Channel Divinity,
-    Superiority Dice, Second Wind).
+Then open **http://localhost:5173** in your browser. Leave the terminal open
+while you use the app. Press **Ctrl + C** in the terminal to stop it.
 
-  Edits on a saved character's sheet persist immediately; edits on the draft
-  flow into the builder as usual. Interactive controls are hidden when
-  printing.
-- **Characters** to save/load/duplicate/delete, **View** the full-page sheet, and
-  export to JSON; **Print** outputs just the sheet. Import a finished character
-  from a **D&D Beyond link**, or with **Import file…** from DDB's character JSON,
-  a DDB PDF export or a character JSON from here — see
-  [Importing a D&D Beyond character](#importing-a-dd-beyond-character).
+### Updating
 
-## Architecture
-
-```
-src/
-  data/
-    types/          TS interfaces for _meta + each content type
-    importer.ts     classify files, parse, normalise, dedupe by identity
-    copyResolver.ts _copy/_mod/_templates inheritance + _versions expansion
-    contentIndex.ts identity / name+source / tag lookups + distinct sources
-    featureResolver.ts  assemble class/subclass features per level
-    tagParser/      {@...} tokenizer (TDD) + React TagRenderer
-    entryRenderer/  recursive `entries` renderer
-    exportCharacter.ts  JSON export/download
-    pdfForm.ts      minimal PDF AcroForm reader (no dependency)
-    ddbImport.ts    D&D Beyond PDF sheet -> Character
-    ddbJson.ts      D&D Beyond character JSON: format, source ids, DDB's
-                    ability-total and max-HP rules
-    ddbJsonImport.ts  D&D Beyond JSON (file or link) -> Character
-    characterImport.ts  picks the importer for a dropped file
-  engine/           pure, unit-tested rules (modifiers, hp, armor,
-                    spellcasting slots, character derivation, edition gating,
-                    the typed modifier engine, optional-feature progressions)
-  model/character.ts  the character = the player's CHOICES
-  store/            Zustand: content, character draft + roster, selectors
-  db/               Dexie schema + persistence + startup bootstrap
-  components/       browser / builder / sheet / characters / common
+```bash
+cd DnD-Teil
+git pull
+npm install
+npm run dev
 ```
 
-Core idea: a character stores **choices**; all derived stats are recomputed by
-`engine/character.ts` (`deriveCharacter`) from those choices + imported content.
-The single recursive `EntryRenderer` + `TagRenderer` render any content type.
+Your characters and imported content stay where they are; updating the code
+doesn't touch them.
 
-## Editions
+### Optional: run the production build
 
-Both `classic` (2014) and `one` (2024) are supported and gated via
-`engine/edition.ts` — notably ASIs come from race (classic) vs background (2024).
+`npm run dev` is fine for everyday use. If you'd like the faster, optimised
+version, which is the same build you would put on a web host:
 
-## Importing a D&D Beyond character
+```bash
+npm run build
+npm run preview    # then open http://localhost:4173
+```
 
-**Characters → Import character…** takes a D&D Beyond **PDF export** (DDB's
-*Export → PDF* on the character sheet) and adds the finished character to the
-roster. It also re-imports a character JSON this app exported.
+The build may warn that some chunks are larger than 500 kB. That's expected
+and harmless.
 
-The PDF is the official fillable WotC sheet with its form fields filled in, so
-the importer reads the fields directly (`data/pdfForm.ts` — a small AcroForm
-reader, no PDF dependency) rather than scraping page text. Encrypted PDFs are
-rejected, and object streams (a DDB export re-saved by Acrobat or Preview) are
-inflated via `DecompressionStream`.
+> **Note:** the browser keeps a separate library for each address.
+> `localhost:5173` and `localhost:4173` don't share characters. Pick one, or move
+> characters between them with **Export** and **Import file…**
+> (see [backups](#where-your-data-lives-and-backups)).
 
-Mapping a DDB sheet onto this app's model means turning *results* back into
-*choices* (`data/ddbImport.ts`):
+## Your first character
 
-- **Everything is resolved against your imported content by name**, so import
-  the 5eTools files first — a character imported against an empty library keeps
-  its numbers but loses its class, species, items and spells.
-- **Ability scores** are stored as base scores *plus* a matching Override Score
-  (DDB's own escape hatch), so the totals match the sheet exactly no matter what
-  the content computes. Clear the overrides on the Abilities page to hand them
-  back to the builder — the base scores already have the race/feat bonuses
-  backed out, so the totals stay put.
-- **Skills, languages and tools** are dealt into the choice slots your race,
-  background and class actually grant, most restrictive slot first. Anything
-  with no slot to live in is reported.
-- **Max HP** is matched exactly by fitting per-level hit-dice rolls, since DDB
-  tracks a fixed total.
-- **Spells**: a prepared caster's sheet lists everything the class *could*
-  prepare, so when the list runs past the class's own prepared limit only the
-  always-prepared entries are imported and the rest are re-picked in the
-  builder. Feat- and species-granted spells are reported rather than filed under
-  the class.
-- **Equipment** comes in with quantities and per-item weights; worn armour, a
-  shield, attuned items and anything named in an attack row are marked equipped.
-  Attack rows with no item or spell behind them become custom attack lines.
-- **Feats** are placed into ASI slots in the order the sheet lists them — DDB
-  doesn't record which slot each came from, so check the What's Next page.
+1. **Load some content.** In the left-hand **Import content** panel, click
+   **Sample** for the bundled test content, or **Import folder…** and pick your
+   5eTools `data/` folder. On a narrow window the panel is behind the **☰**
+   button at the top left.
+2. **Pick the rules.** Use **Edition** in the top bar: *Classic (2014)* or *One (2024)*.
+3. **Build.** Open the **Build** tab and work through the numbered pages:
+   **Class → Background → Race → Abilities → Equipment** (in 2024 rules, *Race*
+   is called *Species*). The top bar shows Level, HP and AC as you go.
+4. **Check What's Next.** It lists any choices you haven't made yet.
+5. **Save.** Click **Save** in the builder bar. The character now appears under **Characters**.
+6. **Play.** In **Characters**, click **View** to open the full sheet.
 
-Anything that can't be resolved is listed after the import instead of being
-guessed at.
+## Getting content in
 
-### From a D&D Beyond link or character JSON
+All three buttons are in the **Import content** panel:
 
-**Characters → D&D Beyond link** takes a sheet link
-(`dndbeyond.com/characters/<id>`) and imports the character directly. The
-character's privacy must be **Public**. D&D Beyond's API only answers its own
-origin, so the request goes through a relay in the Vite **dev and preview
-servers** (`/ddb-character/<id>` in `vite.config.ts` — only that endpoint, no
-cookies forwarded). On a static deployment without the relay, open
-`https://character-service.dndbeyond.com/character/v5/character/<id>`, save it as
-a `.json` file and use **Import file…** instead; the same importer reads it.
+| Button | Use it for |
+|---|---|
+| **Import folder…** | **Recommended.** Pick a whole 5eTools `data/` folder; every `.json` file inside is read. Takes a few seconds. |
+| **Import JSON…** | Single files, such as a homebrew file or one book's spells. You can select several at once. |
+| **Sample** | The bundled sample: a few original classes, species and items, plus the *Space Galleon* vehicle. |
 
-The JSON is the character the sheet itself is built from, so it maps far more
-faithfully than the PDF (`data/ddbJson.ts` for the format, `data/ddbJsonImport.ts`
-for the mapping):
+After an import, a short report shows how much came in and any warnings.
+Content is saved in the browser, so you only import once, not every visit.
 
-- **Every entity names its book.** DDB source ids map to 5eTools sources, so a
-  2024 "Sage" resolves to the XPHB background and a "Dagger" from the 2024 basic
-  rules to the XPHB item, not whichever reprint was imported first. DDB's
-  spellings are translated too ("Crossbow, Light", "Studded Leather",
-  "Magic Initiate (Wizard)" → its `_versions` entry).
-- **Ability scores** keep their real base values; DDB's *Other Modifier* and
-  *Override Score* map onto the same fields here; ASIs, feat and species
-  choices (including a 2024 background's +2/+1) are rebuilt as choices. The
-  totals are computed with DDB's own rule — ported from its sheet code,
-  including dropping a legacy species' ASI when a 2024 background supplies it
-  (which also sets the character's edition). Any ability the imported content
-  can't reproduce (a Tome of Clear Thought's +2) is pinned with Override Score
-  and reported with DDB's breakdown.
-- **Proficiencies** come from DDB's typed modifiers and are dealt into the
-  build's choice slots; **feat and species spells** land in the feat's own pick
-  slots (Magic Initiate's list included); prepared class spells come over
-  without the always-prepared ones the subclass already grants.
-- **Inventory** keeps quantities, equipped/attuned state and **containers**;
-  homebrew or third-party items become custom items that still attack correctly
-  (category, melee/ranged, range).
-- **At the table**: damage taken, temp HP, death saves, spent slots and hit dice,
-  Heroic Inspiration, conditions, currency, details and notes, custom actions,
-  companions, and DDB's encumbrance setting.
+If you import files one by one instead of the whole folder, the builder needs
+these for full results:
 
-`npm test` covers the mapping with an original fixture. To check it against a
-real character, save its JSON outside the repo and run
-`DDB_CHARACTER_JSON=/path/to/character.json npx vitest run src/data/ddbRealCharacter.test.ts`
-(it uses the same 5eTools `data/` directory as `validate-data`).
+| For | Import |
+|---|---|
+| Classes and subclasses | `class/class-*.json` |
+| Spells, and which class gets which | `spells/spells-*.json` **and** `spells/sources.json` |
+| Species, backgrounds, feats | `races.json`, `backgrounds.json`, `feats.json` |
+| Items and equipment | `items-base.json`, `items.json`, `magicvariants.json` |
+| Fighting styles, invocations, metamagic, infusions | `optionalfeatures.json` |
+| Monsters built from templates | `bestiary/template.json` |
 
-## Real 5eTools data
+**Sources:** the **Sources** panel lists every book you've imported. Untick a
+book to hide its content everywhere. When a newer printing is loaded (for
+example the 2024 Fighter), the older one is hidden like on 5eTools; tick
+**Show reprinted** to see both.
 
-The importer handles real 5eTools dumps, not just the bundled samples:
+## Building a character
 
-- **Import the whole `data/` folder at once** with **Import folder…** (or pick
-  files with **Import JSON…**). Every file kind in a 5eTools tree is recognised
-  and reported instead of silently yielding nothing: content files,
-  `spells/sources.json`, `index.json` maps, `book-*`/`adventure-*` prose, and
-  `foundry*.json` VTT data — which is always skipped, because its entries share
-  names with real content and would shadow it. The status line under the
-  buttons shows counts per type and every warning (skipped entries, unresolved
-  copies, failed mods).
-- **Identity is per content type**, matching the site: class features are keyed
-  by `name|source|className|classSource|level`, subclass features add the
-  subclass, subclasses add their class, subraces their race, deities their
-  pantheon, item types/properties their abbreviation. (A plain `name|source`
-  key silently dropped hundreds of "Ability Score Improvement" / "Spellcasting"
-  / "Extra Attack" features and every 2014 subclass offered under a 2024 class.)
-  Magic variants take their source from `inherits`; nameless "base" subraces
-  (where e.g. the PHB Human's +1-to-all lives) are kept, named after their race
-  and flagged `_isBaseVariant`.
-- **`_copy` / `_mod` inheritance** is resolved over the full imported pool
-  (`data/copyResolver.ts`), ported from the site's copy applier: bases are found
-  by full identity (cross-file), metadata (`page`, `srd`, `reprintedAs`, …) is
-  only inherited via `_preserve`, a `null` child field deletes the base's, and
-  every `_mod` mode the site supports is implemented — array ops, regex
-  `replaceTxt` (tag-aware), `setProp`, scalar ops, and the bestiary ops
-  (`addSkills`/`addSaves`/`addSenses`, `addSpells`/`replaceSpells`/`removeSpells`,
-  `scalarAddHit`/`scalarAddDc`, `maxSize`, …) with `<$short_name$>`/`<$dc__con$>`
-  variables. Monster `_templates` apply their root props and mods.
-- **`_versions`** expand into sibling entities — "Archmage (Familiar)", "Magic
-  Initiate; Cleric", "Aasimar; Necrotic Shroud". Subrace versions are expanded
-  against the subrace merged into its race and emitted as races ("Dragonborn
-  (Black)"), exactly as the site lists them.
-- **Feature refs** (`Name|Class||Level`, nested `refSubclassFeature` entries)
-  are resolved with the site's defaults (an omitted source means PHB), so a
-  2014 subclass picked under the 2024 class still lists its features.
-- **Fluff, templates and glue data** (`*Fluff`, `monsterTemplate`, `itemEntry`,
-  …) are imported and indexed for cross-references but hidden from the browser
-  list and source counts.
-- **Reprinted entries are hidden by default**, as on the site: an entry whose
-  `reprintedAs` target is imported and enabled — the 2014 Fighter once the 2024
-  one is loaded, the PHB Battle Master under either Fighter, PHB Fireball next
-  to XPHB Fireball — is left out of the browser and the builder's pickers
-  (`data/reprints.ts`). Tick **Show reprinted** under Sources to list them
-  (dimmed), or disable the newer source to bring the originals back. Options a
-  character already chose always resolve against the full pool. The browser
-  shows each entry's source and, for class/subclass features, subclasses,
-  subraces, deities and cards, the parent that makes same-named entries
-  distinct.
-- **Spell → class lists** come from the `spells/sources.json` reverse-index
-  (real spells have no inline `classes`). Import that file alongside the spell
-  files and the spells step filters correctly per class; spells with no mapping
-  fall back to inline `classes.fromClassList`. A spell with no class info at
-  all is offered openly **only when nothing is known about the class's spell
-  list** — once any mapping/inline data names the class, unknown spells are
-  excluded so forgetting `sources.json` can't flood every class with every
-  spell (the builder shows a warning telling you to import it). Spells
-  **reprinted across sources** (e.g. PHB + XPHB) are collapsed to a single
-  entry, preferring the casting class's own source, so each spell appears once.
-- **Spell slots, cantrip and known/prepared counts** are driven by each class's
-  own progression tables. `casterProgression: "artificer"` (also used by 2024
-  half-casters, who round up) grants a 1st-level slot at level 1; 2024 classes'
-  `preparedSpellsProgression` is read directly instead of approximated. Subclass
-  casters (Eldritch Knight, Arcane Trickster) read their spellcasting from the
-  subclass, so they get their cantrips and spells too.
-- **2024 backgrounds** are fully supported: `choose.weighted` ability grants
-  (+2/+1 or +1/+1/+1, assigned per-slot in the builder) and background-granted
-  **feats** (`{ "name; option|source": true }`) are parsed and applied.
-- **Feats** apply their effects: flat & chosen ability increases, fixed skill /
-  saving-throw / tool / language proficiencies, expertise, **free-choice skill
-  grants** (Prodigy's choose-list, Skilled's "any 3 skills or tools", `any N`)
-  and **granted spells** (`additionalSpells`): Magic Initiate's list choice +
-  cantrip/spell picks and Fey Touched's fixed + school-filtered picks are
-  chosen inline in the feat's accordion and appear on the sheet's Spells tab
-  tagged "Feat". All feat choices are picked inline where the feat is shown
-  (ASI slot or background accordion).
-- **Starting equipment** is auto-granted from a background/class `startingEquipment`
-  (both the 2024 A/B choice-group form and the 2014 `defaultData` form); the
-  Equipment step's "Add starting equipment" button populates the default loadout.
-- **Tool / language / armor / weapon** proficiencies from race, background, class
-  and feats are gathered and shown on the sheet. "Choose/any N language"
-  grants are **pickable** wherever they come from — race, subrace,
-  background or feat — and species `additionalSpells` grants appear on the
-  sheet tagged **Species**.
-- **A general modifier engine** (`engine/modifierEngine.ts`) resolves typed
-  `bonus`/`set`/`proficiency`/`advantage` modifiers against targets
-  (abilities, AC, initiative, speed, skills) with DDB-style stacking rules:
-  bonuses add but same-source bonuses count once, `set` acts as a floor and
-  the highest wins, and modifiers can carry equipment conditions (armored /
-  unarmored / shield). **Equipped items feed it**: `bonusAc` (+1
-  rings/cloaks/armor) raises AC, `ability.static` set-scores
-  (Headband-of-Intellect-style items) floor an ability while worn — a manual
-  Override Score still wins — and "advantage on X (Skill) checks" item text
-  becomes an advantage marker on that skill. **Species passives**
-  (`resist`/`immune` damage types, `darkvision`) surface as Defenses and
-  Senses on the sheet.
-- **Choice-driven class features**: a class or subclass
-  `optionalfeatureProgression` (fighting styles, invocations, metamagic,
-  maneuvers, artificer infusions, …) surfaces an interactive picker in the
-  builder filtered to the matching imported `optionalfeature` entries — with
-  the cumulative count for your level (array and `{ "level": count }`
-  progression forms), simple level prerequisites enforced, and picks shown on
-  the sheet's Features tab. **The options themselves are NOT in the class
-  file**: 5eTools ships them in the separate `optionalfeature.json` (book
-  content), so import that file alongside `class/class-*.json` — the picker
-  tells you so (naming the feature type, e.g. `AI` = Artificer Infusion) when
-  the options are missing, and imported ones get their own browser cards.
-  Class features named **Expertise** offer skill picks from your current
-  proficiencies and double the proficiency bonus on those checks.
-- **Competing AC formulas**: Unarmored-Defense-style features are detected
-  from feature text ("your Armor Class equals N + your X modifier …" while
-  not wearing armor) and the best formula wins — Barbarian 10+Dex+Con (shield
-  allowed via "still gain this benefit"), Monk 10+Dex+Wis (lost with a
-  shield), Draconic Resilience 13+Dex, and equivalent homebrew. Wearing armor
-  always uses the armored formula.
-- **Class resources** are parsed from `classTableGroups`: numeric columns
-  that aren't known/prepared counts (Rages, Ki Points, Sorcery Points,
-  Superiority Dice, …) become spendable pip trackers on the sheet, with the
-  per-level maximum from the table.
-- **Selection limits are enforced** so you can only take what you're entitled to:
-  cantrip/spell counts, "choose N" skill groups (a skill can't be picked twice or
-  re-picked when already granted), point-buy budget, and feats (the same feat
-  can't be taken in two ASI slots).
+The builder has one page per step. Use the tabs or the arrows to move around;
+you can go back and change anything later.
 
-The simplest path is **Import folder…** on a 5eTools `data/` directory. To
-import selectively, the builder needs `class/class-*.json`,
-`spells/spells-*.json` + `spells/sources.json`, `races.json`,
-`backgrounds.json`, `feats.json`, `items-base.json`, `items.json`,
-`magicvariants.json`, `optionalfeatures.json` (invocations / infusions /
-metamagic / fighting styles) and `bestiary/template.json` if you import
-monsters that use templates.
+| Page | What you do there |
+|---|---|
+| **Home** | Choose the rules edition. 2014: ability bonuses come from your race. 2024: they come from your background. |
+| **1. Class** | Set your level, choose skills, subclass, Ability Score Improvements or feats, fighting styles and other class options, and spells (on the **Spells** sub-tab). **+ Add Another Class** multiclasses, with prerequisites checked. |
+| **2. Background** | Pick a background (or make a custom one), its skills, tools, languages and feat, and fill in personality, alignment, appearance and notes. |
+| **3. Species** (*Race* in 2014) | Pick a species or race and subrace, plus any language, skill or spell choices it grants. |
+| **4. Abilities** | Point buy, standard array, rolled or manual scores. Every bonus is itemised, and you can set or override any score by hand. |
+| **5. Equipment** | Add starting equipment, search for items, manage coins and see your weight against carrying capacity. |
+| **What's Next** | A checklist of open choices, plus Save, Sheet and Export. |
 
-`npm run validate-data` runs the whole pipeline over a real data tree
-(`~/Dokumente/5ETools/data` by default; override with `FIVETOOLS_DATA=…`) and
-prints a report — file kinds, entities per type, and every warning. On the
-current official dump it imports 24,115 entities from 501 files with zero
-warnings, and asserts the cases above (all same-named class features present,
-legacy subclasses resolving under 2024 classes, versions expanded, Foundry
-files skipped).
+The builder only lets you take what you're entitled to: spell counts, skill
+choices, point-buy budget and feat prerequisites are all enforced.
 
-## Known simplifications / TODOs
+## Playing from the sheet
 
-- **No official content is bundled.** `srd-lite.json` is small, original test
-  content (Sturdyfolk/Swiftling, Warden/Channeler, etc.) to exercise the builder.
-  Import your own 5eTools dumps for real content.
-- Feats' free-choice **tool/language** grants and save *choices* (e.g.
-  Resilient) are summarised but not yet pickable (skill choices and spell
-  grants ARE pickable). Multiclassing simplifications: saving throws and
-  starting proficiencies come from the first class only, ASI slot indices
-  shift if an earlier class gains a slot, and feat spells don't use the
-  chosen ability for DCs. Schema validation remains TODO.
-- Starting equipment grants the first option of each choice; alternate options
-  and gold-alternative parsing are simplified.
-- Modifier-engine edges: item-granted spells/resistances and structured
-  proficiency grants from items are still TODO (advantage comes from item
-  text only). Optional-feature prerequisites beyond a simple level (pact,
-  spells known) are not validated. Container capacity is displayed but not
-  hard-blocked.
-- Rest simplifications: a long rest restores **all** hit dice, resources and
-  item charges (RAW restores half the dice; item `recharge` strings aren't
-  parsed); which resources a short rest restores is a name heuristic
-  (Ki/Focus, Channel Divinity, Superiority Dice, Second Wind) because the
-  data carries no recharge rule.
-- Prerequisite validation covers ability minimums and level; race,
-  spellcasting and proficiency prerequisites are displayed but not checked.
-  The multiclass gate checks only the incoming class (RAW also requires the
-  current class's minimums). Container capacity is shown but not enforced;
-  only the weightless rule affects carry weight.
-- Feature references (`refClassFeature` / `refSubclassFeature` /
-  `refOptionalfeature` / `refFeat`) render as named pointer lines rather than
-  expanding inline — the referenced features are already listed as their own
-  sections. `options`, spellcasting formula blocks (`abilityDc` /
-  `abilityAttackMod`), `statblock` refs and table roll cells render natively;
-  anything rarer still falls back to a graceful "unsupported" note.
-- Cross-reference tags render as styled spans; click-to-navigate is a TODO.
-- Source identity follows the data: the toggle uses entity `source` values, which
-  can differ from `_meta.sources[].json`.
+Open a saved character with **Characters → View**, or click **Sheet** in the
+builder bar. The sheet follows D&D Beyond's layout, and it is meant to be played from:
+
+- **Roll anything** by clicking it: skills, saves, ability checks, attacks and damage.
+  Results pop up as a dice toast. The **Adv / Dis** toggle at the top applies to every d20.
+- **Hit points:** use **Heal** and **Damage** with an amount. Temporary HP is used up
+  first. Click the HP box for short and long rests, hit dice and death saves.
+- **Spell slots and class resources** (Rage, Ki, Superiority Dice, …) are pips you click to spend.
+  Rests restore them.
+- **Add spells and items** straight from the sheet with **+ Add Spell** and **+ Add Item**.
+  The spell search only offers what your class can cast.
+- **Inventory:** equip, attune (up to 3) and drag items into containers. Carried weight and
+  encumbrance update automatically.
+- **Conditions, inspiration and effects** such as Mage Armor can be switched on and off.
+- **Level Up** raises a class level. New choices are then made in the builder.
+- **Print** prints just the sheet. **Export JSON** saves a copy of the character.
+
+Changes on a saved character's sheet are saved immediately.
+
+For the full feature list, see [docs/FEATURES.md](docs/FEATURES.md).
+
+## Importing from D&D Beyond
+
+Go to **Characters**. The **Import** panel on the right offers three ways in:
+
+| From | How | Notes |
+|---|---|---|
+| **A sheet link** | Paste `https://www.dndbeyond.com/characters/<id>` and click **Import**. | The character's privacy must be **Public**. This only works while the app runs with `npm run dev` or `npm run preview`. |
+| **The character JSON** | Open `https://character-service.dndbeyond.com/character/v5/character/<id>` in your browser, save the page as a `.json` file, then use **Import file…** | Also needs the character to be **Public**. Works everywhere, including a static web host, and gives the same result as the link. |
+| **A PDF export** | On D&D Beyond, use **Export → PDF**, then **Import file…** | Less exact than the link or JSON, but works for characters you can't make public. |
+
+Before you import, **import your 5eTools content first.** The importer looks up
+the character's class, species, spells and items by name in your library.
+Without content, the numbers still come over, but the class, spells and items
+don't.
+
+After the import, a short report lists anything that couldn't be matched. The
+app reports these instead of guessing. Open the character in the builder and
+check **What's Next**: feats in particular may need a second look.
+
+## Where your data lives (and backups)
+
+- **Everything stays on your computer**, in your browser's storage (IndexedDB).
+  Nothing is uploaded, and there is no account.
+- Each browser, browser profile and address (`localhost:5173`, `localhost:4173`, a
+  web host) has **its own separate library**.
+- **Clearing your browser's site data deletes your characters and imported content.**
+- **Back up** a character with **Export** (in Characters) or **Export JSON** (on the sheet).
+  Restore it, or move it to another computer, with **Characters → Import file…**
+- The character you're building is saved automatically as a draft. **Save** adds
+  it to your library.
+
+## Troubleshooting
+
+| Problem | What to do |
+|---|---|
+| `npm: command not found` / `'npm' is not recognized` | Install Node.js from [nodejs.org](https://nodejs.org/), then open a **new** terminal. |
+| Vite says your Node.js version is too old | Install the current LTS release of Node.js (22.12 or newer). |
+| The page won't load | Is the terminal running `npm run dev` still open? If port 5173 was busy, the terminal shows the address it used instead. |
+| Builder lists are empty | Import content first: click **Sample** or **Import folder…** |
+| A class gets no spells, or every spell | Import `spells/sources.json` (or use **Import folder…**). The builder warns when it's missing. |
+| No fighting styles, invocations or metamagic to pick | Import `optionalfeatures.json`. 5eTools keeps them out of the class files. |
+| My characters disappeared | Check the address: `localhost:5173` and `localhost:4173` keep separate libraries. Also check you're in the same browser and profile. |
+| D&D Beyond link import fails | Set the character to **Public** on D&D Beyond. On a static web host the link can't work; use the JSON file route instead. |
+| A homebrew image doesn't show | In the built app (`npm run preview` or a web host), images must be served over `https://`. Plain `http://` images are blocked. |
+| Something looks broken after `git pull` | Run `npm install` again, then restart `npm run dev`. |
+
+## Known limitations
+
+- **Feats:** free-choice tool and language grants, and saving-throw choices (Resilient), are
+  shown but can't be picked yet.
+- **Multiclassing:** saving throws and starting proficiencies come from the first class only.
+  Feat spells don't use the chosen ability for their DC.
+- **Starting equipment** takes the first option of each choice; alternatives and the gold
+  option are simplified.
+- **Rests:** a long rest restores *all* hit dice, resources and item charges (the rules restore
+  half the dice). Which resources a short rest restores is a best guess by name.
+- **Prerequisites:** ability scores and level are checked; race, spellcasting and proficiency
+  prerequisites are shown but not enforced. Container capacity is shown but not enforced.
+- **Links:** cross-references in text are styled, but you can't click through to them yet.
+
+## For developers
+
+```bash
+npm run dev            # dev server with hot reload (http://localhost:5173)
+npm test               # unit and acceptance tests (Vitest)
+npm run typecheck      # types only
+npm run build          # typecheck + production build into dist/
+npm run preview        # serve dist/ (http://localhost:4173)
+npm run validate-data  # import a real 5eTools data/ folder and report
+```
+
+It is a client-only React 19 + TypeScript app built with Vite. Zustand holds
+state and Dexie stores it in IndexedDB. A character stores only the player's
+**choices**; every number on the sheet is recomputed from them and the
+imported content.
+
+[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) covers the code layout, how the
+5eTools import works, how D&D Beyond characters are mapped, and how to test
+against real data.
+
+## Under the hood: how D&D Beyond builds a sheet
+
+To import D&D Beyond characters faithfully, we studied how D&D Beyond's own
+sheet works. We captured a public character loading in the browser and read
+the published character-app code (version 1.72.9, October 2026). These diagrams
+describe **D&D Beyond's** sheet, not this app.
+
+The main finding: D&D Beyond's server stores only what the player chose.
+Every number on the sheet is worked out in the browser. That is why the
+importer rebuilds a character from its choices, the same way this app works,
+and why its ability-score rule is ported directly from D&D Beyond.
+
+![How the D&D Beyond sheet is put together: the React sheet UI dispatches actions to saga handlers, which load raw JSON into a Redux store through an API adapter; 292 memoized selectors turn that state into the numbers on screen.](docs/diagrams/ddb-sheet/01-architecture.svg)
+
+<details>
+<summary><b>What happens when the sheet loads</b>: a token, two waves of parallel requests, then “loaded”</summary>
+<br>
+
+![Load sequence of the D&D Beyond sheet: the load saga gets a token, fetches the character, rule data, feature flags and vehicle rules in parallel, writes them into the store, fetches mappings, infusions and spell lists, then marks the sheet as loaded.](docs/diagrams/ddb-sheet/02-load-sequence.svg)
+
+</details>
+
+<details>
+<summary><b>How the sheet derives its numbers</b>: raw choices → one modifier hub → abilities → AC, HP, skills</summary>
+<br>
+
+![Data flow of D&D Beyond's rules engine: character JSON and rule data feed modifier collectors and one global modifier hub, which feeds abilities and proficiency, which feed armor class, hit points and skills.](docs/diagrams/ddb-sheet/03-derived-stats.svg)
+
+</details>
+
+<details>
+<summary><b>What happens when you edit the sheet</b>: the screen updates first, then one small save request</summary>
+<br>
+
+![Optimistic write on the D&D Beyond sheet: an HP change is committed to the store so the screen updates immediately, then a single PUT request saves it; an error closes the transaction and rejects the change.](docs/diagrams/ddb-sheet/04-write-path.svg)
+
+</details>
+
+<details>
+<summary><b>How one ability score is totalled</b>: the order of bonuses, caps, set scores and overrides (the rule this app's importer uses)</summary>
+<br>
+
+![D&D Beyond's ability-score formula: base score plus bonuses capped at 20, then the other bonus, a set-score floor, an optional override and an optional stacking bonus, clamped to 1–30. The worked example takes an INT of 15 to 19 (+4).](docs/diagrams/ddb-sheet/05-ability-formula.svg)
+
+</details>

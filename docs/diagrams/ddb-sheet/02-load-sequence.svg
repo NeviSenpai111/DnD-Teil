@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg class="diagram" viewBox="0 0 1280 704" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="ddb-load-sequence-title ddb-load-sequence-desc" id="d-02-load-sequence-root">
+<title id="ddb-load-sequence-title">Loading a character in the D&amp;D Beyond sheet</title>
+<desc id="ddb-load-sequence-desc">Sequence of the D&amp;D Beyond character load: the load saga gets a short-term token, fires four requests in parallel for the character, rule data, feature flags and vehicle rules, writes them into the Redux store, fetches mappings, infusion definitions and spell lists, and finally marks the store as loaded.</desc>
+<defs>
+      <style>@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;family=Noto+Serif:ital@0;1&amp;family=Noto+Sans+KR:wght@400;500;600&amp;family=Noto+Serif+KR:wght@400&amp;family=Noto+Sans+TC:wght@400;500;600&amp;family=Noto+Serif+TC:wght@400&amp;display=swap');
+      #d-02-load-sequence-root { --paper: #f4f4f5; --surface: #ffffff; --ink: #18181b; --muted: #52525b; --soft: #71717a;
+  --line: #e4e4e7; --accent: #9b2c2c; --link: #1d72ad;
+  --font-sans: 'Geist', ui-sans-serif, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, monospace; }
+      #d-02-load-sequence-root { font-family: var(--font-sans); color: var(--ink); }
+      #d-02-load-sequence-root .lede { color: var(--muted); max-width: 76ch; margin-bottom: 1.75rem; font-size: 0.95rem; }
+      #d-02-load-sequence-root .lede code, #d-02-load-sequence-root .card code, #d-02-load-sequence-root li code { font-family: var(--font-mono); font-size: 0.82em; color: var(--ink); }
+      #d-02-load-sequence-root .diagram-container { width: 100%; overflow-x: auto; margin-bottom: 2rem; }
+      #d-02-load-sequence-root.diagram { width: 100%; display: block; }
+      #d-02-load-sequence-root .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex: none; }
+      #d-02-load-sequence-root .dot.ink { background: var(--ink); }
+      #d-02-load-sequence-root .dot.accent { background: var(--accent); }
+      #d-02-load-sequence-root .dot.soft { background: var(--soft); }
+      #d-02-load-sequence-root nav.pager { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; font-family: var(--font-mono);
+  font-size: 0.75rem; margin-bottom: 1.5rem; }
+      #d-02-load-sequence-root nav.pager a { color: var(--accent); text-decoration: none; }
+      #d-02-load-sequence-root nav.pager a:hover { text-decoration: underline; }
+      #d-02-load-sequence-root .diagram-container { overflow-x: visible; }
+      #d-02-load-sequence-root.diagram { min-width: 0 !important; }
+      #d-02-load-sequence-root.diagram { min-width: 1280px; }
+      #d-02-load-sequence-root.diagram { min-width: 0; }</style>
+<marker id="d-02-load-sequence-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#52525b"/></marker>
+<marker id="d-02-load-sequence-arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#9b2c2c"/></marker>
+<marker id="d-02-load-sequence-arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#1d72ad"/></marker>
+</defs>
+<rect width="100%" height="100%" fill="#f4f4f5"/>
+<line x1="144" y1="96" x2="144" y2="616" stroke="#18181b" stroke-opacity="0.20" stroke-width="1" stroke-dasharray="3,3"/>
+<line x1="384" y1="96" x2="384" y2="616" stroke="#18181b" stroke-opacity="0.20" stroke-width="1" stroke-dasharray="3,3"/>
+<line x1="624" y1="96" x2="624" y2="616" stroke="#18181b" stroke-opacity="0.20" stroke-width="1" stroke-dasharray="3,3"/>
+<line x1="864" y1="96" x2="864" y2="616" stroke="#18181b" stroke-opacity="0.20" stroke-width="1" stroke-dasharray="3,3"/>
+<line x1="1104" y1="96" x2="1104" y2="616" stroke="#18181b" stroke-opacity="0.20" stroke-width="1" stroke-dasharray="3,3"/>
+<rect x="380" y="124" width="8" height="468" fill="#18181b" fill-opacity="0.06" stroke="#52525b" stroke-width="0.8"/>
+<rect x="620" y="132" width="8" height="44" fill="#18181b" fill-opacity="0.06" stroke="#52525b" stroke-width="0.8"/>
+<rect x="860" y="220" width="8" height="144" fill="#18181b" fill-opacity="0.06" stroke="#52525b" stroke-width="0.8"/>
+<path d="M 372,224 H 364 V 320 H 372" fill="none" stroke="#71717a" stroke-width="0.8"/>
+<text x="356" y="268" fill="#52525b" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="end" letter-spacing="0.08em">WAVE 1</text>
+<text x="356" y="282" fill="#71717a" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="end" letter-spacing="0.04em">yield all([4 calls])</text>
+<text x="356" y="452" fill="#52525b" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="end" letter-spacing="0.08em">WAVE 2 · ALL()</text>
+<text x="356" y="532" fill="#52525b" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="end" letter-spacing="0.08em">PER CLASS</text>
+<!-- POST TOKEN -->
+<line x1="388" y1="136" x2="620" y2="136" stroke="#1d72ad" stroke-width="1.2" marker-end="url(#d-02-load-sequence-arrow-link)"/>
+<rect x="470" y="116" width="68" height="12" rx="2" fill="#f4f4f5"/>
+<text x="504" y="125" fill="#1d72ad" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">POST TOKEN</text>
+<!-- JWT · CACHED -->
+<line x1="620" y1="172" x2="388" y2="172" stroke="#52525b" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#d-02-load-sequence-arrow)"/>
+<rect x="464" y="152" width="80" height="12" rx="2" fill="#f4f4f5"/>
+<text x="504" y="161" fill="#52525b" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">JWT · CACHED</text>
+<!-- GET CHARACTER -->
+<line x1="388" y1="224" x2="860" y2="224" stroke="#1d72ad" stroke-width="1.2" marker-end="url(#d-02-load-sequence-arrow-link)"/>
+<rect x="460" y="204" width="88" height="12" rx="2" fill="#f4f4f5"/>
+<text x="504" y="213" fill="#1d72ad" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">GET CHARACTER</text>
+<!-- GET RULE-DATA -->
+<line x1="388" y1="256" x2="860" y2="256" stroke="#1d72ad" stroke-width="1.2" marker-end="url(#d-02-load-sequence-arrow-link)"/>
+<rect x="460" y="236" width="88" height="12" rx="2" fill="#f4f4f5"/>
+<text x="504" y="245" fill="#1d72ad" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">GET RULE-DATA</text>
+<!-- POST FLAGS -->
+<line x1="388" y1="288" x2="860" y2="288" stroke="#1d72ad" stroke-width="1.2" marker-end="url(#d-02-load-sequence-arrow-link)"/>
+<rect x="470" y="268" width="68" height="12" rx="2" fill="#f4f4f5"/>
+<text x="504" y="277" fill="#1d72ad" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">POST FLAGS</text>
+<!-- GET VEH RULES -->
+<line x1="388" y1="320" x2="1100" y2="320" stroke="#1d72ad" stroke-width="1.2" marker-end="url(#d-02-load-sequence-arrow-link)"/>
+<rect x="460" y="300" width="88" height="12" rx="2" fill="#f4f4f5"/>
+<text x="504" y="309" fill="#1d72ad" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">GET VEH RULES</text>
+<!-- JSON · ~1 MB -->
+<line x1="860" y1="360" x2="388" y2="360" stroke="#52525b" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#d-02-load-sequence-arrow)"/>
+<rect x="704" y="340" width="80" height="12" rx="2" fill="#f4f4f5"/>
+<text x="744" y="349" fill="#52525b" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">JSON · ~1 MB</text>
+<!-- SET 4 SLICES -->
+<line x1="380" y1="400" x2="148" y2="400" stroke="#52525b" stroke-width="1.2" marker-end="url(#d-02-load-sequence-arrow)"/>
+<rect x="224" y="380" width="80" height="12" rx="2" fill="#f4f4f5"/>
+<text x="264" y="389" fill="#52525b" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">SET 4 SLICES</text>
+<!-- GET 4 MAPPINGS -->
+<line x1="388" y1="448" x2="860" y2="448" stroke="#1d72ad" stroke-width="1.2" marker-end="url(#d-02-load-sequence-arrow-link)"/>
+<rect x="458" y="428" width="92" height="12" rx="2" fill="#f4f4f5"/>
+<text x="504" y="437" fill="#1d72ad" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">GET 4 MAPPINGS</text>
+<!-- POST INFUSIONS -->
+<line x1="388" y1="488" x2="1100" y2="488" stroke="#1d72ad" stroke-width="1.2" marker-end="url(#d-02-load-sequence-arrow-link)"/>
+<rect x="458" y="468" width="92" height="12" rx="2" fill="#f4f4f5"/>
+<text x="504" y="477" fill="#1d72ad" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">POST INFUSIONS</text>
+<!-- ALWAYS-SPELLS -->
+<line x1="388" y1="528" x2="860" y2="528" stroke="#1d72ad" stroke-width="1.2" marker-end="url(#d-02-load-sequence-arrow-link)"/>
+<rect x="460" y="508" width="88" height="12" rx="2" fill="#f4f4f5"/>
+<text x="504" y="517" fill="#1d72ad" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">ALWAYS-SPELLS</text>
+<!-- LOADED -->
+<line x1="380" y1="576" x2="148" y2="576" stroke="#9b2c2c" stroke-width="1.4" marker-end="url(#d-02-load-sequence-arrow-accent)"/>
+<rect x="240" y="556" width="48" height="12" rx="2" fill="#f4f4f5"/>
+<text x="264" y="565" fill="#9b2c2c" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">LOADED</text>
+<rect x="56" y="40" width="176" height="56" rx="6" fill="#f4f4f5"/>
+<rect x="56" y="40" width="176" height="56" rx="6" fill="#18181b" fill-opacity="0.05" stroke="#52525b" stroke-width="1"/>
+<rect x="64" y="46" width="36" height="12" rx="2" fill="none" stroke="#52525b" stroke-opacity="0.50" stroke-width="0.8"/>
+<text x="82" y="55" fill="#52525b" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">STATE</text>
+<text x="144" y="72" fill="#18181b" font-size="12" font-weight="600" font-family="'Geist', ui-sans-serif, sans-serif" text-anchor="middle">Redux store</text>
+<text x="144" y="87" fill="#52525b" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">6 slices</text>
+<rect x="296" y="40" width="176" height="56" rx="6" fill="#f4f4f5"/>
+<rect x="296" y="40" width="176" height="56" rx="6" fill="#9b2c2c" fill-opacity="0.08" stroke="#9b2c2c" stroke-width="1"/>
+<rect x="304" y="46" width="32" height="12" rx="2" fill="none" stroke="#9b2c2c" stroke-opacity="0.50" stroke-width="0.8"/>
+<text x="320" y="55" fill="#9b2c2c" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">SAGA</text>
+<text x="384" y="72" fill="#18181b" font-size="12" font-weight="600" font-family="'Geist', ui-sans-serif, sans-serif" text-anchor="middle">Load saga</text>
+<text x="384" y="87" fill="#52525b" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">handleCharacterLoad</text>
+<rect x="536" y="40" width="176" height="56" rx="6" fill="#f4f4f5"/>
+<rect x="536" y="40" width="176" height="56" rx="6" fill="#18181b" fill-opacity="0.03" stroke="#18181b" stroke-opacity="0.30" stroke-width="1"/>
+<rect x="544" y="46" width="32" height="12" rx="2" fill="none" stroke="#18181b" stroke-opacity="0.22" stroke-width="0.8"/>
+<text x="560" y="55" fill="#71717a" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">AUTH</text>
+<text x="624" y="72" fill="#18181b" font-size="12" font-weight="600" font-family="'Geist', ui-sans-serif, sans-serif" text-anchor="middle">auth-service</text>
+<text x="624" y="87" fill="#52525b" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">/v1/cobalt-token</text>
+<rect x="776" y="40" width="176" height="56" rx="6" fill="#f4f4f5"/>
+<rect x="776" y="40" width="176" height="56" rx="6" fill="#18181b" fill-opacity="0.03" stroke="#18181b" stroke-opacity="0.30" stroke-width="1"/>
+<rect x="784" y="46" width="28" height="12" rx="2" fill="none" stroke="#18181b" stroke-opacity="0.22" stroke-width="0.8"/>
+<text x="798" y="55" fill="#71717a" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">API</text>
+<text x="864" y="72" fill="#18181b" font-size="12" font-weight="600" font-family="'Geist', ui-sans-serif, sans-serif" text-anchor="middle">character-service</text>
+<text x="864" y="87" fill="#52525b" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">/character/v5</text>
+<rect x="1016" y="40" width="176" height="56" rx="6" fill="#f4f4f5"/>
+<rect x="1016" y="40" width="176" height="56" rx="6" fill="#18181b" fill-opacity="0.03" stroke="#18181b" stroke-opacity="0.30" stroke-width="1"/>
+<rect x="1024" y="46" width="28" height="12" rx="2" fill="none" stroke="#18181b" stroke-opacity="0.22" stroke-width="0.8"/>
+<text x="1038" y="55" fill="#71717a" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">API</text>
+<text x="1104" y="72" fill="#18181b" font-size="12" font-weight="600" font-family="'Geist', ui-sans-serif, sans-serif" text-anchor="middle">gamedata-service</text>
+<text x="1104" y="87" fill="#52525b" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">vehicles · infusions</text>
+<line x1="40" y1="640" x2="1240" y2="640" stroke="#18181b" stroke-opacity="0.10" stroke-width="0.8"/>
+<text x="40" y="656" fill="#52525b" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.18em">LEGEND</text>
+<rect x="40" y="672" width="14" height="10" rx="2" fill="#9b2c2c" fill-opacity="0.08" stroke="#9b2c2c" stroke-width="1"/>
+<text x="60" y="680" fill="#52525b" font-size="8.5" font-family="'Geist', ui-sans-serif, sans-serif">Load saga</text>
+<rect x="137" y="672" width="14" height="10" rx="2" fill="#18181b" fill-opacity="0.05" stroke="#52525b" stroke-width="1"/>
+<text x="157" y="680" fill="#52525b" font-size="8.5" font-family="'Geist', ui-sans-serif, sans-serif">Redux store</text>
+<rect x="245" y="672" width="14" height="10" rx="2" fill="#18181b" fill-opacity="0.03" stroke="#18181b" stroke-opacity="0.30" stroke-width="1"/>
+<text x="265" y="680" fill="#52525b" font-size="8.5" font-family="'Geist', ui-sans-serif, sans-serif">D&amp;D Beyond service</text>
+<line x1="388" y1="677" x2="416" y2="677" stroke="#1d72ad" stroke-width="1.2" marker-end="url(#d-02-load-sequence-arrow-link)"/>
+<text x="424" y="680" fill="#52525b" font-size="8.5" font-family="'Geist', ui-sans-serif, sans-serif">HTTPS call</text>
+<line x1="507" y1="677" x2="535" y2="677" stroke="#52525b" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#d-02-load-sequence-arrow)"/>
+<text x="543" y="680" fill="#52525b" font-size="8.5" font-family="'Geist', ui-sans-serif, sans-serif">Response</text>
+<line x1="615" y1="677" x2="643" y2="677" stroke="#52525b" stroke-width="1.2" marker-end="url(#d-02-load-sequence-arrow)"/>
+<text x="651" y="680" fill="#52525b" font-size="8.5" font-family="'Geist', ui-sans-serif, sans-serif">Redux put</text>
+<line x1="728" y1="677" x2="756" y2="677" stroke="#9b2c2c" stroke-width="1.2" marker-end="url(#d-02-load-sequence-arrow-accent)"/>
+<text x="764" y="680" fill="#52525b" font-size="8.5" font-family="'Geist', ui-sans-serif, sans-serif">Sheet ready</text>
+</svg>

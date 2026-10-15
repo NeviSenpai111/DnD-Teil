@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg class="diagram" viewBox="0 0 1280 656" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="ddb-derived-stats-title ddb-derived-stats-desc" id="d-03-derived-stats-root">
+<title id="ddb-derived-stats-title">How the sheet derives its numbers</title>
+<desc id="ddb-derived-stats-desc">Data-flow graph of the D&amp;D Beyond rules engine: character JSON feeds modifier collectors and base ability scores, the collectors feed the global modifier hub read by 49 selectors, the hub and rule data feed abilities and proficiency, and those feed armor class, hit points and skills.</desc>
+<defs>
+      <style>@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;family=Noto+Serif:ital@0;1&amp;family=Noto+Sans+KR:wght@400;500;600&amp;family=Noto+Serif+KR:wght@400&amp;family=Noto+Sans+TC:wght@400;500;600&amp;family=Noto+Serif+TC:wght@400&amp;display=swap');
+      #d-03-derived-stats-root { --paper: #f4f4f5; --surface: #ffffff; --ink: #18181b; --muted: #52525b; --soft: #71717a;
+  --line: #e4e4e7; --accent: #9b2c2c; --link: #1d72ad;
+  --font-sans: 'Geist', ui-sans-serif, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, monospace; }
+      #d-03-derived-stats-root { font-family: var(--font-sans); color: var(--ink); }
+      #d-03-derived-stats-root .lede { color: var(--muted); max-width: 76ch; margin-bottom: 1.75rem; font-size: 0.95rem; }
+      #d-03-derived-stats-root .lede code, #d-03-derived-stats-root .card code, #d-03-derived-stats-root li code { font-family: var(--font-mono); font-size: 0.82em; color: var(--ink); }
+      #d-03-derived-stats-root .diagram-container { width: 100%; overflow-x: auto; margin-bottom: 2rem; }
+      #d-03-derived-stats-root.diagram { width: 100%; display: block; }
+      #d-03-derived-stats-root .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex: none; }
+      #d-03-derived-stats-root .dot.ink { background: var(--ink); }
+      #d-03-derived-stats-root .dot.accent { background: var(--accent); }
+      #d-03-derived-stats-root .dot.soft { background: var(--soft); }
+      #d-03-derived-stats-root nav.pager { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; font-family: var(--font-mono);
+  font-size: 0.75rem; margin-bottom: 1.5rem; }
+      #d-03-derived-stats-root nav.pager a { color: var(--accent); text-decoration: none; }
+      #d-03-derived-stats-root nav.pager a:hover { text-decoration: underline; }
+      #d-03-derived-stats-root .diagram-container { overflow-x: visible; }
+      #d-03-derived-stats-root.diagram { min-width: 0 !important; }
+      #d-03-derived-stats-root.diagram { min-width: 1280px; }
+      #d-03-derived-stats-root.diagram { min-width: 0; }</style>
+<marker id="d-03-derived-stats-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#52525b"/></marker>
+<marker id="d-03-derived-stats-arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#9b2c2c"/></marker>
+<marker id="d-03-derived-stats-arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#1d72ad"/></marker>
+</defs>
+<rect width="100%" height="100%" fill="#f4f4f5"/>
+<!-- JSON -&gt; collectors -->
+<line x1="240" y1="120" x2="240" y2="208" stroke="#52525b" stroke-width="1.2" marker-end="url(#d-03-derived-stats-arrow)"/>
+<!-- collectors -&gt; hub -->
+<line x1="360" y1="236" x2="560" y2="236" stroke="#52525b" stroke-width="1.2" marker-end="url(#d-03-derived-stats-arrow)"/>
+<!-- JSON -&gt; abilities (base scores) -->
+<path d="M 160,92 L 96,92 Q 88,92 88,100 L 88,364 Q 88,372 96,372 L 360,372" fill="none" stroke="#52525b" stroke-width="1.2" marker-end="url(#d-03-derived-stats-arrow)"/>
+<!-- hub -&gt; abilities -->
+<path d="M 600,264 L 600,292 Q 600,300 592,300 L 448,300 Q 440,300 440,308 L 440,352" fill="none" stroke="#52525b" stroke-width="1.2" marker-end="url(#d-03-derived-stats-arrow)"/>
+<!-- hub -&gt; proficiency -->
+<path d="M 680,264 L 680,292 Q 680,300 688,300 L 800,300 Q 808,300 808,308 L 808,352" fill="none" stroke="#52525b" stroke-width="1.2" marker-end="url(#d-03-derived-stats-arrow)"/>
+<!-- rule data -&gt; proficiency -->
+<path d="M 1000,120 L 1000,308 Q 1000,316 992,316 L 880,316 Q 872,316 872,324 L 872,352" fill="none" stroke="#52525b" stroke-width="1.2" marker-end="url(#d-03-derived-stats-arrow)"/>
+<!-- rule data -&gt; skills -->
+<line x1="1088" y1="120" x2="1088" y2="496" stroke="#52525b" stroke-width="1.2" marker-end="url(#d-03-derived-stats-arrow)"/>
+<!-- proficiency -&gt; abilities (saves) -->
+<line x1="760" y1="380" x2="520" y2="380" stroke="#52525b" stroke-width="1.2" marker-end="url(#d-03-derived-stats-arrow)"/>
+<!-- abilities -&gt; AC -->
+<path d="M 360,392 L 264,392 Q 256,392 256,400 L 256,496" fill="none" stroke="#52525b" stroke-width="1.2" marker-end="url(#d-03-derived-stats-arrow)"/>
+<!-- abilities -&gt; HP -->
+<path d="M 472,408 L 472,452 Q 472,460 480,460 L 632,460 Q 640,460 640,468 L 640,496" fill="none" stroke="#52525b" stroke-width="1.2" marker-end="url(#d-03-derived-stats-arrow)"/>
+<!-- abilities -&gt; skills -->
+<path d="M 504,408 L 504,432 Q 504,440 512,440 L 1016,440 Q 1024,440 1024,448 L 1024,496" fill="none" stroke="#52525b" stroke-width="1.2" marker-end="url(#d-03-derived-stats-arrow)"/>
+<!-- proficiency -&gt; skills -->
+<path d="M 872,408 L 872,416 Q 872,424 880,424 L 1048,424 Q 1056,424 1056,432 L 1056,496" fill="none" stroke="#52525b" stroke-width="1.2" marker-end="url(#d-03-derived-stats-arrow)"/>
+<rect x="420" y="216" width="80" height="12" rx="2" fill="#f4f4f5"/>
+<text x="460" y="225" fill="#52525b" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">35 MODIFIERS</text>
+<rect x="186" y="352" width="76" height="12" rx="2" fill="#f4f4f5"/>
+<text x="224" y="361" fill="#52525b" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">BASE SCORES</text>
+<rect x="620" y="360" width="40" height="12" rx="2" fill="#f4f4f5"/>
+<text x="640" y="369" fill="#52525b" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">SAVES</text>
+<rect x="160" y="64" width="160" height="56" rx="6" fill="#f4f4f5"/>
+<rect x="160" y="64" width="160" height="56" rx="6" fill="#18181b" fill-opacity="0.03" stroke="#18181b" stroke-opacity="0.30" stroke-width="1"/>
+<rect x="168" y="70" width="20" height="12" rx="2" fill="none" stroke="#18181b" stroke-opacity="0.22" stroke-width="0.8"/>
+<text x="178" y="79" fill="#71717a" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">IN</text>
+<rect x="256" y="70" width="56" height="12" rx="2" fill="#ffffff" stroke="#18181b" stroke-opacity="0.22" stroke-width="0.8"/>
+<text x="284" y="79" fill="#52525b" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.04em">feeds 28</text>
+<text x="240" y="96" fill="#18181b" font-size="12" font-weight="600" font-family="'Geist', ui-sans-serif, sans-serif" text-anchor="middle">Character JSON</text>
+<text x="240" y="111" fill="#52525b" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">stats · classes · items</text>
+<rect x="960" y="64" width="160" height="56" rx="6" fill="#f4f4f5"/>
+<rect x="960" y="64" width="160" height="56" rx="6" fill="#18181b" fill-opacity="0.03" stroke="#18181b" stroke-opacity="0.30" stroke-width="1"/>
+<rect x="968" y="70" width="20" height="12" rx="2" fill="none" stroke="#18181b" stroke-opacity="0.22" stroke-width="0.8"/>
+<text x="978" y="79" fill="#71717a" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">IN</text>
+<rect x="1056" y="70" width="56" height="12" rx="2" fill="#ffffff" stroke="#18181b" stroke-opacity="0.22" stroke-width="0.8"/>
+<text x="1084" y="79" fill="#52525b" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.04em">feeds 61</text>
+<text x="1040" y="96" fill="#18181b" font-size="12" font-weight="600" font-family="'Geist', ui-sans-serif, sans-serif" text-anchor="middle">Rule data</text>
+<text x="1040" y="111" fill="#52525b" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">99 lookup tables</text>
+<rect x="120" y="208" width="240" height="56" rx="6" fill="#f4f4f5"/>
+<rect x="120" y="208" width="240" height="56" rx="6" fill="#ffffff" stroke="#18181b" stroke-width="1"/>
+<rect x="128" y="214" width="28" height="12" rx="2" fill="none" stroke="#18181b" stroke-opacity="0.40" stroke-width="0.8"/>
+<text x="142" y="223" fill="#18181b" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">MOD</text>
+<rect x="304" y="214" width="48" height="12" rx="2" fill="#ffffff" stroke="#18181b" stroke-opacity="0.22" stroke-width="0.8"/>
+<text x="328" y="223" fill="#52525b" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.04em">feeds 3</text>
+<text x="240" y="240" fill="#18181b" font-size="12" font-weight="600" font-family="'Geist', ui-sans-serif, sans-serif" text-anchor="middle">Modifier collectors</text>
+<text x="240" y="255" fill="#52525b" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">race · class · feat · bg · item · cond</text>
+<rect x="560" y="208" width="160" height="56" rx="6" fill="#f4f4f5"/>
+<rect x="560" y="208" width="160" height="56" rx="6" fill="#9b2c2c" fill-opacity="0.08" stroke="#9b2c2c" stroke-width="1"/>
+<rect x="568" y="214" width="28" height="12" rx="2" fill="none" stroke="#9b2c2c" stroke-opacity="0.50" stroke-width="0.8"/>
+<text x="582" y="223" fill="#9b2c2c" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">HUB</text>
+<rect x="656" y="214" width="56" height="12" rx="2" fill="#ffffff" stroke="#18181b" stroke-opacity="0.22" stroke-width="0.8"/>
+<text x="684" y="223" fill="#52525b" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.04em">feeds 49</text>
+<text x="640" y="240" fill="#18181b" font-size="12" font-weight="600" font-family="'Geist', ui-sans-serif, sans-serif" text-anchor="middle">Global modifiers</text>
+<text x="640" y="255" fill="#52525b" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">getValidGlobalModifiers</text>
+<rect x="360" y="352" width="160" height="56" rx="6" fill="#f4f4f5"/>
+<rect x="360" y="352" width="160" height="56" rx="6" fill="#ffffff" stroke="#18181b" stroke-width="1"/>
+<rect x="368" y="358" width="32" height="12" rx="2" fill="none" stroke="#18181b" stroke-opacity="0.40" stroke-width="0.8"/>
+<text x="384" y="367" fill="#18181b" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">CALC</text>
+<rect x="456" y="358" width="56" height="12" rx="2" fill="#ffffff" stroke="#18181b" stroke-opacity="0.22" stroke-width="0.8"/>
+<text x="484" y="367" fill="#52525b" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.04em">feeds 34</text>
+<text x="440" y="384" fill="#18181b" font-size="12" font-weight="600" font-family="'Geist', ui-sans-serif, sans-serif" text-anchor="middle">Abilities &amp; saves</text>
+<text x="440" y="399" fill="#52525b" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">getAbilities</text>
+<rect x="760" y="352" width="160" height="56" rx="6" fill="#f4f4f5"/>
+<rect x="760" y="352" width="160" height="56" rx="6" fill="#ffffff" stroke="#18181b" stroke-width="1"/>
+<rect x="768" y="358" width="32" height="12" rx="2" fill="none" stroke="#18181b" stroke-opacity="0.40" stroke-width="0.8"/>
+<text x="784" y="367" fill="#18181b" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">CALC</text>
+<rect x="856" y="358" width="56" height="12" rx="2" fill="#ffffff" stroke="#18181b" stroke-opacity="0.22" stroke-width="0.8"/>
+<text x="884" y="367" fill="#52525b" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.04em">feeds 20</text>
+<text x="840" y="384" fill="#18181b" font-size="12" font-weight="600" font-family="'Geist', ui-sans-serif, sans-serif" text-anchor="middle">Proficiency bonus</text>
+<text x="840" y="399" fill="#52525b" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">getProficiencyBonus</text>
+<rect x="160" y="496" width="160" height="56" rx="6" fill="#f4f4f5"/>
+<rect x="160" y="496" width="160" height="56" rx="6" fill="#18181b" fill-opacity="0.05" stroke="#52525b" stroke-width="1"/>
+<rect x="168" y="502" width="28" height="12" rx="2" fill="none" stroke="#52525b" stroke-opacity="0.50" stroke-width="0.8"/>
+<text x="182" y="511" fill="#52525b" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">OUT</text>
+<rect x="264" y="502" width="48" height="12" rx="2" fill="#ffffff" stroke="#18181b" stroke-opacity="0.22" stroke-width="0.8"/>
+<text x="288" y="511" fill="#52525b" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.04em">feeds 2</text>
+<text x="240" y="528" fill="#18181b" font-size="12" font-weight="600" font-family="'Geist', ui-sans-serif, sans-serif" text-anchor="middle">Armor class</text>
+<text x="240" y="543" fill="#52525b" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">getAcTotal</text>
+<rect x="560" y="496" width="160" height="56" rx="6" fill="#f4f4f5"/>
+<rect x="560" y="496" width="160" height="56" rx="6" fill="#18181b" fill-opacity="0.05" stroke="#52525b" stroke-width="1"/>
+<rect x="568" y="502" width="28" height="12" rx="2" fill="none" stroke="#52525b" stroke-opacity="0.50" stroke-width="0.8"/>
+<text x="582" y="511" fill="#52525b" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">OUT</text>
+<rect x="664" y="502" width="48" height="12" rx="2" fill="#ffffff" stroke="#18181b" stroke-opacity="0.22" stroke-width="0.8"/>
+<text x="688" y="511" fill="#52525b" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.04em">feeds 3</text>
+<text x="640" y="528" fill="#18181b" font-size="12" font-weight="600" font-family="'Geist', ui-sans-serif, sans-serif" text-anchor="middle">Hit points</text>
+<text x="640" y="543" fill="#52525b" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">getHitPointInfo</text>
+<rect x="960" y="496" width="160" height="56" rx="6" fill="#f4f4f5"/>
+<rect x="960" y="496" width="160" height="56" rx="6" fill="#18181b" fill-opacity="0.05" stroke="#52525b" stroke-width="1"/>
+<rect x="968" y="502" width="28" height="12" rx="2" fill="none" stroke="#52525b" stroke-opacity="0.50" stroke-width="0.8"/>
+<text x="982" y="511" fill="#52525b" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">OUT</text>
+<rect x="1064" y="502" width="48" height="12" rx="2" fill="#ffffff" stroke="#18181b" stroke-opacity="0.22" stroke-width="0.8"/>
+<text x="1088" y="511" fill="#52525b" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.04em">feeds 5</text>
+<text x="1040" y="528" fill="#18181b" font-size="12" font-weight="600" font-family="'Geist', ui-sans-serif, sans-serif" text-anchor="middle">Skills</text>
+<text x="1040" y="543" fill="#52525b" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">getSkills</text>
+<line x1="40" y1="592" x2="1240" y2="592" stroke="#18181b" stroke-opacity="0.10" stroke-width="0.8"/>
+<text x="40" y="608" fill="#52525b" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.18em">LEGEND</text>
+<rect x="40" y="624" width="14" height="10" rx="2" fill="#18181b" fill-opacity="0.03" stroke="#18181b" stroke-opacity="0.30" stroke-width="1"/>
+<text x="60" y="632" fill="#52525b" font-size="8.5" font-family="'Geist', ui-sans-serif, sans-serif">Server input</text>
+<rect x="153" y="624" width="14" height="10" rx="2" fill="#ffffff" stroke="#18181b" stroke-width="1"/>
+<text x="173" y="632" fill="#52525b" font-size="8.5" font-family="'Geist', ui-sans-serif, sans-serif">Derived selector</text>
+<rect x="286" y="624" width="14" height="10" rx="2" fill="#9b2c2c" fill-opacity="0.08" stroke="#9b2c2c" stroke-width="1"/>
+<text x="306" y="632" fill="#52525b" font-size="8.5" font-family="'Geist', ui-sans-serif, sans-serif">Modifier hub (focal)</text>
+<rect x="440" y="624" width="14" height="10" rx="2" fill="#18181b" fill-opacity="0.05" stroke="#52525b" stroke-width="1"/>
+<text x="460" y="632" fill="#52525b" font-size="8.5" font-family="'Geist', ui-sans-serif, sans-serif">Sheet value</text>
+<line x1="548" y1="629" x2="576" y2="629" stroke="#52525b" stroke-width="1.2" marker-end="url(#d-03-derived-stats-arrow)"/>
+<text x="584" y="632" fill="#52525b" font-size="8.5" font-family="'Geist', ui-sans-serif, sans-serif">Feeds (data flow)</text>
+<rect x="900" y="624" width="56" height="12" rx="2" fill="#ffffff" stroke="#18181b" stroke-opacity="0.22" stroke-width="0.8"/>
+<text x="928" y="633" fill="#52525b" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.04em">feeds N</text>
+<text x="964" y="634" fill="#52525b" font-size="8.5" font-family="'Geist', ui-sans-serif, sans-serif">N selectors read it directly (whole graph)</text>
+</svg>
